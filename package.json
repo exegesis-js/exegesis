@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
-    "test": "mocha 'test/**/*.@(ts|js)'",
+    "test": "mocha",
+    "test-pre-commit": "mocha --reporter progress",
     "build": "tsc",
     "lint": "tslint -c tslint.json -t stylish 'src/**/*.ts'",
     "prepare": "npm run build",
@@ -14,7 +15,7 @@
   "pre-commit": [
     "build",
     "lint",
-    "test"
+    "test-pre-commit"
   ],
   "repository": {
     "type": "git",
