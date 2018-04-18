@@ -1,6 +1,7 @@
 export interface ParameterBag<T> {
     query: T;
     header: T;
+    server: T;
     path: T;
     cookie: T;
 }

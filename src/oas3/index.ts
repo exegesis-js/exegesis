@@ -84,15 +84,14 @@ export default class OpenApi implements ApiInterface {
                 const operation = path.getOperation(method);
                 const mediaType = (operation && contentType) ? operation.getRequestMediaType(contentType) : undefined;
 
-                // TODO: Annoying that parsing parameters can throw validation error here.
-                // Maybe we should return a `parseParameters()` function instead to defer
-                // this?
-                const parsedParameters : ParameterBag<any> | undefined =
-                    operation && operation.parseParameters({
+                const parseParameters = operation && function() : ParameterBag<any> {
+                    return operation.parseParameters({
                         headers,
                         pathParams,
+                        serverParams,
                         queryString: parsedUrl.query || undefined
                     });
+                };
 
                 const validateParameters : ValidatorFunction | undefined =
                     operation && operation.validator;
@@ -104,7 +103,7 @@ export default class OpenApi implements ApiInterface {
                     serverParams,
                     // parseParameters: operation &&
                     //     operation.parameterParser(serverParams, pathParams, parsedUrl.query),
-                    parsedParameters,
+                    parseParameters,
                     validateParameters,
                     // parseBody: mediaType && mediaType.bodyParser,
                     validateBody,

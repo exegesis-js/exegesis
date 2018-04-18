@@ -86,6 +86,7 @@ export default class Operation {
     parseParameters(params : {
         headers : ValuesBag | undefined,
         pathParams: ValuesBag | undefined,
+        serverParams: ValuesBag | undefined,
         queryString: string | undefined
     }) : ParameterBag<any> {
         const {headers, pathParams, queryString} = params;
@@ -100,6 +101,7 @@ export default class Operation {
         return {
             query: parsedQuery ? this._parseParameterGroup(this._parameters.query, parsedQuery, ctx) : {},
             header: headers ? this._parseParameterGroup(this._parameters.header, headers, ctx) : {},
+            server: params.serverParams || {},
             path: pathParams ? this._parseParameterGroup(this._parameters.path, pathParams, ctx) : {},
             cookie: {}
         };

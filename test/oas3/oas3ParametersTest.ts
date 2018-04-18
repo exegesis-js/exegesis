@@ -115,7 +115,7 @@ const types : {[key: string]: any} = {
             spaceDelimited: '?var=foo bar'
         }]
     }
-}
+};
 
 describe('oas3 integration parameter parsing', function() {
     describe('path parameters', function() {
@@ -150,7 +150,7 @@ describe('oas3 integration parameter parsing', function() {
                             {}
                         );
 
-                        expect(result!.parsedParameters!.path.var).to.eql(sample.value);
+                        expect(result!.parseParameters!().path.var).to.eql(sample.value);
                     });
                 }
             }
@@ -189,7 +189,7 @@ describe('oas3 integration parameter parsing', function() {
                         {'x-custom-header': sample.simple}
                     );
 
-                    expect(result!.parsedParameters!.header['x-custom-header']).to.eql(sample.value);
+                    expect(result!.parseParameters!().header['x-custom-header']).to.eql(sample.value);
                 });
 
             }
@@ -202,9 +202,8 @@ describe('oas3 integration parameter parsing', function() {
                     {}
                 );
 
-                expect(result!.parsedParameters!.header['x-custom-header']).to.eql(undefined);
+                expect(result!.parseParameters!().header['x-custom-header']).to.eql(undefined);
             });
-
         }
     });
 
@@ -232,7 +231,7 @@ describe('oas3 integration parameter parsing', function() {
                         }
                     });
                     return openApi;
-                }
+                };
 
                 for(const sample of typeDef.samples) {
                     if(!(style in sample)) {
@@ -246,9 +245,8 @@ describe('oas3 integration parameter parsing', function() {
                             {}
                         );
 
-
                         expect(result, 'matched a route').to.exist;
-                        expect(result!.parsedParameters!.query.var).to.eql(sample.value);
+                        expect(result!.parseParameters!().query.var).to.eql(sample.value);
                     });
                 }
 
@@ -260,7 +258,7 @@ describe('oas3 integration parameter parsing', function() {
                         {}
                     );
 
-                    expect(result!.parsedParameters!.query.var).to.eql(undefined);
+                    expect(result!.parseParameters!().query.var).to.eql(undefined);
                 });
 
                 // TODO: deepObject, pipe and space delimited.
@@ -288,14 +286,14 @@ describe('oas3 integration parameter parsing', function() {
                 `/query?var[a]=b&var[c]=d`,
                 {}
             );
-            expect(result!.parsedParameters!.query.var).to.eql({a:'b', c: 'd'});
+            expect(result!.parseParameters!().query.var).to.eql({a:'b', c: 'd'});
 
             result = openApi.resolve(
                 'GET',
                 `/query`,
                 {}
             );
-            expect(result!.parsedParameters!.query.var).to.eql(undefined);
+            expect(result!.parseParameters!().query.var).to.eql(undefined);
         });
 
         for(const style of [
@@ -323,21 +321,21 @@ describe('oas3 integration parameter parsing', function() {
                     `/query?var=a${style.delimiter}b${style.delimiter}c`,
                     {}
                 );
-                expect(result!.parsedParameters!.query.var).to.eql(['a', 'b', 'c']);
+                expect(result!.parseParameters!().query.var).to.eql(['a', 'b', 'c']);
 
                 result = openApi.resolve(
                     'GET',
                     `/query?var=a`,
                     {}
                 );
-                expect(result!.parsedParameters!.query.var).to.eql(['a']);
+                expect(result!.parseParameters!().query.var).to.eql(['a']);
 
                 result = openApi.resolve(
                     'GET',
                     `/query`,
                     {}
                 );
-                expect(result!.parsedParameters!.query.var).to.eql(undefined);
+                expect(result!.parseParameters!().query.var).to.eql(undefined);
             });
         }
 

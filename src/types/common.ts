@@ -104,7 +104,7 @@ export const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 
 export interface ResolvedPath {
     serverParams: ParametersMap | undefined;
     // parseParameters: operation && operation.parameterParser(serverParams, pathParams, parsedUrl.query),
-    parsedParameters: ParameterBag<any> | undefined;
+    parseParameters: (() => ParameterBag<any>) | undefined;
     validateParameters: ValidatorFunction | undefined;
     // parseBody: mediaType && mediaType.bodyParser,
     validateBody: ValidatorFunction | undefined;
