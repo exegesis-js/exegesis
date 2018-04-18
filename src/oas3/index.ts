@@ -39,7 +39,7 @@ export default class OpenApi implements ApiInterface {
             this._servers = new Servers(openApiDoc.servers);
         }
 
-        this._paths = new Paths(new Oas3Context(['paths'], openApiDoc, options));
+        this._paths = new Paths(new Oas3Context(openApiDoc, ['paths'], options));
     }
 
     /**

@@ -32,11 +32,8 @@ export function contentToMediaTypeRegistry(
             answer.set(mediaType, new MediaType(
                 mediaContext,
                 oaMediaType,
-                {
-                    in: 'body',
-                    name: 'body',
-                    docPath: mediaContext.path
-                }
+                'body',
+                'body'
             ));
         }
     }

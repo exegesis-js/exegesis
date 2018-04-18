@@ -13,14 +13,15 @@ export default class MediaType {
     constructor(
         context : Oas3Context,
         oaMediaType: oas3.MediaTypeObject,
-        location: ParameterLocation
+        parameterIn: string,
+        parameterName: string
     ) {
         this.context = context;
         this.oaMediaType = oaMediaType;
 
         if(oaMediaType.schema) {
             const schemaContext = context.childContext('schema');
-            this.validator = generateRequestValidator(schemaContext, location);
+            this.validator = generateRequestValidator(schemaContext, parameterIn, parameterName);
         } else {
             this.validator = () => null;
         }

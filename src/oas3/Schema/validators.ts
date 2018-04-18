@@ -62,7 +62,7 @@ export function _fixNullables(schema: any) {
 
 export function _filterRequiredProperties(schema: any, propNameToFilter: string) {
     traveseSchema(schema, (childSchema: any) => {
-        if(schema.properties && schema.required) {
+        if(childSchema.properties && schema.required) {
             for(const propName of Object.keys(childSchema.properties)) {
                 const prop = childSchema.properties[propName];
                 const resolvedProp = resolveRef(schema, prop);
@@ -76,7 +76,8 @@ export function _filterRequiredProperties(schema: any, propNameToFilter: string)
 
 function generateValidator(
     schemaContext: Oas3Context,
-    location: ParameterLocation,
+    parameterIn: string,
+    parameterName: string,
     propNameToFilter: string
 ) : ValidatorFunction {
     const {openApiDoc, path: schemaPath} = schemaContext;
@@ -102,10 +103,10 @@ function generateValidator(
                 type: ErrorType.Error,
                 message: err.message || 'Unspecified error',
                 location: {
-                    in: location.in,
-                    name: location.name,
-                    docPath: location.docPath,
-                    path: jsonPaths.jsonPointerToPath(err.dataPath)
+                    in: parameterIn,
+                    name: parameterName,
+                    docPath: schemaPath,
+                    path: err.dataPath ? jsonPaths.jsonPointerToPath(err.dataPath) : []
                 }
             }));
             return validationErrors;
@@ -116,14 +117,16 @@ function generateValidator(
 
 export function generateRequestValidator(
     schemaContext: Oas3Context,
-    location: ParameterLocation
+    parameterIn: string,
+    parameterName: string
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, location, 'readOnly');
+    return generateValidator(schemaContext, parameterIn, parameterName, 'readOnly');
 }
 
 export function generateResponseValidator(
     schemaContext: Oas3Context,
-    location: ParameterLocation
+    parameterIn: string,
+    parameterName: string
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, location, 'writeOnly');
+    return generateValidator(schemaContext, parameterIn, parameterName, 'writeOnly');
 }

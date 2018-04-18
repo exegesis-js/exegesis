@@ -1,7 +1,7 @@
 import * as jsonPaths from './jsonPaths';
 
 function resolveRefPriv(document: any, ref: string) : any {
-    if(!ref.startsWith('#')) {
+    if(!ref.startsWith('#/') && !ref.startsWith('/')) {
         throw new Error(`Cannot resolve non-local ref ${ref}`);
     }
 

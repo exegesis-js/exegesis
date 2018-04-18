@@ -1,5 +1,7 @@
 import * as options from '../src/options';
 import * as oas3 from 'openapi3-ts';
+import Oas3Context from '../src/oas3/Oas3Context';
+import { jsonPointerToPath } from '../src/utils/jsonPaths';
 
 export const defaultCompiledOptions : options.ExgesisCompiledOptions = options.compileOptions();
 
@@ -13,4 +15,8 @@ export function makeOpenApiDoc() : oas3.OpenAPIObject {
         paths: {
         }
     };
+}
+
+export function makeContext(openApiDoc: oas3.OpenAPIObject, jsonPointer: string) {
+    return new Oas3Context(openApiDoc, jsonPointerToPath(jsonPointer), defaultCompiledOptions);
 }

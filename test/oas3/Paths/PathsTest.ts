@@ -19,7 +19,7 @@ describe('oas3 Paths', function() {
     it('should resolve paths', function() {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['/foo'] = DUMMY_PATH_OBJECT;
-        const paths = new Paths(new Oas3Context(['paths'], openApiDoc, defaultCompiledOptions));
+        const paths = new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions));
         const resolved = paths.resolvePath('/foo');
         expect(resolved).to.exist;
         expect(resolved!.path.oaPath).to.eql(DUMMY_PATH_OBJECT);
@@ -37,7 +37,7 @@ describe('oas3 Paths', function() {
             }]
         }, DUMMY_PATH_OBJECT);
 
-        const paths = new Paths(new Oas3Context(['paths'], openApiDoc, defaultCompiledOptions));
+        const paths = new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions));
         const resolved = paths.resolvePath('/bar/foo');
         expect(resolved).to.exist;
         expect(resolved!.pathParams).to.eql({var: 'bar'});
@@ -46,7 +46,7 @@ describe('oas3 Paths', function() {
     it('should not treat specitifcation extensions as paths', function() {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['x-my-extension'] = DUMMY_PATH_OBJECT;
-        const paths = new Paths(new Oas3Context(['paths'], openApiDoc, defaultCompiledOptions));
+        const paths = new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions));
         const resolved = paths.resolvePath('x-my-extension');
         expect(resolved).to.not.exist;
     });
@@ -55,14 +55,14 @@ describe('oas3 Paths', function() {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['foo'] = DUMMY_PATH_OBJECT;
         expect(() =>
-            new Paths(new Oas3Context(['paths'], openApiDoc, defaultCompiledOptions))
+            new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions))
         ).to.throw('Invalid path "foo"');
     });
 
     it('should allow empty paths object', function() {
         const openApiDoc = makeOpenApiDoc();
         expect(() =>
-            new Paths(new Oas3Context(['paths'], openApiDoc, defaultCompiledOptions))
+            new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions))
         ).to.not.throw;
     });
 });

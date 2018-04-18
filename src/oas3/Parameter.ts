@@ -35,15 +35,15 @@ export default class Parameter {
             oaParameter = context.resolveRef(oaParameter.$ref) as oas3.ParameterObject;
         }
 
-        this.context = context;
-        this.oaParameter = oaParameter;
-        this.validate = () => null;
-
         this.location = {
             in: oaParameter.in,
             name: oaParameter.name,
             docPath: context.path
         };
+
+        this.context = context;
+        this.oaParameter = oaParameter;
+        this.validate = () => null;
 
         // Find the schema for this parameter.
         if(oaParameter.schema) {
@@ -51,7 +51,8 @@ export default class Parameter {
             const schema = context.resolveRef(oaParameter.schema) as oas3.SchemaObject;
             this.validate = generateRequestValidator(
                 context.childContext('schema'),
-                this.location
+                oaParameter.in,
+                oaParameter.name
             );
             this.parser = this._generateSchemaParser(schema);
 
@@ -64,13 +65,14 @@ export default class Parameter {
             if(schema) {
                 this.validate = generateRequestValidator(
                     context.childContext(['content', mediaTypeString, 'schema']),
-                    this.location
+                    oaParameter.in,
+                    oaParameter.name
                 );
             }
             this.parser = this._generateContentParser(mediaTypeString);
 
         } else {
-            throw new Error(`Parameter ${this.location.name} should have a 'schema' or a 'content'`);
+            throw new Error(`Parameter ${oaParameter.name} should have a 'schema' or a 'content'`);
         }
 
     }
