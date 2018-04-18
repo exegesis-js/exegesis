@@ -32,8 +32,8 @@ function extractSchemaPriv(
         if(schema.$ref && typeof(schema.$ref) === 'string') {
             if(ctx.replaced[schema.$ref]) {
                 schema.$ref = ctx.replaced[schema.$ref];
-            } else if(jsonPaths.jsonPathStartsWith(schema.$ref, ctx.rootSubtreeRef)) {
-                ctx.replaced[schema.$ref] = jsonPaths.jsonPathStripPrefix(schema.$ref, ctx.rootSubtreeRef);
+            } else if(jsonPaths.jsonPointerStartsWith(schema.$ref, ctx.rootSubtreeRef)) {
+                ctx.replaced[schema.$ref] = jsonPaths.jsonPointerStripPrefix(schema.$ref, ctx.rootSubtreeRef);
                 schema.$ref = ctx.replaced[schema.$ref];
             } else if(!refResolver(schema.$ref)) {
                 // Don't know how to resolve this ref
@@ -45,7 +45,7 @@ function extractSchemaPriv(
 
                 // Find a name to store this under in 'definitions'.
                 const origRef = schema.$ref;
-                const jsonPath = jsonPaths.jsonRefToPath(schema.$ref);
+                const jsonPath = jsonPaths.jsonPointerToPath(schema.$ref);
                 let newRefSuffix : string | undefined = jsonPath.length > 0 ? jsonPath[jsonPath.length - 1] : undefined;
                 while(!newRefSuffix || ctx.result.definitions[newRefSuffix]) {
                     newRefSuffix = `schema${ctx.schemaCount++}`;

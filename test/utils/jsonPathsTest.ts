@@ -4,33 +4,29 @@ import {expect} from 'chai';
 import * as jsonPaths from '../../src/utils/jsonPaths';
 
 const PAIRS : [string[], string][] = [
-    [['paths', '/foo/{var}/bar'], '#/paths/%2Ffoo%2F%7Bvar%7D%2Fbar']
+    [['foo', 'bar'], '#/foo/bar'],
+    [['foo', 'bar/baz'], '#/foo/bar~1baz'],
+    [['foo', 'bar baz'], '#/foo/bar%20baz'],
+    [['paths', '/foo/{var}/bar'], '#/paths/~1foo~1%7Bvar%7D~1bar']
 ];
 
 describe("jsonPaths utils", function() {
-    it('should convert a path to a JsonRef', function() {
-        expect(jsonPaths.pathToJsonRef(['foo', 'bar'])).to.equal('#/foo/bar');
-        expect(jsonPaths.pathToJsonRef(['foo', 'bar/baz'])).to.equal('#/foo/bar%2Fbaz');
+    it('should convert a non-uri JSON pointer to a path', function() {
+        expect(jsonPaths.jsonPointerToPath('/foo%7Dbar')).to.eql(['foo%7Dbar']);
     });
 
-    it('should convert a JsonRef to a path', function() {
-        expect(jsonPaths.jsonRefToPath('#/foo/bar'), '#/foo/bar').to.eql(['foo', 'bar']);
+    it('should handle lower case URI encoded paths', function() {
+        expect(jsonPaths.jsonPointerToPath('#/foo/bar%7dbaz'), '').to.eql(['foo', 'bar}baz']);
+    });
 
-        expect(jsonPaths.jsonRefToPath('/foo/bar'), 'Should accept paths that start with /')
-            .to.eql(['foo', 'bar']);
-
-
-        expect(jsonPaths.jsonRefToPath('/foo/bar%2Fbaz'), 'Should handle URI encoded paths')
-            .to.eql(['foo', 'bar/baz']);
-
-        expect(jsonPaths.jsonRefToPath('/foo/bar%2fbaz'), 'Should handle lower case URI encoded paths')
-            .to.eql(['foo', 'bar/baz']);
+    it('should handle upper case URI encoded paths', function() {
+        expect(jsonPaths.jsonPointerToPath('#/foo/bar%7Dbaz'), '').to.eql(['foo', 'bar}baz']);
     });
 
     it('should convert back and forth', function() {
         for(const [path, jsonRef] of PAIRS) {
-            expect(jsonPaths.pathToJsonRef(path)).to.eql(jsonRef);
-            expect(jsonPaths.jsonRefToPath(jsonRef)).to.eql(path);
+            expect(jsonPaths.pathToJsonPointer(path)).to.eql(jsonRef);
+            expect(jsonPaths.jsonPointerToPath(jsonRef)).to.eql(path);
         }
     });
 });

@@ -8,7 +8,7 @@ import { generateFormStyleQueryParser } from './formParser';
 import { generatePathStyleParser } from './pathParser';
 import { generateDelimitedParser } from './delimitedParser';
 import { ParserContext } from './ParserContext';
-import { pathToJsonRef } from '../../utils/jsonPaths';
+import { pathToJsonPointer } from '../../utils/jsonPaths';
 
 export interface ParametersParser {
     (
@@ -48,7 +48,7 @@ export function getMimeTypeParser(
     const bodyParser = parameterParsers.get(mimeType);
     const name = parameterLocation.name;
     if(!bodyParser) {
-        throw new Error(`Parameter ${parameterLocation.name} in ${pathToJsonRef(parameterLocation.docPath)} ` +
+        throw new Error(`Parameter ${parameterLocation.name} in ${pathToJsonPointer(parameterLocation.docPath)} ` +
             `uses media type ${mimeType}, but no parameter parser is registered for this type.`
         );
     }

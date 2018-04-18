@@ -45,6 +45,10 @@ describe("resolveRef", function() {
         ).to.throw('Cannot resolve non-local ref');
     });
 
+    it('should resolve a ref with /s', function() {
+        expect(resolveRef({'a/b': 7}, '#/a~1b')).to.eql(7);
+    });
+
     it('should resolve a ref with URI encoded components', function() {
         expect(resolveRef({'a b': 7}, '#/a%20b')).to.eql(7);
     });

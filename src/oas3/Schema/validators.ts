@@ -82,7 +82,7 @@ function generateValidator(
     const {openApiDoc, path: schemaPath} = schemaContext;
     const customFormats = schemaContext.options.customFormats;
 
-    const schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonRef(schemaPath));
+    const schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonPointer(schemaPath));
     _filterRequiredProperties(schema, propNameToFilter);
     // TODO: Should we do this?  Or should we rely on the schema being correct in the first place?
     // _fixNullables(schema);
@@ -105,7 +105,7 @@ function generateValidator(
                     in: location.in,
                     name: location.name,
                     docPath: location.docPath,
-                    path: jsonPaths.jsonRefToPath(err.dataPath)
+                    path: jsonPaths.jsonPointerToPath(err.dataPath)
                 }
             }));
             return validationErrors;
