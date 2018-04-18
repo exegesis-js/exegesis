@@ -12,6 +12,10 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                 number: {
                     type: 'number'
                 },
+                int32: {
+                    type: 'integer',
+                    format: 'int32'
+                },
                 object: {
                     type: 'object',
                     required: ['a', 'b'],
@@ -107,6 +111,24 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: ['components', 'schemas', 'object2'],
                 path: ['a']
+            }
+        }]);
+    });
+
+    it('should validate an integer with a format', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/int32');
+
+        const validator = validators.generateRequestValidator(context, 'query', 'foo');
+        expect(validator(7)).to.eql(null);
+
+        expect(validator(2**32)).to.eql([{
+            type: ErrorType.Error,
+            message: 'should match format "int32"',
+            location: {
+                in: 'query',
+                name: 'foo',
+                docPath: ['components', 'schemas', 'int32'],
+                path: []
             }
         }]);
     });

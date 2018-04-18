@@ -2,7 +2,7 @@ import {generateRequestValidator} from './Schema/validators';
 import Oas3Context from './Oas3Context';
 
 import * as oas3 from 'openapi3-ts';
-import {ValidatorFunction, ParameterLocation} from '../types/common';
+import {ValidatorFunction} from '../types/common';
 
 export default class MediaType {
 

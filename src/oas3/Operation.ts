@@ -52,7 +52,7 @@ export default class Operation {
                 (result as any)[parameter.oaParameter.in].push(parameter);
                 return result;
             },
-            {query: [], header: [], path: [], cookie: []}
+            {query: [], header: [], path: [], server: [], cookie: []}
         );
     }
 
