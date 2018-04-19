@@ -1,17 +1,29 @@
 import http from 'http';
 import * as oas3 from 'openapi3-ts';
 
-import { ParametersMap, ParameterBag } from '../oas3/types';
 import { JsonPath } from '../utils/jsonPaths';
-import { ValidatorFunction } from './validation';
+import { ValidatorFunction, IValidationError } from './validation';
 import { HttpMethod } from './common';
+import { BodyParser } from '../bodyParsers/BodyParser';
+
+export interface ParameterBag<T> {
+    query: T;
+    header: T;
+    server: T;
+    path: T;
+    cookie: T;
+}
+
+// A collection of parameters from the server, path, query, cookies, etc...
+export interface ParametersMap<T> {
+    [key: string]: T;
+}
 
 export interface ResolvedPath {
-    serverParams: ParametersMap | undefined;
-    // parseParameters: operation && operation.parameterParser(serverParams, pathParams, parsedUrl.query),
-    parseParameters: (() => ParameterBag<any>) | undefined;
-    validateParameters: ValidatorFunction | undefined;
-    // parseBody: mediaType && mediaType.bodyParser,
+    serverParams: ParametersMap<string | string[]> | undefined;
+    parseParameters: (() => ParameterBag<ParametersMap<any>>) | undefined;
+    validateParameters: ((parameterValues: ParameterBag<ParametersMap<any>>) => IValidationError[] | null) | undefined;
+    bodyParser: BodyParser | undefined;
     validateBody: ValidatorFunction | undefined;
     // responseValidator,
     // responseContentType?,

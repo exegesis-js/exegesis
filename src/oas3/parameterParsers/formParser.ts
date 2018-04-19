@@ -1,5 +1,5 @@
 import ld from 'lodash';
-import { ParameterParser, ValuesBag } from ".";
+import { RawParameterParser, ValuesBag } from ".";
 import { ParameterLocation } from "../../types/validation";
 import { simpleParser, simpleKeysParser } from "./simpleParser";
 
@@ -7,8 +7,8 @@ export function generateFormStyleQueryParser(
     parameterLocation: ParameterLocation,
     isKeys: boolean,
     explode: boolean
-) : ParameterParser {
-    let result : ParameterParser;
+) : RawParameterParser {
+    let result : RawParameterParser;
 
     if(!isKeys) {
         if(!explode) {

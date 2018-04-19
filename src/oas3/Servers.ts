@@ -1,6 +1,6 @@
 import * as oas3 from 'openapi3-ts';
-import { ParametersMap } from './types';
 import { compileTemplatePath, PathParserFunction } from './Paths/PathResolver';
+import { ParametersMap } from '../types/ApiInterface';
 
 const FULL_URL_RE = /^(.*?):\/\/([^/]*?)\/(.*)$/; // e.g. https://foo.bar/v1
 const ABSOLUTE_URL_RE = /^\/(.*)$/; // e.g. /v1
@@ -8,7 +8,7 @@ const ABSOLUTE_URL_RE = /^\/(.*)$/; // e.g. /v1
 export interface ResolvedServer {
     oaServer: oas3.ServerObject;
     // Parameters from the server.
-    serverParams: ParametersMap;
+    serverParams: ParametersMap<string | string[]>;
     // The unmatched portion of the pathname.
     pathnameRest: string;
 }
@@ -36,7 +36,7 @@ function generateServerParser(oaServer: oas3.ServerObject) : ServerParser {
         } else {
             basepathAcceptFunction = () => ({
                 matched: '/',
-                pathParams: Object.create(null)
+                rawPathParams: Object.create(null)
             });
         }
 
@@ -47,7 +47,7 @@ function generateServerParser(oaServer: oas3.ServerObject) : ServerParser {
                 return {
                     oaServer,
                     pathnameRest: pathname.slice(pathMatch.matched.length-1),
-                    serverParams: Object.assign({}, hostMatch.pathParams, pathMatch.pathParams),
+                    serverParams: Object.assign({}, hostMatch.rawPathParams, pathMatch.rawPathParams),
                 };
             } else {
                 return null;
@@ -63,7 +63,7 @@ function generateServerParser(oaServer: oas3.ServerObject) : ServerParser {
             if(pathMatch) {
                 return {
                     oaServer,
-                    serverParams: pathMatch.pathParams,
+                    serverParams: pathMatch.rawPathParams,
                     pathnameRest: pathname.slice(pathMatch.matched.length)
                 };
             } else {

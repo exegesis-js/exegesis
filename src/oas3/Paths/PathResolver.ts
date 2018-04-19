@@ -1,8 +1,8 @@
 import {escapeRegExp} from 'lodash';
-import { ParametersMap } from '../types';
+import { ParametersMap } from '../../types/ApiInterface';
 const TEMPLATE_RE = /^(.*?){(.*?)}(.*)$/;
 
-export type PathParserFunction = (pathname: string) => {matched: string, pathParams: ParametersMap} | null;
+export type PathParserFunction = (pathname: string) => {matched: string, rawPathParams: ParametersMap<any>} | null;
 
 /**
  * @param path - The path to check.
@@ -65,8 +65,8 @@ export function compileTemplatePath(
         if(match) {
             return {
                 matched: match[0],
-                pathParams: params.reduce(
-                    (result: ParametersMap, paramName, index) => {
+                rawPathParams: params.reduce(
+                    (result: ParametersMap<string | string[]>, paramName, index) => {
                         result[paramName] = match[index + 1];
                         return result;
                     },
@@ -116,19 +116,19 @@ export default class PathResolver<T> {
      * exists.
      *
      * @param urlPathname - The pathname to search for.
-     * @returns A `{value, pathParams} object if a path is matched, or
+     * @returns A `{value, rawPathParams} object if a path is matched, or
      *   undefined if there was no match.
      */
     resolvePath(urlPathname: string) {
         let value : T | undefined = this._staticPaths[urlPathname];
-        let pathParams : ParametersMap | undefined;
+        let rawPathParams : ParametersMap<string | string[]> | undefined;
 
         if(!value) {
             for(const dynamicPath of this._dynamicPaths) {
                 const matched = dynamicPath.parser(urlPathname);
                 if(matched) {
                     value = dynamicPath.value;
-                    pathParams = matched.pathParams;
+                    rawPathParams = matched.rawPathParams;
                 }
             }
         }
@@ -136,7 +136,7 @@ export default class PathResolver<T> {
         if(value) {
             return {
                 value,
-                pathParams
+                rawPathParams
             };
         } else {
             return undefined;

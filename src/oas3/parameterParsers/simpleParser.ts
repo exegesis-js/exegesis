@@ -1,4 +1,4 @@
-import { ParameterParser, ValuesBag } from '.';
+import { RawParameterParser, ValuesBag } from '.';
 import { ParameterLocation } from '../../types/validation';
 import { arrayToObject, isArrayValidationError } from './common';
 
@@ -7,7 +7,7 @@ export function generateSimpleParser(
     parameterLocation: ParameterLocation,
     isKeys: boolean,
     explode: boolean
-) : ParameterParser {
+) : RawParameterParser {
     let parserFn: (value: string, parameterLocation: ParameterLocation) => any;
     const name = parameterLocation.name;
 

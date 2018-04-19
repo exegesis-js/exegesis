@@ -3,9 +3,9 @@ import { JsonPath } from "../utils/jsonPaths";
 /**
  * The location of a parameter or property within a request.
  *
- * @property in - A description of where the error was located (e.g. 'path', 'query', 'body', etc...).
+ * @property in - A description of where the error was located (e.g. 'path', 'query', 'request', etc...).
  * @property name - If this refers to a parameter, this is the name of the parameter.
- *   If `in` is 'body', this will be 'body' also.
+ *   If `in` is 'request', this will be 'body'.
  * @property docPath - An array of strings which describes the path to the
  *   OpenAPI definition that is related to the parameter.
  * @property [path] - An array of strings which describes the path to the parameter.
@@ -13,7 +13,7 @@ import { JsonPath } from "../utils/jsonPaths";
  *   the body is "image/gif", then this field doesn't really make sense.
  */
 export interface ParameterLocation {
-    in: string; // "path" | "server" | "query" | "cookie" | "header" | "body";
+    in: string; // "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
     name: string;
     docPath: JsonPath;
     path?: JsonPath;

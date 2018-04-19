@@ -18,22 +18,33 @@ export function isReferenceObject(obj: any) : obj is oas3.ReferenceObject {
  * @param path - The path to the `content` object.
  * @param content - The `content` object.
  */
-export function contentToMediaTypeRegistry(
+export function contentToMediaTypeRegistry<T>(
     context: Oas3Context,
+    parserRegistry: MimeTypeRegistry<T>,
+    parameterIn: string,
+    parameterRequired: boolean,
     content?: oas3.ContentObject
 ) {
-    const answer = new MimeTypeRegistry<MediaType>();
+    const answer = new MimeTypeRegistry<MediaType<T>>();
 
     if(content) {
         for(const mediaType of Object.keys(content)) {
             const oaMediaType = content[mediaType];
             const mediaContext = context.childContext(mediaType);
+            const parser = parserRegistry.get(mediaType);
 
-            answer.set(mediaType, new MediaType(
+            if(!parser) {
+                throw new Error('Unable to find suitable mime type parser for ' +
+                    `type ${mediaType} in ${context.jsonPointer}`);
+            }
+
+            answer.set(mediaType, new MediaType<T>(
                 mediaContext,
                 oaMediaType,
+                parameterIn,
                 'body',
-                'body'
+                parameterRequired,
+                parser
             ));
         }
     }

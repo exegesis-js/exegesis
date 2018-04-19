@@ -1,5 +1,5 @@
 import querystring from 'querystring';
-import { ParameterParser, ValuesBag } from '.';
+import { RawParameterParser, ValuesBag } from '.';
 import { ParameterLocation } from '../../types/validation';
 import { isArrayValidationError } from './common';
 import { generateFormStyleQueryParser } from './formParser';
@@ -10,7 +10,7 @@ export function generatePathStyleParser(
     parameterLocation: ParameterLocation,
     isKeys: boolean,
     explode: boolean
-) : ParameterParser {
+) : RawParameterParser {
     const parser = generateFormStyleQueryParser(parameterLocation, isKeys, explode);
     return (values: ValuesBag, ctx: ParserContext) : any => {
         const value = values[parameterLocation.name];

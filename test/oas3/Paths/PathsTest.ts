@@ -23,7 +23,7 @@ describe('oas3 Paths', function() {
         const resolved = paths.resolvePath('/foo');
         expect(resolved).to.exist;
         expect(resolved!.path.oaPath).to.eql(DUMMY_PATH_OBJECT);
-        expect(resolved!.pathParams).to.eql(undefined);
+        expect(resolved!.rawPathParams).to.eql(undefined);
     });
 
     it('should resolve a path with parameters', function() {
@@ -40,7 +40,7 @@ describe('oas3 Paths', function() {
         const paths = new Paths(new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions));
         const resolved = paths.resolvePath('/bar/foo');
         expect(resolved).to.exist;
-        expect(resolved!.pathParams).to.eql({var: 'bar'});
+        expect(resolved!.rawPathParams).to.eql({var: 'bar'});
     });
 
     it('should not treat specitifcation extensions as paths', function() {

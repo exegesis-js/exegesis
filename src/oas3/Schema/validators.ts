@@ -80,6 +80,7 @@ function generateValidator(
     schemaContext: Oas3Context,
     parameterIn: string,
     parameterName: string,
+    parameterRequired: boolean,
     propNameToFilter: string
 ) : ValidatorFunction {
     const {openApiDoc, path: schemaPath} = schemaContext;
@@ -99,6 +100,23 @@ function generateValidator(
     const validate = ajv.compile(schema);
 
     return function(json: any) {
+        if(json === null || json === undefined) {
+            if(parameterRequired) {
+                return [{
+                    type: ErrorType.Error,
+                    message: `Missing required ${parameterIn}:${parameterName}`,
+                    location: {
+                        in: parameterIn,
+                        name: parameterName,
+                        docPath: schemaPath,
+                        path: []
+                    }
+                }];
+            } else {
+                return null;
+            }
+        }
+
         validate(json);
         if(validate.errors) {
             const validationErrors : IValidationError[] = validate.errors.map(err => ({
@@ -113,6 +131,7 @@ function generateValidator(
             }));
             return validationErrors;
         }
+
         return null;
     };
 }
@@ -120,15 +139,17 @@ function generateValidator(
 export function generateRequestValidator(
     schemaContext: Oas3Context,
     parameterIn: string,
-    parameterName: string
+    parameterName: string,
+    parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterIn, parameterName, 'readOnly');
+    return generateValidator(schemaContext, parameterIn, parameterName, parameterRequired, 'readOnly');
 }
 
 export function generateResponseValidator(
     schemaContext: Oas3Context,
     parameterIn: string,
-    parameterName: string
+    parameterName: string,
+    parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterIn, parameterName, 'writeOnly');
+    return generateValidator(schemaContext, parameterIn, parameterName, parameterRequired, 'writeOnly');
 }

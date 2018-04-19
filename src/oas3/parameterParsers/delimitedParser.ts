@@ -1,6 +1,6 @@
 // Implements 'spaceDelimited' and 'pipeDelimited' from OAS 3.
 
-import { ParameterParser, ValuesBag } from '.';
+import { RawParameterParser, ValuesBag } from '.';
 import { ParameterLocation } from '../../types/validation';
 import { arrayToObject } from './common';
 
@@ -8,7 +8,7 @@ export function generateDelimitedParser(
     parameterLocation: ParameterLocation,
     isKeys: boolean,
     delimiter: string
-) : ParameterParser {
+) : RawParameterParser {
     let parserFn: (value: string, delimiter: string, loc: ParameterLocation) => any;
     const name = parameterLocation.name;
 

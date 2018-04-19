@@ -2,7 +2,7 @@ import {isSpecificationExtension} from '../oasUtils';
 import Oas3Context from '../Oas3Context';
 import Path from '../Path';
 import PathResolver from './PathResolver';
-import { ParametersMap } from '../types';
+import { ParametersMap } from '../../types/ApiInterface';
 
 export default class Paths {
     private readonly _pathResolver : PathResolver<Path> = new PathResolver();
@@ -36,12 +36,14 @@ export default class Paths {
      *   note that if the path is resolved and the operation is not found, this
      *   will return an object with a null `operationObject`.
      */
-    resolvePath(urlPathname: string) : {path: Path, pathParams: ParametersMap | undefined} | undefined {
+    resolvePath(
+        urlPathname: string
+    ) : {path: Path, rawPathParams: ParametersMap<string | string[]> | undefined} | undefined {
         const result = this._pathResolver.resolvePath(urlPathname);
         if(result) {
             return {
                 path: result.value,
-                pathParams: result.pathParams
+                rawPathParams: result.rawPathParams
             };
         } else {
             return undefined;

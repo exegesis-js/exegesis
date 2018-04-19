@@ -1,22 +1,22 @@
 import querystring from 'querystring';
 import * as oas3 from 'openapi3-ts';
-import { ValidatorFunction } from '../types/validation';
 import {MimeTypeRegistry} from '../utils/mime';
 import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
 import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
-import { ParameterBag } from './types';
 import { ParserContext } from './parameterParsers/ParserContext';
+import { ParametersMap, ParameterBag } from '../types/ApiInterface';
 import { ValuesBag } from './parameterParsers';
+import { BodyParser } from '../bodyParsers/BodyParser';
+import { IValidationError } from '../types/validation';
 
 export default class Operation {
     readonly context: Oas3Context;
     readonly oaOperation: oas3.OperationObject;
     readonly oaPath: oas3.PathItemObject;
-    readonly validator?: ValidatorFunction;
 
-    private readonly _requestBodies: MimeTypeRegistry<MediaType>;
+    private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
     private readonly _parameters: ParameterBag<Parameter[]>;
 
     constructor(
@@ -35,12 +35,15 @@ export default class Operation {
         if(requestBody && requestBody.content) {
             // FIX: This should not be a map of MediaTypes, but a map of request bodies.
             // Request body has a "required" flag, which we are currently ignoring.
-            this._requestBodies = contentToMediaTypeRegistry(
+            this._requestBodyContentTypes = contentToMediaTypeRegistry<BodyParser>(
                 context.childContext(['requestBody', 'content']),
+                context.options.bodyParsers,
+                'body',
+                requestBody.required || false,
                 requestBody.content
             );
         } else {
-            this._requestBodies = new MimeTypeRegistry<MediaType>();
+            this._requestBodyContentTypes = new MimeTypeRegistry<MediaType<BodyParser>>();
         }
 
         const localParameters = (this.oaOperation.parameters || [])
@@ -54,8 +57,6 @@ export default class Operation {
             },
             {query: [], header: [], path: [], server: [], cookie: []}
         );
-
-        // FIXME: Set this.validator.
     }
 
     /**
@@ -67,15 +68,15 @@ export default class Operation {
      * @returns - The MediaType object to handle this request, or undefined if
      *   no MediaType is set for the given contentType.
      */
-    getRequestMediaType(contentType: string) : MediaType | undefined {
-        return this._requestBodies.get(contentType);
+    getRequestMediaType(contentType: string) : MediaType<BodyParser> | undefined {
+        return this._requestBodyContentTypes.get(contentType);
     }
 
     private _parseParameterGroup(
         params: Parameter[],
         values: ValuesBag,
         parserContext: ParserContext
-    ) {
+    ) : ParametersMap<any> {
         return params.reduce(
             (result: any, parameter: Parameter) => {
                 result[parameter.oaParameter.name] = parameter.parser(values, parserContext);
@@ -87,11 +88,11 @@ export default class Operation {
 
     parseParameters(params : {
         headers : ValuesBag | undefined,
-        pathParams: ValuesBag | undefined,
+        rawPathParams: ValuesBag | undefined,
         serverParams: ValuesBag | undefined,
         queryString: string | undefined
-    }) : ParameterBag<any> {
-        const {headers, pathParams, queryString} = params;
+    }) : ParameterBag<ParametersMap<any>> {
+        const {headers, rawPathParams, queryString} = params;
         const ctx = new ParserContext(queryString);
 
         const parsedQuery = queryString
@@ -104,20 +105,22 @@ export default class Operation {
             query: parsedQuery ? this._parseParameterGroup(this._parameters.query, parsedQuery, ctx) : {},
             header: headers ? this._parseParameterGroup(this._parameters.header, headers, ctx) : {},
             server: params.serverParams || {},
-            path: pathParams ? this._parseParameterGroup(this._parameters.path, pathParams, ctx) : {},
+            path: rawPathParams ? this._parseParameterGroup(this._parameters.path, rawPathParams, ctx) : {},
             cookie: {}
         };
     }
 
-    // validateParameters(parameterValues: ParameterBag<any>) : IValidationError[] | null {
-    //     const result: IValidationError[] | null = null;
-    //     for(const key of Object.keys(parameterValues)) {
-    //         const parameters = this._parameters[key] as Parameter[];
-    //         const values = parameterValues[key];
+    validateParameters(parameterValues: ParameterBag<ParametersMap<any>>) : IValidationError[] | null {
+        const result: IValidationError[] | null = null;
+        for(const parameterLocation of Object.keys(parameterValues)) {
+            const parameters: Parameter[] = (this._parameters as any)[parameterLocation] as Parameter[];
+            const values = (parameterValues as any)[parameterLocation] as ParametersMap<any>;
 
-    //         for(const parameter of parameters) {
-    //             parameter.validate(parameters[parameter.oaParameter.name]);
-    //         }
-    //     }
-    // }
+            for(const parameter of parameters) {
+                parameter.validate(values[parameter.oaParameter.name]);
+            }
+        }
+
+        return result;
+    }
 }

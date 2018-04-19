@@ -5,12 +5,10 @@ import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
 import { HttpMethod, } from '../types/common';
-import { ValidatorFunction } from '../types/validation';
-import { ApiInterface, ResolvedPath } from '../types/ApiInterface';
+import { ApiInterface, ResolvedPath, ParametersMap } from '../types/ApiInterface';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';
-import { ParametersMap, ParameterBag } from './types';
 
 export default class OpenApi implements ApiInterface {
     private openApiDoc: oas3.OpenAPIObject;
@@ -64,7 +62,7 @@ export default class OpenApi implements ApiInterface {
 
         let pathToResolve : string | undefined;
         let oaServer : oas3.ServerObject | undefined;
-        let serverParams : ParametersMap | undefined;
+        let serverParams : ParametersMap<string | string[]> | undefined;
 
         // FIXME: Different paths and operations can have their own servers object.
         // Need to first resolve the server, and then use the server to resolve
@@ -83,32 +81,27 @@ export default class OpenApi implements ApiInterface {
         if(pathToResolve) {
             const resolvedPath = this._paths.resolvePath(pathToResolve);
             if(resolvedPath) {
-                const {path, pathParams} = resolvedPath;
+                const {path, rawPathParams} = resolvedPath;
                 const operation = path.getOperation(method);
                 const mediaType = (operation && contentType) ? operation.getRequestMediaType(contentType) : undefined;
 
-                const parseParameters = operation && function() : ParameterBag<any> {
+                const parseParameters = operation && function() {
                     return operation.parseParameters({
                         headers,
-                        pathParams,
+                        rawPathParams,
                         serverParams,
                         queryString: parsedUrl.query || undefined
                     });
                 };
 
-                const validateParameters : ValidatorFunction | undefined =
-                    operation && operation.validator;
-
-                const validateBody : ValidatorFunction | undefined =
-                    mediaType && mediaType.validator;
+                const validateParameters = operation && operation.validateParameters.bind(operation);
+                const validateBody = mediaType && mediaType.validator;
 
                 return {
                     serverParams,
-                    // parseParameters: operation &&
-                    //     operation.parameterParser(serverParams, pathParams, parsedUrl.query),
                     parseParameters,
                     validateParameters,
-                    // parseBody: mediaType && mediaType.bodyParser,
+                    bodyParser: mediaType && mediaType.parser,
                     validateBody,
                     // responseValidator,
                     // responseContentType?,

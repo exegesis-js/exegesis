@@ -1,7 +1,9 @@
 import ld from 'lodash';
 
 import { MimeTypeRegistry } from "./utils/mime";
-import { BodyParser, ParameterBodyParser, isParameterBodyParser } from './bodyParsers/BodyParser';
+import { MimeTypeParser, StringParser, BodyParser } from './bodyParsers/BodyParser';
+import TextBodyParser from './bodyParsers/TextBodyParser';
+import JsonBodyParser from './bodyParsers/JsonBodyParser';
 
 /**
  * A function which validates custom formats.
@@ -60,7 +62,7 @@ export interface CustomFormats {
  */
 export interface ExegesisOptions {
     customFormats?: CustomFormats;
-    bodyParsers?: {[mimeType: string]: BodyParser};
+    mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
     maxParameters?: number;
     defaultMaxBodySize?: number;
     ignoreServers?: boolean;
@@ -69,7 +71,7 @@ export interface ExegesisOptions {
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
     bodyParsers: MimeTypeRegistry<BodyParser>;
-    parameterParsers: MimeTypeRegistry<ParameterBodyParser>;
+    parameterParsers: MimeTypeRegistry<StringParser>;
     maxParameters: number;
     defaultMaxBodySize: number;
     ignoreServers: boolean;
@@ -105,16 +107,30 @@ const defaultValidators : CustomFormats = {
 };
 
 export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledOptions {
-    const bodyParsers = options.bodyParsers || {};
+    const maxBodySize = options.defaultMaxBodySize || 100000;
+
+    const mimeTypeParsers = Object.assign(
+        {
+            'text/*': new TextBodyParser(maxBodySize),
+            'application/json': new JsonBodyParser(maxBodySize)
+        },
+        options.mimeTypeParsers || {}
+    );
+
+    const bodyParsers = new MimeTypeRegistry<BodyParser>(
+        ld.pickBy(mimeTypeParsers, p => p.parseReq) as {[mimeType: string]: BodyParser}
+    );
+
+    const parameterParsers = new MimeTypeRegistry<StringParser>(
+        ld.pickBy(mimeTypeParsers, p => p.parseString) as {[mimeType: string]: StringParser}
+    );
 
     return {
         customFormats: Object.assign({}, defaultValidators, options.customFormats || {}),
-        bodyParsers: new MimeTypeRegistry<BodyParser>(bodyParsers),
-        parameterParsers: new MimeTypeRegistry<ParameterBodyParser>(
-            ld.pickBy(bodyParsers, p => isParameterBodyParser(p)) as {[mimeType: string]: ParameterBodyParser}
-        ),
+        bodyParsers,
+        parameterParsers,
         maxParameters: options.maxParameters || 10000,
-        defaultMaxBodySize: 100000,
+        defaultMaxBodySize: maxBodySize,
         ignoreServers: options.ignoreServers || false
     };
 }
