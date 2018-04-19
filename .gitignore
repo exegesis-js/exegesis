@@ -2,3 +2,5 @@ node_modules
 /notes.md
 /lib
 /types
+/.nyc_output
+/coverage
