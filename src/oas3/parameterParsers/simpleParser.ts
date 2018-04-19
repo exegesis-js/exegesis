@@ -1,5 +1,5 @@
 import { ParameterParser, ValuesBag } from '.';
-import { ParameterLocation } from '../../types/common';
+import { ParameterLocation } from '../../types/validation';
 import { arrayToObject, isArrayValidationError } from './common';
 
 // TODO: Replace `isKeys` with `allowedTypes`?

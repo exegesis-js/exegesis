@@ -1,6 +1,6 @@
 import ld from 'lodash';
 import { ParameterParser, ValuesBag } from ".";
-import { ParameterLocation } from "../../types/common";
+import { ParameterLocation } from "../../types/validation";
 import { simpleParser, simpleKeysParser } from "./simpleParser";
 
 export function generateFormStyleQueryParser(

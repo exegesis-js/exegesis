@@ -2,8 +2,11 @@ import {parse as parseUrl} from 'url';
 import * as semver from 'semver';
 import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
-import { HttpMethod, ValidatorFunction, ApiInterface, ResolvedPath } from '../types/common';
+
 import { ExgesisCompiledOptions } from '../options';
+import { HttpMethod, } from '../types/common';
+import { ValidatorFunction } from '../types/validation';
+import { ApiInterface, ResolvedPath } from '../types/ApiInterface';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';

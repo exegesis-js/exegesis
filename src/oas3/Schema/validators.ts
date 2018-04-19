@@ -1,9 +1,11 @@
 import Ajv from 'ajv';
 import traveseSchema from 'json-schema-traverse';
-import {ValidatorFunction, IValidationError, ErrorType, CustomFormats} from '../../types/common';
+
+import { CustomFormats } from '../../options';
+import { ValidatorFunction, IValidationError, ErrorType } from '../../types/validation';
 import * as jsonPaths from '../../utils/jsonPaths';
 import * as jsonSchema from '../../utils/jsonSchema';
-import {resolveRef} from '../../utils/json-schema-resolve-ref';
+import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import Oas3Context from '../Oas3Context';
 
 // TODO tests

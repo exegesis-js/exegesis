@@ -1,7 +1,35 @@
 import ld from 'lodash';
 
-import { CustomFormats, BodyParser } from "./types/common";
 import { MimeTypeRegistry } from "./utils/mime";
+import { BodyParser, ParameterBodyParser, isParameterBodyParser } from './bodyParsers/BodyParser';
+
+/**
+ * A function which validates custom formats.
+ */
+export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
+
+export interface StringCustomFormatChecker {
+    type: 'string';
+    validate: CustomFormatChecker;
+}
+
+export interface NumberCustomFormatChecker {
+    type: 'number';
+    validate: (value: number) => boolean;
+}
+
+/**
+ * A hash where keys are format names.  Values can be one of:
+ *
+ *   * A RegExp for checking a string.
+ *   * A `function(string) : boolean` for checking a string, which returns
+ *     false the the string is invalid.
+ *   * A `{validate, type}` object, where `type` is either "string" or "number",
+ *     and validate is a `function(string) : boolean`.
+ */
+export interface CustomFormats {
+    [key: string]: CustomFormatChecker | StringCustomFormatChecker | NumberCustomFormatChecker;
+}
 
 /**
  * Options that control how an OpenAPI document is parsed and validated.
@@ -41,7 +69,7 @@ export interface ExegesisOptions {
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
     bodyParsers: MimeTypeRegistry<BodyParser>;
-    parameterParsers: MimeTypeRegistry<BodyParser>;
+    parameterParsers: MimeTypeRegistry<ParameterBodyParser>;
     maxParameters: number;
     defaultMaxBodySize: number;
     ignoreServers: boolean;
@@ -77,15 +105,14 @@ const defaultValidators : CustomFormats = {
 };
 
 export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledOptions {
-
     const bodyParsers = options.bodyParsers || {};
 
     return {
         customFormats: Object.assign({}, defaultValidators, options.customFormats || {}),
-        // TODO: Allow express middlewares as body parsers?
         bodyParsers: new MimeTypeRegistry<BodyParser>(bodyParsers),
-        parameterParsers: new MimeTypeRegistry<BodyParser>(ld.pickBy(bodyParsers, p => !!p.parseString)),
-        // TODO: Use these.
+        parameterParsers: new MimeTypeRegistry<ParameterBodyParser>(
+            ld.pickBy(bodyParsers, p => isParameterBodyParser(p)) as {[mimeType: string]: ParameterBodyParser}
+        ),
         maxParameters: options.maxParameters || 10000,
         defaultMaxBodySize: 100000,
         ignoreServers: options.ignoreServers || false

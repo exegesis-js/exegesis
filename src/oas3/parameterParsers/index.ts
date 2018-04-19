@@ -1,14 +1,15 @@
 import ld from 'lodash';
+import { BodyParser, ParameterBodyParser } from '../../bodyParsers/BodyParser';
 import { ValidationError } from "../../errors";
+import { ErrorType, ParameterLocation } from "../../types/validation";
 import { MimeTypeRegistry } from "../../utils/mime";
-import { BodyParser, ErrorType, ParameterLocation } from "../../types/common";
+import { pathToJsonPointer } from '../../utils/jsonPaths';
 import { ParameterBag } from '../types';
 import { generateSimpleParser } from './simpleParser';
 import { generateFormStyleQueryParser } from './formParser';
 import { generatePathStyleParser } from './pathParser';
 import { generateDelimitedParser } from './delimitedParser';
 import { ParserContext } from './ParserContext';
-import { pathToJsonPointer } from '../../utils/jsonPaths';
 
 export interface ParametersParser {
     (
@@ -37,7 +38,8 @@ function arrayCoercion(parser: ParameterParser) : ParameterParser {
 export function getMimeTypeParser(
     parameterLocation: ParameterLocation,
     mimeType: string,
-    parameterParsers: MimeTypeRegistry<BodyParser>
+    parameterParsers: MimeTypeRegistry<ParameterBodyParser>,
+    uriEncoded: boolean = false
 ) : ParameterParser {
     if(mimeType === 'application/x-www-form-urlencoded') {
         // This is a special case in OAS 3; we need to parse the parameter/body
@@ -55,10 +57,20 @@ export function getMimeTypeParser(
 
     return (values: ValuesBag) : any => {
         try {
-            const value = values[name];
+            let value = values[name];
             if(!value) {return value;}
-            if(Array.isArray(value)) {return value.map(bodyParser.parseString);}
-            return bodyParser.parseString(value);
+            if(uriEncoded) {
+                if(Array.isArray(value)) {
+                    value = value.map(decodeURIComponent);
+                } else {
+                    value = decodeURIComponent(value);
+                }
+            }
+            if(Array.isArray(value)) {
+                return value.map(bodyParser.parseString);
+            } else {
+                return bodyParser.parseString(value);
+            }
         } catch (err) {
             throw new ValidationError({
                 type: ErrorType.Error,

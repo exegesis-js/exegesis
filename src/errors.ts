@@ -1,5 +1,4 @@
-import ld from 'lodash';
-import {IValidationError} from './types/common';
+import { IValidationError } from './types/validation';
 
 export class ExtendableError extends Error {
     constructor(message: string) {
@@ -13,10 +12,18 @@ export class ExtendableError extends Error {
     }
 }
 
-export class HttpBadRequestError extends ExtendableError {
-    readonly status = 400;
-    constructor(message: string) {
+export class HttpError extends ExtendableError {
+    readonly status: number;
+
+    constructor(status: number, message: string) {
         super(message);
+        this.status = status;
+    }
+}
+
+export class HttpBadRequestError extends HttpError {
+    constructor(message: string) {
+        super(400, message);
     }
 }
 
@@ -26,7 +33,7 @@ export class ValidationError extends HttpBadRequestError {
     constructor(
         errors: IValidationError[] | IValidationError
     ) {
-        if(!ld.isArray(errors)) {
+        if(!Array.isArray(errors)) {
             errors = [errors];
         }
         super(errors.length === 1 ? errors[0].message : 'Multiple validation errors');
@@ -34,9 +41,14 @@ export class ValidationError extends HttpBadRequestError {
     }
 }
 
-export class HttpNotFoundError extends ExtendableError {
-    readonly status = 404;
+export class HttpNotFoundError extends HttpError {
     constructor(message: string) {
-        super(message);
+        super(404, message);
+    }
+}
+
+export class HttpPayloadTooLargeError extends HttpError {
+    constructor(message: string) {
+        super(413, message);
     }
 }

@@ -4,7 +4,7 @@ import { ParameterParser, getMimeTypeParser, getParser } from './parameterParser
 import Oas3Context from './Oas3Context';
 
 import * as oas3 from 'openapi3-ts';
-import { ValidatorFunction, ParameterLocation } from '../types/common';
+import { ValidatorFunction, ParameterLocation } from '../types/validation';
 import { isReferenceObject } from './oasUtils';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
@@ -88,7 +88,12 @@ export default class Parameter {
     }
 
     private _generateContentParser(mediaType: string) : ParameterParser {
-        return getMimeTypeParser(this.location, mediaType, this.context.options.parameterParsers);
+        return getMimeTypeParser(
+            this.location,
+            mediaType,
+            this.context.options.parameterParsers,
+            this.oaParameter.in === 'query' || this.oaParameter.in === 'path'
+        );
     }
 
 }

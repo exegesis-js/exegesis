@@ -48,7 +48,7 @@
     "typescript": "^2.8.1"
   },
   "dependencies": {
-    "ajv": "^6.4.0",
+    "ajv": "git://github.com/epoberezkin/ajv#e88e5f53d71e11f94898fb9f7fe8bd0b0bd43692",
     "content-type": "^1.0.4",
     "json-schema-ref-parser": "^4.1.1",
     "json-schema-traverse": "^0.3.1",

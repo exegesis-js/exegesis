@@ -1,7 +1,7 @@
 // Implements 'spaceDelimited' and 'pipeDelimited' from OAS 3.
 
 import { ParameterParser, ValuesBag } from '.';
-import { ParameterLocation } from '../../types/common';
+import { ParameterLocation } from '../../types/validation';
 import { arrayToObject } from './common';
 
 export function generateDelimitedParser(

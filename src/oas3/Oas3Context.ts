@@ -1,7 +1,7 @@
 import * as ld from 'lodash';
 
 import * as oas3 from 'openapi3-ts';
-import { JsonPath } from '../types/common';
+import { JsonPath, pathToJsonPointer } from '../utils/jsonPaths';
 import { ExgesisCompiledOptions } from '../options';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
 
@@ -12,6 +12,7 @@ import { resolveRef } from '../utils/json-schema-resolve-ref';
  */
 export default class Oas3Context {
     readonly path: JsonPath;
+    readonly jsonPointer: string;
     readonly openApiDoc: oas3.OpenAPIObject;
     readonly options: ExgesisCompiledOptions;
 
@@ -38,6 +39,7 @@ export default class Oas3Context {
         } else {
             throw new Error("Invalid parameters to Oas3Context constructor");
         }
+        this.jsonPointer = pathToJsonPointer(this.path);
     }
 
     childContext(relativePath: JsonPath | string) {

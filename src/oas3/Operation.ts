@@ -1,6 +1,6 @@
 import querystring from 'querystring';
 import * as oas3 from 'openapi3-ts';
-import { ValidatorFunction } from '../types/common';
+import { ValidatorFunction } from '../types/validation';
 import {MimeTypeRegistry} from '../utils/mime';
 import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
@@ -54,6 +54,8 @@ export default class Operation {
             },
             {query: [], header: [], path: [], server: [], cookie: []}
         );
+
+        // FIXME: Set this.validator.
     }
 
     /**

@@ -1,6 +1,6 @@
 import querystring from 'querystring';
 import { ParameterParser, ValuesBag } from '.';
-import { ParameterLocation } from '../../types/common';
+import { ParameterLocation } from '../../types/validation';
 import { isArrayValidationError } from './common';
 import { generateFormStyleQueryParser } from './formParser';
 import { ParserContext } from './ParserContext';
