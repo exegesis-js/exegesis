@@ -1,0 +1,11 @@
+{
+    "line-length": false,
+    "no-inline-html": {
+      "allowed_elements": [
+        "a"
+      ]
+    },
+    "no-trailing-punctuation": {
+        "punctuation": ".,;:!"
+    }
+  }

@@ -14,7 +14,7 @@ The Exegesis context is expecting a `parameters` object that consists of one
 key for each of the "in"s (path, query, header, cookie), and each of those
 objects has parameter names for keys, mapping to the associated values:
 
-```
+```js
 parameters = {
     path: {
       id: '5acc0981eaad142f3a754c77'
@@ -67,7 +67,7 @@ So, the general approach taken, when compiling a parser for an object, is:
   try to parse it as an object...  Right now though, we throw an exception
   when compiling the schema.  See [discussion here](https://github.com/OAI/OpenAPI-Specification/issues/1535#issuecomment-380032898).
 
-# Parameter Parser Functions
+## Parameter Parser Functions
 
 At run time, parameter parsers are functions that take in some input, and produce
 a value.  These functions are synchonous, because it makes the parameter
@@ -123,10 +123,10 @@ don't worry about pct-encoding anything, we just let `qs` handle everything.
 Note that the same query parsers are used to handle `application/x-www-form-urlencoded`
 bodies.
 
-# Cookie Parameters
+## Cookie Parameters
 
 The format for cookie parameters is ambiguous in OpenAPI 3.0.  The specification
 says one thing, but the documentation on swagger.io says something else.
-Until https://github.com/OAI/OpenAPI-Specification/issues/1528 is resolved,
-Exegesis will probably not support cookie parameters.  If you have a specific
+Until [OpenAPI-Specification #1528](https://github.com/OAI/OpenAPI-Specification/issues/1528)
+is resolved, Exegesis will probably not support cookie parameters.  If you have a specific
 use case, please raise an issue, and we'll see if we can help you out.
