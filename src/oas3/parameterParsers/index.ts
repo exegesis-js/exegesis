@@ -77,3 +77,20 @@ function generateDeepObjectParser(loc: ParameterLocation) : RawParameterParser {
         return parserContext.qs[loc.name];
     };
 }
+
+export function parseParameters(
+    params: {
+        name: string,
+        parser: RawParameterParser
+    }[],
+    parserContext: ParserContext,
+    rawValues: ValuesBag
+) : ParametersMap<any> {
+    return params.reduce(
+        (result: any, {name, parser}) => {
+            result[name] = parser(rawValues, parserContext);
+            return result;
+        },
+        {}
+    );
+}

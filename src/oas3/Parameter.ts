@@ -74,6 +74,7 @@ export default class Parameter {
     /**
      * Parameter parser used to parse this parameter.
      */
+    readonly name: string;
     readonly parser: RawParameterParser;
 
     constructor(context: Oas3Context, oaParameter: oas3.ParameterObject | oas3.ReferenceObject) {
@@ -86,6 +87,7 @@ export default class Parameter {
             name: resOaParameter.name,
             docPath: context.path
         };
+        this.name = resOaParameter.name;
 
         this.context = context;
         this.oaParameter = resOaParameter;

@@ -7,7 +7,7 @@ import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
 import { ParserContext } from './parameterParsers/ParserContext';
 import { ParametersMap, ParametersByLocation } from '../types/ApiInterface';
-import { ValuesBag } from './parameterParsers';
+import { ValuesBag, parseParameters } from './parameterParsers';
 import { BodyParser } from '../bodyParsers/BodyParser';
 import { IValidationError } from '../types/validation';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
@@ -78,20 +78,6 @@ export default class Operation {
         return this._requestBodyContentTypes.get(contentType);
     }
 
-    private _parseParameterGroup(
-        params: Parameter[],
-        values: ValuesBag,
-        parserContext: ParserContext
-    ) : ParametersMap<any> {
-        return params.reduce(
-            (result: any, parameter: Parameter) => {
-                result[parameter.oaParameter.name] = parameter.parser(values, parserContext);
-                return result;
-            },
-            {}
-        );
-    }
-
     parseParameters(params : {
         headers : ValuesBag | undefined,
         rawPathParams: ValuesBag | undefined,
@@ -108,10 +94,10 @@ export default class Operation {
         // TODO: Can eek out a little more performance here by precomputing the parsers for each parameter group,
         // since if there are no parameters in a group, we can just do nothing.
         return {
-            query: parsedQuery ? this._parseParameterGroup(this._parameters.query, parsedQuery, ctx) : {},
-            header: headers ? this._parseParameterGroup(this._parameters.header, headers, ctx) : {},
+            query: parsedQuery ? parseParameters(this._parameters.query, ctx, parsedQuery) : {},
+            header: headers ? parseParameters(this._parameters.header, ctx, headers) : {},
             server: params.serverParams || {},
-            path: rawPathParams ? this._parseParameterGroup(this._parameters.path, rawPathParams, ctx) : {},
+            path: rawPathParams ? parseParameters(this._parameters.path, ctx, rawPathParams) : {},
             cookie: {}
         };
     }
