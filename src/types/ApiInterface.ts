@@ -6,7 +6,7 @@ import { ValidatorFunction, IValidationError } from './validation';
 import { HttpMethod } from './common';
 import { BodyParser } from '../bodyParsers/BodyParser';
 
-export interface ParameterBag<T> {
+export interface ParametersByLocation<T> {
     query: T;
     header: T;
     server: T;
@@ -19,10 +19,13 @@ export interface ParametersMap<T> {
     [key: string]: T;
 }
 
+export type ParsedParameterValidator =
+    ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null) | undefined;
+
 export interface ResolvedPath {
     serverParams: ParametersMap<string | string[]> | undefined;
-    parseParameters: (() => ParameterBag<ParametersMap<any>>) | undefined;
-    validateParameters: ((parameterValues: ParameterBag<ParametersMap<any>>) => IValidationError[] | null) | undefined;
+    parseParameters: (() => ParametersByLocation<ParametersMap<any>>) | undefined;
+    validateParameters: ParsedParameterValidator;
     bodyParser: BodyParser | undefined;
     validateBody: ValidatorFunction | undefined;
     // responseValidator,
@@ -35,8 +38,8 @@ export interface ResolvedPath {
         pathObject: oas3.PathItemObject;
         operationPath: JsonPath | undefined;
         operationObject: oas3.OperationObject | undefined;
-        mediaTypePath: JsonPath | undefined;
-        mediaTypeObject: oas3.MediaTypeObject | undefined;
+        requestBodyMediaTypePath: JsonPath | undefined;
+        requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
     };
 }
 

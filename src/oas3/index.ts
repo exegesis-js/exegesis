@@ -113,8 +113,8 @@ export default class OpenApi implements ApiInterface {
                         pathObject: path.oaPath,
                         operationPath: operation && operation.context.path,
                         operationObject: operation && operation.oaOperation,
-                        mediaTypePath: mediaType && mediaType.context.path,
-                        mediaTypeObject: mediaType && mediaType.oaMediaType
+                        requestBodyMediaTypePath: mediaType && mediaType.context.path,
+                        requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType
                     }
                 };
             }

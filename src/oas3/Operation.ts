@@ -6,7 +6,7 @@ import MediaType from './MediaType';
 import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
 import { ParserContext } from './parameterParsers/ParserContext';
-import { ParametersMap, ParameterBag } from '../types/ApiInterface';
+import { ParametersMap, ParametersByLocation } from '../types/ApiInterface';
 import { ValuesBag } from './parameterParsers';
 import { BodyParser } from '../bodyParsers/BodyParser';
 import { IValidationError } from '../types/validation';
@@ -17,7 +17,7 @@ export default class Operation {
     readonly oaPath: oas3.PathItemObject;
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
-    private readonly _parameters: ParameterBag<Parameter[]>;
+    private readonly _parameters: ParametersByLocation<Parameter[]>;
 
     constructor(
         context: Oas3Context,
@@ -51,7 +51,7 @@ export default class Operation {
         const allParameters =  parentParameters.concat(localParameters);
 
         this._parameters = allParameters.reduce(
-            (result: ParameterBag<Parameter[]>, parameter: Parameter) => {
+            (result: ParametersByLocation<Parameter[]>, parameter: Parameter) => {
                 (result as any)[parameter.oaParameter.in].push(parameter);
                 return result;
             },
@@ -91,7 +91,7 @@ export default class Operation {
         rawPathParams: ValuesBag | undefined,
         serverParams: ValuesBag | undefined,
         queryString: string | undefined
-    }) : ParameterBag<ParametersMap<any>> {
+    }) : ParametersByLocation<ParametersMap<any>> {
         const {headers, rawPathParams, queryString} = params;
         const ctx = new ParserContext(queryString);
 
@@ -110,7 +110,7 @@ export default class Operation {
         };
     }
 
-    validateParameters(parameterValues: ParameterBag<ParametersMap<any>>) : IValidationError[] | null {
+    validateParameters(parameterValues: ParametersByLocation<ParametersMap<any>>) : IValidationError[] | null {
         const result: IValidationError[] | null = null;
         for(const parameterLocation of Object.keys(parameterValues)) {
             const parameters: Parameter[] = (this._parameters as any)[parameterLocation] as Parameter[];
