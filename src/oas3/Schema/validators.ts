@@ -19,7 +19,10 @@ import Oas3Context from '../Oas3Context';
 function addCustomFormats(ajv: Ajv.Ajv, customFormats: CustomFormats) : {[k: string]: Ajv.FormatDefinition} {
     return Object.keys(customFormats)
         .reduce<{[k: string]: Ajv.FormatDefinition}>((
-            result: {[k: string]: Ajv.FormatDefinition},
+            // TODO: Hack for https://github.com/epoberezkin/ajv/pull/761:
+            //
+            // result: {[k: string]: Ajv.FormatDefinition},
+            result: {[k: string]: any},
             key: string
         ) => {
             const customFormat = customFormats[key];
