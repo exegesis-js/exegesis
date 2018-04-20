@@ -3,15 +3,17 @@ import Oas3Context from '../Oas3Context';
 import Path from '../Path';
 import PathResolver from './PathResolver';
 import { ParametersMap } from '../../types/ApiInterface';
+import { EXEGESIS_CONTROLLER } from '../extensions';
 
 export default class Paths {
     private readonly _pathResolver : PathResolver<Path> = new PathResolver();
 
-    constructor(context: Oas3Context) {
+    constructor(context: Oas3Context, exegesisController: string | undefined) {
         const {openApiDoc} = context;
 
+        exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || exegesisController;
         for(const path of Object.keys(openApiDoc.paths)) {
-            const pathObject = new Path(context.childContext(path), openApiDoc.paths[path]);
+            const pathObject = new Path(context.childContext(path), openApiDoc.paths[path], exegesisController);
 
             if(isSpecificationExtension(path)) {
                 // Skip extentions

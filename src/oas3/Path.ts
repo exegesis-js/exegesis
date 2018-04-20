@@ -3,8 +3,9 @@ import Operation from './Operation';
 import Oas3Context from './Oas3Context';
 
 import * as oas3 from 'openapi3-ts';
-import {HttpMethod, HTTP_METHODS} from '../types/common';
+import {HTTP_METHODS} from '../types/common';
 import Parameter from './Parameter';
+import { EXEGESIS_CONTROLLER } from './extensions';
 
 interface OperationsMap {
     [key: string]: Operation;
@@ -15,7 +16,7 @@ export default class Path {
     readonly oaPath: oas3.PathItemObject;
     private readonly _operations: OperationsMap;
 
-    constructor(context: Oas3Context, oaPath: oas3.PathItemObject) {
+    constructor(context: Oas3Context, oaPath: oas3.PathItemObject, exegesisController: string | undefined) {
         this.context = context;
         if(oaPath.$ref) {
             this.oaPath = context.resolveRef(oaPath.$ref) as oas3.PathItemObject;
@@ -25,13 +26,18 @@ export default class Path {
         const parameters = (oaPath.parameters || [])
             .map((p, i) => new Parameter(context.childContext(['parameters', '' + i]), p));
 
+        exegesisController = oaPath[EXEGESIS_CONTROLLER] || exegesisController;
         this._operations = HTTP_METHODS
             .map(method => method.toLowerCase())
             .filter(method => oaPath[method])
             .reduce(
                 (result: OperationsMap, method: string) => {
                     result[method] = new Operation(
-                        context.childContext(method), oaPath[method], oaPath, parameters
+                        context.childContext(method),
+                        oaPath[method],
+                        oaPath,
+                        exegesisController,
+                        parameters
                     );
                     return result;
                 },
@@ -39,7 +45,7 @@ export default class Path {
             );
     }
 
-    getOperation(method: HttpMethod) : Operation | undefined {
+    getOperation(method: string) : Operation | undefined {
         return this._operations[method.toLowerCase()];
     }
 }

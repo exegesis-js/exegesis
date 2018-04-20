@@ -10,11 +10,14 @@ import { ParametersMap, ParametersByLocation } from '../types/ApiInterface';
 import { ValuesBag } from './parameterParsers';
 import { BodyParser } from '../bodyParsers/BodyParser';
 import { IValidationError } from '../types/validation';
+import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
 export default class Operation {
     readonly context: Oas3Context;
     readonly oaOperation: oas3.OperationObject;
     readonly oaPath: oas3.PathItemObject;
+    readonly exegesisController: string;
+    readonly operationId: string;
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
@@ -23,11 +26,14 @@ export default class Operation {
         context: Oas3Context,
         oaOperation: oas3.OperationObject,
         oaPath: oas3.PathItemObject,
+        exegesisController: string | undefined,
         parentParameters: Parameter[]
     ) {
         this.context = context;
         this.oaOperation = oaOperation;
         this.oaPath = oaPath;
+        this.exegesisController = oaOperation[EXEGESIS_CONTROLLER] || exegesisController;
+        this.operationId = oaOperation[EXEGESIS_OPERATION_ID] || oaOperation.operationId;
 
         const requestBody = oaOperation.requestBody &&
             (context.resolveRef(oaOperation.requestBody) as oas3.RequestBodyObject);

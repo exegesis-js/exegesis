@@ -4,6 +4,8 @@ import { MimeTypeRegistry } from "./utils/mime";
 import { MimeTypeParser, StringParser, BodyParser } from './bodyParsers/BodyParser';
 import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
+import { Controllers } from './controllers/types';
+import { loadControllersSync } from './controllers/loadControllers';
 
 /**
  * A function which validates custom formats.
@@ -35,41 +37,60 @@ export interface CustomFormats {
 
 /**
  * Options that control how an OpenAPI document is parsed and validated.
- *
- * @property customFormats - A hash where keys are format names.  Values
- * can be one of:
- *   * A RegExp for checking a string.
- *   * A `function(string) : boolean` for checking a string, which returns
- *     false the the string is invalid.
- *   * A `{validate, type}` object, where `type` is either "string" or "number",
- *     and validate is a `function(string) : boolean`.
- *
- * @property bodyParsers - A hash where keys are either mime types or
- *   mimetype wildcards (e.g. 'application/*'), and values are
- *  `{parseString(string)}` or `(parseString(string), parseStream(readable)}`
- *  objects.
- *
- * @property maxParameters - The maximum number of properties to parse from
- *   a query string or parameter.  Defaults to 1000.
- *
- * @property defaultMaxBodySize - If a bodyParser does not support
- *   `parseStream()`, this defines the maximum size of a body that will be
- *   parsed by (most) built-in body parsers.  Note that some body parsers
- *   may ignore this value, or pass a stream object directly as the body.
- *
- * @property ignoreServers - If true, when resolving a path Exegesis will
- *   ignore the "servers" section of the OpenAPI doc entirely.
  */
 export interface ExegesisOptions {
+    /**
+     * A hash where keys are format names.  Values can be one of:
+     *
+     *   * A RegExp for checking a string.
+     *   * A `function(string) : boolean` for checking a string, which returns
+     *     false the the string is invalid.
+     *   * A `{validate, type}` object, where `type` is either "string" or "number",
+     *     and validate is a `function(string) : boolean`.
+     */
     customFormats?: CustomFormats;
-    mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
+
+    /**
+     * If true, when resolving a path Exegesis will
+     * ignore the "servers" section of the OpenAPI doc entirely.
+     */
+     ignoreServers?: boolean;
+
+    /**
+     * The maximum number of properties to parse from a query string or
+     * parameter.  Defaults to 1000.
+     */
     maxParameters?: number;
+
+    /**
+     * If a bodyParser does not support
+     * `parseStream()`, this defines the maximum size of a body that will be
+     * parsed by (most) built-in body parsers.  Note that some body parsers
+     * may ignore this value, or pass a stream object directly as the body.
+     */
     defaultMaxBodySize?: number;
-    ignoreServers?: boolean;
+
+    /**
+     * A hash where keys are either mime types or  mimetype wildcards
+     * (e.g. 'application/*'), and values are MimeTypeParsers.  Any
+     * MimeTypeParser which implements `parseString()` will be used for parsing
+     * parameters.  Any which implements `parseReq()` will be used for parsing
+     * requests.
+     */
+    mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
+
+    /**
+     * Either a glob for controller modules, or a hash where keys are
+     * controller file names and values are modules.  If this is not provided,
+     * then Exegesis will never resolve a controller when calling
+     * `ApiInterface.resolve()`.
+     */
+    controllers?: string | Controllers;
 }
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
+    controllers?: Controllers;
     bodyParsers: MimeTypeRegistry<BodyParser>;
     parameterParsers: MimeTypeRegistry<StringParser>;
     maxParameters: number;
@@ -97,11 +118,16 @@ const defaultValidators : CustomFormats = {
         type: 'number',
         validate: () => true
     },
-    password: () => true, // Nothing to do - this is just a hint for docs.
-    // Binary and byte could both be expensive to validate, so we just do nothing.
+    // Nothing to do for 'password'; this is just a hint for docs.
+    password: () => true,
+    // Impossible to validate "binary".
     binary: () => true,
+    // `byte` is base64 encoded data.  We *could* validate it here, but if the
+    // string is long, we might take a while to do it, and the application will
+    // figure it out quickly enough when it tries to decode it, so we just
+    // pass it along.
     byte: () => true,
-    // Not defined by OAS 3.0.1, but it's used throughout OAS 3.0.1, so we put it
+    // Not defined by OAS 3, but it's used throughout OAS 3.0.1, so we put it
     // here as an alias for 'byte' just in case.
     base64: () => true
 };
@@ -118,16 +144,23 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
     );
 
     const bodyParsers = new MimeTypeRegistry<BodyParser>(
-        ld.pickBy(mimeTypeParsers, p => p.parseReq) as {[mimeType: string]: BodyParser}
+        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseReq) as {[mimeType: string]: BodyParser}
     );
 
     const parameterParsers = new MimeTypeRegistry<StringParser>(
-        ld.pickBy(mimeTypeParsers, p => p.parseString) as {[mimeType: string]: StringParser}
+        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {[mimeType: string]: StringParser}
     );
 
+    const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
+
+    const controllers = typeof(options.controllers) === 'string'
+        ? loadControllersSync(options.controllers)
+        : options.controllers;
+
     return {
-        customFormats: Object.assign({}, defaultValidators, options.customFormats || {}),
         bodyParsers,
+        controllers,
+        customFormats,
         parameterParsers,
         maxParameters: options.maxParameters || 10000,
         defaultMaxBodySize: maxBodySize,

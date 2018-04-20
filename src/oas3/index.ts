@@ -4,14 +4,15 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
-import { HttpMethod, } from '../types/common';
 import { ApiInterface, ResolvedPath, ParametersMap } from '../types/ApiInterface';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';
+import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
 export default class OpenApi implements ApiInterface {
-    private openApiDoc: oas3.OpenAPIObject;
+    private readonly _openApiDoc: oas3.OpenAPIObject;
+    private readonly _options: ExgesisCompiledOptions;
     private _servers?: Servers;
     private _paths : Paths;
 
@@ -32,7 +33,8 @@ export default class OpenApi implements ApiInterface {
             throw new Error(`OpenAPI version ${openApiDoc.openapi} not supported`);
         }
 
-        this.openApiDoc = openApiDoc;
+        this._openApiDoc = openApiDoc;
+        this._options = options;
 
         // TODO: Optimize this case when no `servers` were present in openApi doc,
         // or where we don't need to match servers (only server is {url: '/'})?
@@ -40,18 +42,13 @@ export default class OpenApi implements ApiInterface {
             this._servers = new Servers(openApiDoc.servers);
         }
 
-        this._paths = new Paths(new Oas3Context(openApiDoc, ['paths'], options));
+        const exegesisController = openApiDoc[EXEGESIS_CONTROLLER];
+
+        this._paths = new Paths(new Oas3Context(openApiDoc, ['paths'], options), exegesisController);
     }
 
-    /**
-     *
-     * @param method - The HTTP method used (e.g. 'GET').
-     * @param url - The URL used to retrieve this request.
-     * @param headers - Any headers sent along with the request.
-     * @throws {ValidationError} if some parameters cannot be parsed.
-     */
     resolve(
-        method: HttpMethod,
+        method: string,
         url: string,
         headers: http.IncomingHttpHeaders
     ) : ResolvedPath | undefined {
@@ -97,17 +94,34 @@ export default class OpenApi implements ApiInterface {
                 const validateParameters = operation && operation.validateParameters.bind(operation);
                 const validateBody = mediaType && mediaType.validator;
 
+                const exegesisControllerName = mediaType && (
+                    mediaType.oaMediaType[EXEGESIS_CONTROLLER] ||
+                    (operation && operation.exegesisController)
+                );
+
+                const operationId = mediaType && (
+                    mediaType.oaMediaType[EXEGESIS_OPERATION_ID] ||
+                    (operation && operation.operationId)
+                );
+
+                const controller = this._options.controllers &&
+                    exegesisControllerName && operationId &&
+                    this._options.controllers[exegesisControllerName] &&
+                    this._options.controllers[exegesisControllerName][operationId];
+
                 return {
                     serverParams,
                     parseParameters,
                     validateParameters,
                     bodyParser: mediaType && mediaType.parser,
                     validateBody,
+                    exegesisControllerName,
+                    operationId,
+                    controller,
                     // responseValidator,
                     // responseContentType?,
-                    // controller,
                     openapi: {
-                        openApiDoc: this.openApiDoc,
+                        openApiDoc: this._openApiDoc,
                         serverObject: oaServer,
                         pathPath: path.context.path,
                         pathObject: path.oaPath,

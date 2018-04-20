@@ -3,6 +3,8 @@
 ## x-exegesis-controller
 
 Controls which module defines the controller for an operation.
+`x-exegesis-controller` may contains "/"s if controllers are organized in a
+heirarchy.
 
 Allowed in:
 
