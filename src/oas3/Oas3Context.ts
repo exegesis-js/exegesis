@@ -1,9 +1,11 @@
 import * as ld from 'lodash';
 
 import * as oas3 from 'openapi3-ts';
-import { JsonPath, pathToJsonPointer } from '../utils/jsonPaths';
-import { ExgesisCompiledOptions } from '../options';
+import { pathToJsonPointer } from '../utils/jsonPaths';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
+
+import { JsonPath } from '../types';
+import { ExgesisCompiledOptions } from '../types/internal';
 
 /**
  * This has common stuff that we want to pass all the way down through the OAS

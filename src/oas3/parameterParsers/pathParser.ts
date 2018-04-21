@@ -1,9 +1,10 @@
 import querystring from 'querystring';
 import { RawParameterParser, ValuesBag } from '.';
-import { ParameterLocation } from '../../types/validation';
 import { isArrayValidationError } from './common';
 import { generateFormStyleQueryParser } from './formParser';
 import { ParserContext } from './ParserContext';
+
+import { ParameterLocation } from '../../types';
 
 // Generates a RFC 6570 path-style parser.  This is an OAS3 "matrix" parser.
 export function generatePathStyleParser(

@@ -3,8 +3,8 @@ import * as semver from 'semver';
 import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
-import { ExgesisCompiledOptions } from '../options';
-import { ApiInterface, ResolvedPath, ParametersMap } from '../types/ApiInterface';
+import { ExgesisCompiledOptions } from '../types/internal';
+import { ApiInterface, ResolvedPath, ParametersMap } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';

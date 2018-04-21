@@ -3,9 +3,9 @@ import oas3 from 'openapi3-ts';
 import { expect } from 'chai';
 import OpenApi from '../../src/oas3';
 import { compileOptions } from '../../src/options';
-import { ExegesisContext } from '../../src/core/ExegesisContext';
 import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 import { invokeController } from '../../src/controllers/invoke';
+import { ExegesisContext } from '../../src';
 
 // "Integration tests" which check to veryify we can match a path and extract
 // various kinds of parameters correctly.
@@ -36,7 +36,7 @@ function generateOpenApi() : oas3.OpenAPIObject {
 
 const controllers = {
     myController: {
-        op(context: ExegesisContext) {return 7;}
+        op() {return 7;}
     }
 };
 
@@ -87,7 +87,6 @@ describe('oas3 integration controller extensions', function() {
     });
 
     it('should resolve even if there is no controller', async function() {
-        const context: ExegesisContext = ({} as any);
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
 

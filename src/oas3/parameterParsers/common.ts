@@ -1,5 +1,5 @@
 import { ValidationError } from "../../errors";
-import { ErrorType, ParameterLocation } from "../../types/validation";
+import { ErrorType, ParameterLocation } from "../../types";
 
 export function arrayToObject(values: string | string[], loc: ParameterLocation) {
     const result : any = {};

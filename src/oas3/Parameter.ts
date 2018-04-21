@@ -3,12 +3,11 @@ import {generateRequestValidator} from './Schema/validators';
 import { RawParameterParser, getParser, ValuesBag } from './parameterParsers';
 import Oas3Context from './Oas3Context';
 
-import * as oas3 from 'openapi3-ts';
-import { ValidatorFunction, ParameterLocation, ErrorType } from '../types/validation';
 import { isReferenceObject } from './oasUtils';
 import MediaType from './MediaType';
-import { StringParser } from '../bodyParsers/BodyParser';
 import { ValidationError } from '../errors';
+
+import { ValidatorFunction, ParameterLocation, ErrorType, StringParser, oas3 } from '../types';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',

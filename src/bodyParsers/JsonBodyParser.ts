@@ -1,8 +1,7 @@
 import http from 'http';
 import expressBodyParser from 'body-parser';
 
-import { MimeTypeParser, ReqParserFunction } from "./BodyParser";
-import { NextFunction } from 'express';
+import { MimeTypeParser, ReqParserFunction, Callback } from '../types';
 
 export default class JsonBodyParser implements MimeTypeParser {
     private _bodyParserMiddlware: ReqParserFunction;
@@ -22,7 +21,7 @@ export default class JsonBodyParser implements MimeTypeParser {
         JSON.parse(value);
     }
 
-    parseReq(req: http.IncomingMessage, res: http.ServerResponse, done: NextFunction) : void {
+    parseReq(req: http.IncomingMessage, res: http.ServerResponse, done: Callback<void>) : void {
         this._bodyParserMiddlware(req, res, done);
     }
 }

@@ -1,6 +1,7 @@
 import { RawParameterParser, ValuesBag } from '.';
-import { ParameterLocation } from '../../types/validation';
 import { arrayToObject, isArrayValidationError } from './common';
+
+import { ParameterLocation } from '../../types';
 
 // TODO: Replace `isKeys` with `allowedTypes`?
 export function generateSimpleParser(

@@ -1,5 +1,12 @@
-import { ExegesisContext } from "../core/ExegesisContext";
-import { Callback } from "../types/common";
+import * as http from 'http';
+import * as http2 from 'http2';
+import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
+
+export interface ExegesisContext {
+    req: http.IncomingMessage | http2.Http2ServerRequest;
+    res: http.ServerResponse | http2.Http2ServerResponse;
+    params: ParametersByLocation<ParametersMap<any>>;
+}
 
 export type PromiseController = (context: ExegesisContext) => any;
 export type CallbackController = (context: ExegesisContext, done: Callback<any>) => void;

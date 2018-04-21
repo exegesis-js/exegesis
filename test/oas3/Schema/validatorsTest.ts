@@ -2,7 +2,8 @@ import * as oas3 from 'openapi3-ts';
 import { expect } from 'chai';
 import { makeOpenApiDoc, makeContext } from '../../fixtures';
 import * as validators from '../../../src/oas3/Schema/validators';
-import { ErrorType } from '../../../src/types/validation';
+
+import { ErrorType } from '../../../src/types';
 
 const openApiDoc : oas3.OpenAPIObject = Object.assign(
     makeOpenApiDoc(),

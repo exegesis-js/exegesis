@@ -6,10 +6,8 @@ import MediaType from './MediaType';
 import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
 import { ParserContext } from './parameterParsers/ParserContext';
-import { ParametersMap, ParametersByLocation } from '../types/ApiInterface';
 import { ValuesBag, parseParameters } from './parameterParsers';
-import { BodyParser } from '../bodyParsers/BodyParser';
-import { IValidationError } from '../types/validation';
+import { ParametersMap, ParametersByLocation, BodyParser, IValidationError } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
 export default class Operation {

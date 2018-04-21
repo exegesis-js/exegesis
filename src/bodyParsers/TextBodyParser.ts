@@ -1,7 +1,7 @@
 import http from 'http';
 import expressBodyParser from 'body-parser';
 
-import { MimeTypeParser, ReqParserFunction } from "./BodyParser";
+import { MimeTypeParser, ReqParserFunction } from "../types";
 import { NextFunction } from 'express';
 
 export default class TextBodyParser implements MimeTypeParser {

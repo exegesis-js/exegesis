@@ -1,11 +1,11 @@
 import Operation from './Operation';
 
 import Oas3Context from './Oas3Context';
-
 import * as oas3 from 'openapi3-ts';
-import {HTTP_METHODS} from '../types/common';
 import Parameter from './Parameter';
 import { EXEGESIS_CONTROLLER } from './extensions';
+
+const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
 
 interface OperationsMap {
     [key: string]: Operation;

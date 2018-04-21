@@ -1,6 +1,5 @@
 import pb from 'promise-breaker';
-import { ExegesisContext } from "../core/ExegesisContext";
-import { Controller } from "./types";
+import { Controller, ExegesisContext } from "../types";
 
 export function invokeController(
     controller: Controller,

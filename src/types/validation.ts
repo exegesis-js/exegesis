@@ -1,4 +1,4 @@
-import { JsonPath } from "../utils/jsonPaths";
+import { JsonPath } from "./basicTypes";
 
 /**
  * The location of a parameter or property within a request.

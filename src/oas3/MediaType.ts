@@ -1,6 +1,6 @@
 import * as oas3 from 'openapi3-ts';
 
-import { ValidatorFunction } from '../types/validation';
+import { ValidatorFunction } from '../types';
 import { generateRequestValidator } from './Schema/validators';
 import Oas3Context from './Oas3Context';
 

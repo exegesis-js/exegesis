@@ -1,10 +1,5 @@
 import ld from 'lodash';
-/**
- * A path to an object within a JSON document.
- *
- * `'#/' + path.map(encodeURIComponent).join('/')` would get you a JSON Ref.
- */
-export type JsonPath = string[];
+import { JsonPath } from '../types';
 
 export function jsonPointerUriFragmentToJsonPointer(ref: string) : string {
     if(ref.startsWith('/')) {

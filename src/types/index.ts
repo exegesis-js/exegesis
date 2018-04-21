@@ -1,28 +1,17 @@
 import http from 'http';
+import { BodyParser } from './bodyParser';
 import * as oas3 from 'openapi3-ts';
+import { IValidationError, ValidatorFunction } from './validation';
+import { ParametersByLocation, ParametersMap, JsonPath } from './basicTypes';
+import { Controller } from './controllers';
 
-import { JsonPath } from '../utils/jsonPaths';
-import { ValidatorFunction, IValidationError } from './validation';
-import { BodyParser } from '../bodyParsers/BodyParser';
-import { Controller } from '../controllers/types';
+export {oas3 as oas3};
 
-// This file provides an interface into the `oas3` subdirectory.  The idea here is,
-// when `oas4` comes along we can support it by writing a new `oas4` subdirectory
-// that implements this same interface, and then we'll be able to support oas4
-// wihtout changing anything.  (We'll see if this actually works.  :P)
-
-export interface ParametersByLocation<T> {
-    query: T;
-    header: T;
-    server: T;
-    path: T;
-    cookie: T;
-}
-
-// A collection of parameters from the server, path, query, cookies, etc...
-export interface ParametersMap<T> {
-    [key: string]: T;
-}
+export * from './bodyParser';
+export * from './basicTypes';
+export * from './controllers';
+export * from './options';
+export * from './validation';
 
 export type ParsedParameterValidator =
     ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null) | undefined;
@@ -53,6 +42,10 @@ export interface ResolvedPath {
     openapi: ResolvedOAS3;
 }
 
+// ApiInterface provides an interface into the `oas3` subdirectory.  The idea here is,
+// when `oas4` comes along we can support it by writing a new `oas4` subdirectory
+// that implements this same interface, and then we'll be able to support oas4
+// wihtout changing anything.  (We'll see if this actually works.  :P)
 export interface ApiInterface {
     /**
      * Resolve an incoming request.

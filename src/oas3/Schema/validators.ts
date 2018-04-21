@@ -1,12 +1,12 @@
 import Ajv from 'ajv';
 import traveseSchema from 'json-schema-traverse';
 
-import { CustomFormats } from '../../options';
-import { ValidatorFunction, IValidationError, ErrorType } from '../../types/validation';
 import * as jsonPaths from '../../utils/jsonPaths';
 import * as jsonSchema from '../../utils/jsonSchema';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import Oas3Context from '../Oas3Context';
+
+import { CustomFormats, ValidatorFunction, IValidationError, ErrorType } from '../../types';
 
 // TODO tests
 // * nullable

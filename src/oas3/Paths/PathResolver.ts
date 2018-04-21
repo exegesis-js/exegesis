@@ -1,6 +1,7 @@
 import {escapeRegExp} from 'lodash';
-import { ParametersMap } from '../../types/ApiInterface';
 const TEMPLATE_RE = /^(.*?){(.*?)}(.*)$/;
+
+import { ParametersMap } from '../../types';
 
 export type PathParserFunction = (pathname: string) => {matched: string, rawPathParams: ParametersMap<any>} | null;
 

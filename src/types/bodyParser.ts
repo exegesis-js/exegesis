@@ -1,8 +1,8 @@
 import http from 'http';
+import { Callback } from './basicTypes';
 
 // Stolen from @types/connect.
-export type NextFunction = (err?: any) => void;
-export type NextHandleFunction = (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) => void;
+export type NextHandleFunction = (req: http.IncomingMessage, res: http.ServerResponse, next: Callback<void>) => void;
 
 export type StringParserFunction = (encoded: string) => any;
 export type ReqParserFunction = NextHandleFunction;

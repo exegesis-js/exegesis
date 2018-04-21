@@ -1,12 +1,12 @@
 import ld from 'lodash';
-import { ParameterLocation } from "../../types/validation";
 
 import { ParserContext } from './ParserContext';
 import { generateSimpleParser } from './simpleParser';
 import { generateFormStyleQueryParser } from './formParser';
 import { generatePathStyleParser } from './pathParser';
 import { generateDelimitedParser } from './delimitedParser';
-import { ParametersMap } from '../../types/ApiInterface';
+
+import { ParameterLocation, ParametersMap } from "../../types";
 
 export type ValuesBag = ParametersMap<string | string[] | undefined>;
 

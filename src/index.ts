@@ -1,7 +1,9 @@
 import $RefParser from 'json-schema-ref-parser';
 import OpenApi from './oas3';
-import {ExegesisOptions, compileOptions} from './options';
-import * as oas3 from 'openapi3-ts';
+import { compileOptions } from './options';
+import { ExegesisOptions, oas3 } from './types';
+
+export * from './types';
 
 /**
  * Reads an OpenAPI document from a YAML or JSON file.
@@ -9,6 +11,7 @@ import * as oas3 from 'openapi3-ts';
  * @param openApiDocFile - The file containing the OpenAPI document.
  * @returns {Promise<OpenApi>} - Returns the parsed OpenAPI document.
  */
+// TODO: Support promise or callback.
 export function compile(openApiDocFile: string, options?: ExegesisOptions): Promise<OpenApi> {
     const refParser = new $RefParser();
 

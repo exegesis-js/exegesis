@@ -2,8 +2,9 @@ import {isSpecificationExtension} from '../oasUtils';
 import Oas3Context from '../Oas3Context';
 import Path from '../Path';
 import PathResolver from './PathResolver';
-import { ParametersMap } from '../../types/ApiInterface';
 import { EXEGESIS_CONTROLLER } from '../extensions';
+
+import { ParametersMap } from '../../types';
 
 export default class Paths {
     private readonly _pathResolver : PathResolver<Path> = new PathResolver();

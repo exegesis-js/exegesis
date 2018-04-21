@@ -1,6 +1,7 @@
 import * as oas3 from 'openapi3-ts';
 import { compileTemplatePath, PathParserFunction } from './Paths/PathResolver';
-import { ParametersMap } from '../types/ApiInterface';
+
+import { ParametersMap } from '../types';
 
 const FULL_URL_RE = /^(.*?):\/\/([^/]*?)\/(.*)$/; // e.g. https://foo.bar/v1
 const ABSOLUTE_URL_RE = /^\/(.*)$/; // e.g. /v1

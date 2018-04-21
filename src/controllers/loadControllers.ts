@@ -2,7 +2,7 @@ import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
 
-import { Controllers } from './types';
+import { Controllers } from '../types';
 
 /**
  * Load a set of controllers.

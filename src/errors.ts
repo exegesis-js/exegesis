@@ -1,4 +1,4 @@
-import { IValidationError } from './types/validation';
+import { IValidationError } from './types';
 
 export class ExtendableError extends Error {
     constructor(message: string) {
