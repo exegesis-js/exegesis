@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import * as load from '../../src/controllers/loadControllers';
 import { invokeController } from '../../src/controllers/invoke';
-import { ExegesisContext } from '../../src/core/ExegesisContext';
+import { ExegesisContext } from '../../src/types';
 
 describe('controllers - loadControllers', function() {
     it('should load controllers from a folder', function() {

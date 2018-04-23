@@ -7,10 +7,11 @@
   "scripts": {
     "test": "npm run build && npm run test:lint && npm run test:unittest",
     "build": "tsc",
-    "test:unittest": "nyc mocha 'test/**/*.@(ts|js)'",
-    "test:lint": "npm run test:lint.ts && npm run test:lint.md",
-    "test:lint.ts": "tslint -c tslint.json -t stylish 'src/**/*.ts'",
-    "test:lint.md": "markdownlint **/*.md *.md",
+    "test:unittest": "tsc -p test && nyc mocha 'test/**/*.@(ts|js)'",
+    "test:lint": "npm run test:lint:source && npm run test:lint:markdown && npm run test:lint:tests",
+    "test:lint:source": "tslint -c tslint.json -t stylish 'src/**/*.ts'",
+    "test:lint:tests": "tslint -c test/tslint.json -t stylish 'test/**/*.ts'",
+    "test:lint:markdown": "markdownlint **/*.md *.md",
     "test:pre-commit": "mocha --reporter progress 'test/**/*.@(ts|js)'",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm test"

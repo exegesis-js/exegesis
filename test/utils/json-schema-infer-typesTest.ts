@@ -36,7 +36,7 @@ describe("json-schema-infer-types", function() {
         const schema = {
             required: ['0'],
             properties: {
-                '0': {type: 'string'}
+                0: {type: 'string'}
             }
         };
 
@@ -142,4 +142,3 @@ describe("json-schema-infer-types", function() {
         expect(inferTypes(schema)).to.eql(['object', 'integer']);
     });
 });
-

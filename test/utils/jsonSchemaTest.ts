@@ -42,23 +42,22 @@ describe("jsonSchema utils", function() {
                 }
             };
 
-            debugger;
             const result = jsonSchema.extractSchema(doc, '#/myDoc/someStuff/schema');
             expect(result).to.eql({
-                "type": "object",
-                "properties": {
-                    users: {type: "array", items: {"$ref": "#/definitions/User"}
+                type: "object",
+                properties: {
+                    users: {type: "array", items: {$ref: "#/definitions/User"}
                     },
-                    "menu": {
-                        "$ref": "#/definitions/Menu"
+                    menu: {
+                        $ref: "#/definitions/Menu"
                     }
                 },
-                "definitions": {
+                definitions: {
                     name: {type: 'string'},
                     User: {
                         type: 'object',
                         properties: {
-                            name: {"$ref": "#/definitions/name"}
+                            name: {$ref: "#/definitions/name"}
                         }
                     },
                     Menu: {
