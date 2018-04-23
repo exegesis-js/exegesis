@@ -1,7 +1,7 @@
 import ld from 'lodash';
 import oas3 from 'openapi3-ts';
 import { expect } from 'chai';
-import OpenApi from '../../src/oas3';
+import OpenApi from '../../src/oas3/OpenApi';
 import { compileOptions } from '../../src/options';
 import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 import { invokeController } from '../../src/controllers/invoke';
@@ -19,7 +19,15 @@ function generateOpenApi() : oas3.OpenAPIObject {
         },
         paths: {
             '/path': {
+                get: {
+                    responses: {
+                        default: {description: 'hello'}
+                    }
+                },
                 post: {
+                    responses: {
+                        default: {description: 'hello'}
+                    },
                     requestBody: {
                         required: true,
                         content: {
@@ -42,46 +50,69 @@ const controllers = {
 
 const options = compileOptions({controllers});
 
-const EXEGESIS_CONTROLLER_LOCATIONS = [
-    "/x-exegesis-controller",
-    "/paths/x-exegesis-controller",
-    "/paths/~1path/x-exegesis-controller",
-    "/paths/~1path/post/x-exegesis-controller",
-    "/paths/~1path/post/requestBody/content/application~1json/x-exegesis-controller",
-];
+async function findControllerTest(method: string, controllerLocation: string, operationLocation: string) {
+    const context: ExegesisContext = ({} as any);
+    const openApiDoc = generateOpenApi();
+    ld.set(openApiDoc, jsonPointerToPath(controllerLocation), 'myController');
+    ld.set(openApiDoc, jsonPointerToPath(operationLocation), 'op');
 
-const EXEGESIS_OPERATION_LOCATIONS = [
-    "/paths/~1path/post/x-exegesis-operationId",
-    "/paths/~1path/post/operationId",
-    "/paths/~1path/post/requestBody/content/application~1json/x-exegesis-operationId",
-];
+    const openApi = new OpenApi(openApiDoc, options);
+
+    const resolved = openApi.resolve(
+        method,
+        "/path",
+        method === 'POST' ? {"content-type": 'application/json'} : {}
+    );
+
+    expect({
+        controllerName: resolved!.operation!.exegesisControllerName,
+        operationId: resolved!.operation!.operationId
+    }, `controller: ${controllerLocation}, operation: ${operationLocation}` ).to.eql({
+        controllerName: 'myController',
+        operationId: 'op'
+    });
+    expect(await invokeController(resolved!.operation!.controller!, context)).to.equal(7);
+}
 
 describe('oas3 integration controller extensions', function() {
-    it('should resolve controller and operationId', async function() {
-        const context: ExegesisContext = ({} as any);
+    it('should resolve controller and operationId with body', async function() {
+        const EXEGESIS_CONTROLLER_LOCATIONS = [
+            "/x-exegesis-controller",
+            "/paths/x-exegesis-controller",
+            "/paths/~1path/x-exegesis-controller",
+            "/paths/~1path/post/x-exegesis-controller",
+            "/paths/~1path/post/requestBody/content/application~1json/x-exegesis-controller",
+        ];
+
+        const EXEGESIS_OPERATION_LOCATIONS = [
+            "/paths/~1path/post/x-exegesis-operationId",
+            "/paths/~1path/post/operationId",
+            "/paths/~1path/post/requestBody/content/application~1json/x-exegesis-operationId",
+        ];
 
         for(const controllerLocation of EXEGESIS_CONTROLLER_LOCATIONS) {
             for(const operationLocation of EXEGESIS_OPERATION_LOCATIONS) {
-                const openApiDoc = generateOpenApi();
-                ld.set(openApiDoc, jsonPointerToPath(controllerLocation), 'myController');
-                ld.set(openApiDoc, jsonPointerToPath(operationLocation), 'op');
+                await findControllerTest('POST', controllerLocation, operationLocation);
+            }
+        }
+    });
 
-                const openApi = new OpenApi(openApiDoc, options);
+    it('should resolve controller and operationId without body', async function() {
+        const EXEGESIS_CONTROLLER_LOCATIONS = [
+            "/x-exegesis-controller",
+            "/paths/x-exegesis-controller",
+            "/paths/~1path/x-exegesis-controller",
+            "/paths/~1path/get/x-exegesis-controller",
+        ];
 
-                const resolved = openApi.resolve(
-                    "POST",
-                    "/path",
-                    {"content-type": 'application/json'}
-                );
+        const EXEGESIS_OPERATION_LOCATIONS = [
+            "/paths/~1path/get/x-exegesis-operationId",
+            "/paths/~1path/get/operationId",
+        ];
 
-                expect({
-                    controllerName: resolved!.exegesisControllerName,
-                    operationId: resolved!.operationId
-                }).to.eql({
-                    controllerName: 'myController',
-                    operationId: 'op'
-                });
-                expect(await invokeController(resolved!.controller!, context)).to.equal(7);
+        for(const controllerLocation of EXEGESIS_CONTROLLER_LOCATIONS) {
+            for(const operationLocation of EXEGESIS_OPERATION_LOCATIONS) {
+                await findControllerTest('get', controllerLocation, operationLocation);
             }
         }
     });
@@ -97,9 +128,9 @@ describe('oas3 integration controller extensions', function() {
         );
 
         expect({
-            controllerName: resolved!.exegesisControllerName,
-            operationId: resolved!.operationId,
-            controller: resolved!.controller
+            controllerName: resolved!.operation!.exegesisControllerName,
+            operationId: resolved!.operation!.operationId,
+            controller: resolved!.operation!.controller
         }).to.eql({
             controllerName: undefined,
             operationId: undefined,

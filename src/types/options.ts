@@ -1,5 +1,5 @@
 import { MimeTypeParser } from './bodyParser';
-import { Controllers } from './controllers';
+import { Controllers } from './core';
 
 /**
  * A function which validates custom formats.

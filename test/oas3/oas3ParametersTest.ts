@@ -1,7 +1,7 @@
 import oas3 from 'openapi3-ts';
 import { expect } from 'chai';
 import { defaultCompiledOptions } from '../fixtures';
-import OpenApi from '../../src/oas3';
+import OpenApi from '../../src/oas3/OpenApi';
 
 const pathStyles = ['simple', 'matrix' /*TODO: , 'label' */];
 const queryStyles = ['form', 'pipeDelimited', 'spaceDelimited', 'deepObject'];
@@ -150,7 +150,7 @@ describe('oas3 integration parameter parsing', function() {
                             {}
                         );
 
-                        expect(result!.parseParameters!().path.var).to.eql(sample.value);
+                        expect(result!.operation!.parseParameters!().path.var).to.eql(sample.value);
                     });
                 }
             }
@@ -189,7 +189,7 @@ describe('oas3 integration parameter parsing', function() {
                         {'x-custom-header': sample.simple}
                     );
 
-                    expect(result!.parseParameters!().header['x-custom-header']).to.eql(sample.value);
+                    expect(result!.operation!.parseParameters!().header['x-custom-header']).to.eql(sample.value);
                 });
 
             }
@@ -202,7 +202,7 @@ describe('oas3 integration parameter parsing', function() {
                     {}
                 );
 
-                expect(result!.parseParameters!().header['x-custom-header']).to.eql(undefined);
+                expect(result!.operation!.parseParameters!().header['x-custom-header']).to.eql(undefined);
             });
         }
     });
@@ -246,7 +246,7 @@ describe('oas3 integration parameter parsing', function() {
                         );
 
                         expect(result, 'matched a route').to.exist;
-                        expect(result!.parseParameters!().query.var).to.eql(sample.value);
+                        expect(result!.operation!.parseParameters!().query.var).to.eql(sample.value);
                     });
                 }
 
@@ -258,7 +258,7 @@ describe('oas3 integration parameter parsing', function() {
                         {}
                     );
 
-                    expect(result!.parseParameters!().query.var).to.eql(undefined);
+                    expect(result!.operation!.parseParameters!().query.var).to.eql(undefined);
                 });
 
                 // TODO: deepObject, pipe and space delimited.
@@ -286,14 +286,14 @@ describe('oas3 integration parameter parsing', function() {
                 `/query?var[a]=b&var[c]=d`,
                 {}
             );
-            expect(result!.parseParameters!().query.var).to.eql({a:'b', c: 'd'});
+            expect(result!.operation!.parseParameters!().query.var).to.eql({a:'b', c: 'd'});
 
             result = openApi.resolve(
                 'GET',
                 `/query`,
                 {}
             );
-            expect(result!.parseParameters!().query.var).to.eql(undefined);
+            expect(result!.operation!.parseParameters!().query.var).to.eql(undefined);
         });
 
         for(const style of [
@@ -321,21 +321,21 @@ describe('oas3 integration parameter parsing', function() {
                     `/query?var=a${style.delimiter}b${style.delimiter}c`,
                     {}
                 );
-                expect(result!.parseParameters!().query.var).to.eql(['a', 'b', 'c']);
+                expect(result!.operation!.parseParameters!().query.var).to.eql(['a', 'b', 'c']);
 
                 result = openApi.resolve(
                     'GET',
                     `/query?var=a`,
                     {}
                 );
-                expect(result!.parseParameters!().query.var).to.eql(['a']);
+                expect(result!.operation!.parseParameters!().query.var).to.eql(['a']);
 
                 result = openApi.resolve(
                     'GET',
                     `/query`,
                     {}
                 );
-                expect(result!.parseParameters!().query.var).to.eql(undefined);
+                expect(result!.operation!.parseParameters!().query.var).to.eql(undefined);
             });
         }
 
