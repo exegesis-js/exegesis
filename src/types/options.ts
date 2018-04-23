@@ -1,5 +1,5 @@
 import { MimeTypeParser } from './bodyParser';
-import { Controllers } from './core';
+import { Controllers, SecurityPlugins } from './core';
 
 /**
  * A function which validates custom formats.
@@ -41,6 +41,13 @@ export interface ExegesisOptions {
      * requests.
      */
     mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
+
+    /**
+     * An array of security plugins.  See
+     * https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md
+     * for details.
+     */
+    securityPlugins?: SecurityPlugins;
 
     /**
      * Either a glob for controller modules, or a hash where keys are

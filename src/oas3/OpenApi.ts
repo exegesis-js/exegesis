@@ -3,8 +3,8 @@ import * as semver from 'semver';
 import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
-import { ApiInterface, ExgesisCompiledOptions } from '../types/internal';
-import { ResolvedPath, ParametersMap } from '../types';
+import { ApiInterface, ExgesisCompiledOptions, ResolvedPath } from '../types/internal';
+import { ParametersMap } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';
@@ -99,13 +99,13 @@ export default class OpenApi implements ApiInterface {
 
                     const exegesisControllerName =
                         (mediaType && mediaType.oaMediaType[EXEGESIS_CONTROLLER]) ||
-                        (operation && operation.exegesisController);
+                        operation.exegesisController;
 
                     const operationId =
                         (mediaType && mediaType.oaMediaType[EXEGESIS_OPERATION_ID]) ||
-                        (operation && operation.operationId);
+                        operation.operationId;
 
-                    const controller = this._options.controllers &&
+                    const controller =
                         exegesisControllerName && operationId &&
                         this._options.controllers[exegesisControllerName] &&
                         this._options.controllers[exegesisControllerName][operationId];
@@ -118,6 +118,7 @@ export default class OpenApi implements ApiInterface {
                         exegesisControllerName,
                         operationId,
                         controller,
+                        authenticate: operation.authenticate.bind(operation)
                         // responseValidator,
                         // responseContentType?
                     };

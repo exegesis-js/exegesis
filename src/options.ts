@@ -65,11 +65,12 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
 
     const controllers = typeof(options.controllers) === 'string'
         ? loadControllersSync(options.controllers)
-        : options.controllers;
+        : options.controllers || {};
 
     return {
         bodyParsers,
         controllers,
+        securityPlugins: options.securityPlugins || [],
         customFormats,
         parameterParsers,
         maxParameters: options.maxParameters || 10000,

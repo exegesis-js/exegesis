@@ -4,18 +4,36 @@ import { Readable } from 'stream';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
 
+export interface ExegesisSecurityScheme {
+    user?: any;
+    roles? : string[] | undefined;
+    scopes? : string[] | undefined;
+}
+
+export interface ExegesisNamedSecurityScheme extends ExegesisSecurityScheme {
+    name: string;
+}
+
+export type PromiseSecurityPlugin =
+    (context: ExegesisContext) => ExegesisSecurityScheme | undefined | Promise<ExegesisSecurityScheme>;
+export type CallbackSecurityPlugin =
+    (context: ExegesisContext, done: Callback<ExegesisSecurityScheme | undefined>) => void;
+export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
+export type SecurityPlugins = {scheme: string, plugin: SecurityPlugin}[];
+
 export interface ExegesisResponse {
     statusCode: number;
     statusMessage: string | undefined;
     headers: http.OutgoingHttpHeaders;
     body: any;
     connection: net.Socket;
+    ended: boolean;
 
     setStatus(status: number) : this;
     header(header: string, value: number | string | string[] | undefined) : this;
     set(header: string, value: number | string | string[] | undefined) : this;
     json(json: any) : void;
-    error(message: string, statusCode?: number) : never;
+    end(): void;
     setHeader(name: string, value: number | string | string[] | undefined) : void;
     getHeader(name: string) : number | string | string[] | undefined;
     getHeaderNames() : string[];
@@ -28,8 +46,12 @@ export interface ExegesisContext {
     readonly req: http.IncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
-    params: ParametersByLocation<ParametersMap<any>> | undefined;
-    body: any;
+    security?: ExegesisSecurityScheme;
+    user?: any;
+    params?: ParametersByLocation<ParametersMap<any>>;
+    body?: any;
+
+    makeError(statusCode: number, message: string) : Error;
 }
 
 export type PromiseController = (context: ExegesisContext) => any;
@@ -60,6 +82,10 @@ export interface HttpResult {
 
 /**
  * A function which takes in a request and response, and returns an HttpResult.
+ *
+ * @throws {ValidationError} - If a validation error occurs in the parameters or the body.
+ * @throws {HttpError} - If a non-validation error occurs, and an HTTP error code is suggested.
+ * @throws {Error} - If any other error occurs.
  */
 export type ExegesisRunner = (
     req: http.IncomingMessage,

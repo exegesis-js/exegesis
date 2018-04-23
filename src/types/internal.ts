@@ -1,16 +1,65 @@
 import * as http from 'http';
+import * as oas3 from 'openapi3-ts';
 
-import { Controllers, CustomFormats, StringParser, BodyParser, ResolvedPath } from '.';
+import {
+    Controllers,
+    CustomFormats,
+    StringParser,
+    BodyParser,
+    SecurityPlugins,
+    ParametersByLocation,
+    ParametersMap,
+    IValidationError,
+    ExegesisNamedSecurityScheme,
+    ValidatorFunction,
+    Controller,
+    ExegesisContext,
+    JsonPath
+} from '.';
 import { MimeTypeRegistry } from "../utils/mime";
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
-    controllers?: Controllers;
+    controllers: Controllers;
+    securityPlugins: SecurityPlugins;
     bodyParsers: MimeTypeRegistry<BodyParser>;
     parameterParsers: MimeTypeRegistry<StringParser>;
     maxParameters: number;
     defaultMaxBodySize: number;
     ignoreServers: boolean;
+}
+
+export type ParsedParameterValidator =
+    ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null);
+
+// This bit is OAS3 specific.  May change in future versions.
+export interface ResolvedOAS3 {
+    openApiDoc: oas3.OpenAPIObject;
+    serverObject: oas3.ServerObject | undefined;
+    pathPath: JsonPath;
+    pathObject: oas3.PathItemObject;
+    operationPath: JsonPath | undefined;
+    operationObject: oas3.OperationObject | undefined;
+    requestBodyMediaTypePath: JsonPath | undefined;
+    requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
+}
+
+export interface ResolvedOperation {
+    parseParameters: (() => ParametersByLocation<ParametersMap<any>>);
+    validateParameters: ParsedParameterValidator;
+    bodyParser: BodyParser | undefined;
+    validateBody: ValidatorFunction | undefined;
+    exegesisControllerName: string | undefined;
+    operationId: string | undefined;
+    controller: Controller | undefined;
+    authenticate(context: ExegesisContext) : Promise<ExegesisNamedSecurityScheme | undefined>;
+    // responseValidator;
+    // responseContentType?;
+}
+
+export interface ResolvedPath {
+    operation: ResolvedOperation | undefined;
+    openapi: ResolvedOAS3;
 }
 
 // ApiInterface provides an interface into the `oas3` subdirectory.  The idea here is,

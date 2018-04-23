@@ -5,10 +5,65 @@ import { Readable } from 'stream';
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import { Callback, ExegesisRunner, HttpResult } from '../types';
-import { ApiInterface } from '../types/internal';
-import ExegesisResponseImpl from './ExegesisResponseImpl';
+import {
+    Callback,
+    ExegesisRunner,
+    HttpResult,
+    ExegesisContext
+} from '../types';
+import { ApiInterface, ResolvedOperation } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
+
+async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
+    const authenticated = await operation.authenticate(context);
+    context.security = authenticated;
+    context.user = authenticated && authenticated.user;
+}
+
+function parseAndValidateParameters(operation: ResolvedOperation, context: ExegesisContext) {
+    context.params = operation.parseParameters();
+    const errors = operation.validateParameters(context.params);
+    if(errors && errors.length > 0) {
+        throw new ValidationError(errors);
+    }
+}
+
+async function parseAndValidateBody(operation: ResolvedOperation, context: ExegesisContext) {
+    let body: any;
+    if(operation.bodyParser) {
+        body = await pb.call((done: Callback<void>) =>
+            operation.bodyParser!.parseReq(context.req, context.origRes, done)
+        );
+
+        const bodyErrors = operation.validateBody && operation.validateBody(body);
+        if(bodyErrors && bodyErrors.length > 0) {
+            throw new ValidationError(bodyErrors);
+        }
+    }
+    (context.req as any).body = body;
+    context.body = body;
+}
+
+function resultToHttpResponse(
+    context: ExegesisContext,
+    result: any
+) : HttpResult {
+    let output: Readable | undefined;
+    if(result) {
+        if(result && result.pipe && (typeof result.pipe === 'function')) {
+            output = result as Readable;
+        } else {
+            context.res.setHeader('content-type', 'application/json');
+            output = stringToStream(JSON.stringify(result));
+        }
+    }
+
+    return {
+        status: context.res.statusCode,
+        headers: context.res.headers,
+        body: output
+    };
+}
 
 /**
  * Returns a `(req, res) => Promise<boolean>` function, which handles incoming
@@ -30,59 +85,41 @@ export default async function generateExegesisRunner(
         const resolved = api.resolve(method, url, req.headers);
 
         if(resolved && resolved.operation) {
-            const {parseParameters, validateParameters, bodyParser, validateBody, controller} = resolved.operation;
+            try {
+                const {operation} = resolved;
 
-            if(!controller) {
-                throw new Error(`No operation found for ${method} ${url}`);
-            }
-
-            // FIXME: Run security handlers here.
-            // FIXME: Verify that serurity requirements have been met.
-
-            // Parse and validate parameters.
-            const params = parseParameters();
-            const errors = validateParameters(params);
-            if(errors && errors.length > 0) {
-                throw new ValidationError(errors);
-            }
-
-            // Parse and validate incoming body.
-            let body: any;
-            if(bodyParser) {
-                body = await pb.call((done: Callback<void>) => bodyParser.parseReq(req, res, done));
-                const bodyErrors = validateBody && validateBody(body);
-                if(bodyErrors && bodyErrors.length > 0) {
-                    throw new ValidationError(bodyErrors);
+                if(!operation.controller) {
+                    throw new Error(`No operation found for ${method} ${url}`);
                 }
-            }
-            (req as any).body = body;
 
-            // Generate response.
-            const response = new ExegesisResponseImpl(res);
-            const context = new ExegesisContextImpl(req, res, body, params);
+                const context = new ExegesisContextImpl(req, res);
+                await handleSecurity(operation, context);
+                parseAndValidateParameters(operation, context);
+                await parseAndValidateBody(operation, context);
 
-            const controllerResult = await invokeController(controller, context);
-            const result = response.body || controllerResult;
+                let controllerResult: any;
+                if(!context.res.ended) {
+                    controllerResult = await invokeController(operation.controller, context);
+                    // TODO: Response validation goes here.
+                }
 
-            // TODO: Response validation goes here.
-
-            // Convert result into an HTTP message.
-            let output: Readable | undefined;
-            if(result) {
-                if(result && result.pipe && (typeof result.pipe === 'function')) {
-                    output = result as Readable;
+                return resultToHttpResponse(context, context.res.body || controllerResult);
+            } catch (err) {
+                if(err instanceof ValidationError) {
+                    // TODO: Allow customization of validation error?  Or even
+                    // just throw the error instead of turning it into a message?
+                    return {
+                        status: err.status,
+                        headers: {"content-type": "application/json"},
+                        body: stringToStream(JSON.stringify({
+                            message: "Validation errors",
+                            errors: err.errors
+                        }))
+                    };
                 } else {
-                    // FIXME: response validation
-                    response.setHeader('content-type', 'application/json');
-                    output = stringToStream(JSON.stringify(result));
+                    throw err;
                 }
             }
-
-            return {
-                status: response.statusCode,
-                headers: response.headers,
-                body: output
-            };
         } else {
             return undefined;
         }

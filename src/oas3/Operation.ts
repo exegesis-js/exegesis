@@ -1,5 +1,7 @@
+import pb from 'promise-breaker';
 import querystring from 'querystring';
 import * as oas3 from 'openapi3-ts';
+
 import {MimeTypeRegistry} from '../utils/mime';
 import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
@@ -7,8 +9,40 @@ import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
 import { ParserContext } from './parameterParsers/ParserContext';
 import { ValuesBag, parseParameters } from './parameterParsers';
-import { ParametersMap, ParametersByLocation, BodyParser, IValidationError } from '../types';
+import {
+    ParametersMap,
+    ParametersByLocation,
+    BodyParser,
+    IValidationError,
+    ExegesisContext,
+    ExegesisNamedSecurityScheme,
+    ExegesisSecurityScheme
+} from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
+import { HttpError } from '../errors';
+
+function getSecurityRequirements(
+    context: Oas3Context, // Operation context.
+    oaOperation: oas3.OperationObject
+) {
+    const securityRequirements = oaOperation.security || context.openApiDoc.security || {};
+    const securityRequirementsLength = Object.keys(securityRequirements).length;
+    let requiredRoles = oaOperation['x-exegesis-roles'] || context.openApiDoc['x-exegesis-roles'] || [];
+
+    if(requiredRoles && requiredRoles.length > 0 && (securityRequirementsLength === 0)) {
+        if(oaOperation.security && !oaOperation['x-exegesis-roles']) {
+            // Operation explicitly sets security to `{}`, but doesn't set
+            // `x-exegesis-roles`.  This is OK - we'll ingore roles for this
+            // case.
+            requiredRoles = [];
+        } else {
+            throw new Error(`Operation ${context.jsonPointer} requires ` +
+                `roles ${requiredRoles.join(',')} but has no security requirements.`);
+        }
+    }
+
+    return {securityRequirements, requiredRoles};
+}
 
 export default class Operation {
     readonly context: Oas3Context;
@@ -16,6 +50,9 @@ export default class Operation {
     readonly oaPath: oas3.PathItemObject;
     readonly exegesisController: string;
     readonly operationId: string;
+    readonly securitySchemeNames: string[];
+    readonly securityRequirements: oas3.SecurityRequirementObject;
+    readonly requiredRoles: string[];
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
@@ -32,6 +69,18 @@ export default class Operation {
         this.oaPath = oaPath;
         this.exegesisController = oaOperation[EXEGESIS_CONTROLLER] || exegesisController;
         this.operationId = oaOperation[EXEGESIS_OPERATION_ID] || oaOperation.operationId;
+
+        const security = getSecurityRequirements(context, oaOperation);
+        this.securitySchemeNames = Object.keys(security.securityRequirements);
+        this.securityRequirements = security.securityRequirements;
+        this.requiredRoles = security.requiredRoles;
+
+        for(const schemeName of this.securitySchemeNames) {
+            if(!context.options.securityPlugins.find(p => p.scheme === schemeName)) {
+                throw new Error(`Operation ${context.jsonPointer} references security scheme ${schemeName} ` +
+                    `but no security plugin was provided.`);
+            }
+        }
 
         const requestBody = oaOperation.requestBody &&
             (context.resolveRef(oaOperation.requestBody) as oas3.RequestBodyObject);
@@ -112,5 +161,51 @@ export default class Operation {
         }
 
         return result;
+    }
+
+    async authenticate(context: ExegesisContext) : Promise<ExegesisNamedSecurityScheme | undefined> {
+        if(this.securitySchemeNames.length === 0) {
+            // No auth required
+            return undefined;
+        }
+
+        let errors: string[] | undefined;
+        let authenticated : ExegesisSecurityScheme | undefined;
+        let result : ExegesisNamedSecurityScheme | undefined;
+
+        for(const {scheme, plugin} of this.context.options.securityPlugins) {
+            if(!this.securityRequirements[scheme]) {
+                // This operation doesn't want the scheme - don't bother calling it.
+                continue;
+            }
+
+            authenticated = await pb.call(plugin, null, context);
+            if(!authenticated) {
+                // Couldn't authenticate.  Try the next one.
+                continue;
+            }
+
+            const missingRoles = this.requiredRoles.filter(role =>
+                authenticated && (!authenticated.roles || authenticated.roles.indexOf(role) === -1));
+
+            if(missingRoles.length > 0) {
+                errors = errors || [];
+                errors.push(`Authenticated using ${scheme} but missing required roles ${missingRoles.join(', ')}.`);
+                continue; // Try another authentication scheme.
+            }
+
+            result = Object.assign({name: scheme}, authenticated);
+
+            break;
+        }
+
+        if(result) {
+            return result;
+        } else if(errors) {
+            throw new HttpError(403, errors.join('\n'));
+        } else {
+            throw new HttpError(401, `Must authorize using one of the following ` +
+                `schemes ${this.securitySchemeNames.join(', ')}`);
+        }
     }
 }
