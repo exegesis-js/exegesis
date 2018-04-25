@@ -46,6 +46,7 @@ export interface ExegesisContext {
     readonly req: http.IncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
+    api: any;
     security?: ExegesisSecurityScheme;
     user?: any;
     params?: ParametersByLocation<ParametersMap<any>>;

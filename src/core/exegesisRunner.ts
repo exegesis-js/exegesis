@@ -72,8 +72,8 @@ function resultToHttpResponse(
  *
  * @returns runner function.
  */
-export default async function generateExegesisRunner(
-    api: ApiInterface
+export default async function generateExegesisRunner<T>(
+    api: ApiInterface<T>
 ) : Promise<ExegesisRunner> {
     return async (
         req: http.IncomingMessage,
@@ -92,7 +92,7 @@ export default async function generateExegesisRunner(
                     throw new Error(`No operation found for ${method} ${url}`);
                 }
 
-                const context = new ExegesisContextImpl(req, res);
+                const context = new ExegesisContextImpl<T>(req, res, resolved.api);
                 await handleSecurity(operation, context);
                 parseAndValidateParameters(operation, context);
                 await parseAndValidateBody(operation, context);

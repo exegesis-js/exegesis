@@ -5,13 +5,24 @@ import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
 import { ApiInterface, ResolvedPath } from '../types/internal';
-import { ParametersMap } from '../types';
+import { ParametersMap, JsonPath } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
-export default class OpenApi implements ApiInterface {
+export interface ResolvedOAS3 {
+    openApiDoc: oas3.OpenAPIObject;
+    serverObject: oas3.ServerObject | undefined;
+    pathPath: JsonPath;
+    pathObject: oas3.PathItemObject;
+    operationPath: JsonPath | undefined;
+    operationObject: oas3.OperationObject | undefined;
+    requestBodyMediaTypePath: JsonPath | undefined;
+    requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
+}
+
+export default class OpenApi implements ApiInterface<ResolvedOAS3> {
     private readonly _openApiDoc: oas3.OpenAPIObject;
     private readonly _options: ExgesisCompiledOptions;
     private _servers?: Servers;
@@ -52,7 +63,7 @@ export default class OpenApi implements ApiInterface {
         method: string,
         url: string,
         headers: http.IncomingHttpHeaders
-    ) : ResolvedPath | undefined {
+    ) : ResolvedPath<ResolvedOAS3> | undefined {
         const parsedUrl = parseUrl(url);
         const pathname = parsedUrl.pathname || '';
         const host = parsedUrl.hostname || headers['host'] || '';
@@ -127,7 +138,7 @@ export default class OpenApi implements ApiInterface {
 
                 return {
                     operation: resolvedOperation,
-                    openapi: {
+                    api: {
                         openApiDoc: this._openApiDoc,
                         serverObject: oaServer,
                         pathPath: path.context.path,

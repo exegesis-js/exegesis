@@ -10,11 +10,16 @@ import { ExgesisCompiledOptions } from '../options';
  * @param openApiDocFile - The file containing the OpenAPI document.
  * @returns - Returns the parsed OpenAPI document.
  */
-// TODO: Support promise or callback.
-export function compile(openApiDocFile: string, options: ExgesisCompiledOptions): Promise<OpenApi> {
+export function compile(
+    openApiDocFile: string | oas3.OpenAPIObject,
+    options: ExgesisCompiledOptions
+): Promise<OpenApi> {
     const refParser = new $RefParser();
 
-    return refParser.dereference(openApiDocFile, {dereference: {circular: false}})
+    return refParser.bundle(
+        openApiDocFile as any,
+        {dereference: {circular: false}}
+    )
     .then((openApiDoc: any) => {
         return new OpenApi(openApiDoc as oas3.OpenAPIObject, options);
     });
