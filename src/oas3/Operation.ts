@@ -1,5 +1,4 @@
 import pb from 'promise-breaker';
-import querystring from 'querystring';
 import * as oas3 from 'openapi3-ts';
 
 import {MimeTypeRegistry} from '../utils/mime';
@@ -7,8 +6,7 @@ import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
 import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
-import { ParserContext } from './parameterParsers/ParserContext';
-import { ValuesBag, parseParameters } from './parameterParsers';
+import { ValuesBag, parseParameterGroup, parseQueryParameters } from './parameterParsers';
 import {
     ParametersMap,
     ParametersByLocation,
@@ -18,7 +16,7 @@ import {
     ExegesisNamedSecurityScheme,
     ExegesisSecurityScheme
 } from '../types';
-import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
+import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID, EXEGESIS_ROLES } from './extensions';
 import { HttpError } from '../errors';
 
 // Returns a `{securityRequirements, requiredRoles}` object for the given operation.
@@ -149,31 +147,28 @@ export default class Operation {
         queryString: string | undefined
     }) : ParametersByLocation<ParametersMap<any>> {
         const {headers, rawPathParams, queryString} = params;
-        const ctx = new ParserContext(queryString);
 
-        const parsedQuery = queryString
-            ? querystring.parse(queryString, '&', '=', {decodeURIComponent: (val: string) => val})
-            : undefined;
-
-        // TODO: Can eek out a little more performance here by precomputing the parsers for each parameter group,
-        // since if there are no parameters in a group, we can just do nothing.
         return {
-            query: parsedQuery ? parseParameters(this._parameters.query, ctx, parsedQuery) : {},
-            header: headers ? parseParameters(this._parameters.header, ctx, headers) : {},
+            query: queryString ? parseQueryParameters(this._parameters.query, queryString) : {},
+            header: headers ? parseParameterGroup(this._parameters.header, headers) : {},
             server: params.serverParams || {},
-            path: rawPathParams ? parseParameters(this._parameters.path, ctx, rawPathParams) : {},
+            path: rawPathParams ? parseParameterGroup(this._parameters.path, rawPathParams) : {},
             cookie: {}
         };
     }
 
     validateParameters(parameterValues: ParametersByLocation<ParametersMap<any>>) : IValidationError[] | null {
-        const result: IValidationError[] | null = null;
+        let result: IValidationError[] | null = null;
         for(const parameterLocation of Object.keys(parameterValues)) {
             const parameters: Parameter[] = (this._parameters as any)[parameterLocation] as Parameter[];
             const values = (parameterValues as any)[parameterLocation] as ParametersMap<any>;
 
             for(const parameter of parameters) {
-                parameter.validate(values[parameter.oaParameter.name]);
+                const innerResult = parameter.validate(values[parameter.oaParameter.name]);
+                if(innerResult && innerResult.length > 0) {
+                    result = result || [];
+                    result = result.concat(innerResult);
+                }
             }
         }
 

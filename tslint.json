@@ -16,6 +16,7 @@
         "no-string-literal": false,
         "object-literal-shorthand": false,
         "object-literal-sort-keys": false,
+        "object-literal-key-quotes": false,
         "only-arrow-functions": false,
         "ordered-imports": false,
         "quotemark": [false, "single", "avoid-escape"],

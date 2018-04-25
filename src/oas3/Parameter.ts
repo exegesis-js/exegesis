@@ -1,13 +1,11 @@
-import inferTypes from './../utils/json-schema-infer-types';
-import {generateRequestValidator} from './Schema/validators';
-import { RawParameterParser, getParser, ValuesBag } from './parameterParsers';
+import { generateRequestValidator } from './Schema/validators';
+import { generateParser, ParameterParser } from './parameterParsers';
 import Oas3Context from './Oas3Context';
 
 import { isReferenceObject } from './oasUtils';
 import MediaType from './MediaType';
-import { ValidationError } from '../errors';
 
-import { ValidatorFunction, ParameterLocation, ErrorType, StringParser, oas3 } from '../types';
+import { ValidatorFunction, ParameterLocation, StringParser, oas3 } from '../types';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',
@@ -26,42 +24,15 @@ function generateSchemaParser(self: Parameter, schema: oas3.SchemaObject) {
         ? getDefaultExplode(style)
         : self.oaParameter.explode;
     const allowReserved = self.oaParameter.allowReserved || false;
-    const allowedTypes = inferTypes(schema);
-    return getParser(self.location, style, allowedTypes, {explode, allowReserved});
+
+    return generateParser({
+        required: self.oaParameter.required,
+        style,
+        explode,
+        allowReserved,
+        schema
+    });
 }
-
-function generateMediaTypeParser(
-    self: Parameter,
-    mediaTypeString: string,
-    mediaType: MediaType<StringParser>
-) {
-    const uriEncoded = self.oaParameter.in === 'query' || self.oaParameter.in === 'path';
-
-    return (values: ValuesBag) : any => {
-        try {
-            let value = values[self.oaParameter.name];
-            if(!value) {return value;}
-            if(uriEncoded) {
-                if(Array.isArray(value)) {
-                    value = value.map(decodeURIComponent);
-                } else {
-                    value = decodeURIComponent(value);
-                }
-            }
-            if(Array.isArray(value)) {
-                return value.map(mediaType.parser.parseString);
-            } else {
-                return mediaType.parser.parseString(value);
-            }
-        } catch (err) {
-            throw new ValidationError({
-                type: ErrorType.Error,
-                message: `Error parsing parameter ${self.oaParameter.name} of type ${mediaTypeString}: ` +
-                    err.message,
-                location: self.location
-            });
-        }
-    };}
 
 export default class Parameter {
     readonly context: Oas3Context;
@@ -74,7 +45,7 @@ export default class Parameter {
      * Parameter parser used to parse this parameter.
      */
     readonly name: string;
-    readonly parser: RawParameterParser;
+    readonly parser: ParameterParser;
 
     constructor(context: Oas3Context, oaParameter: oas3.ParameterObject | oas3.ReferenceObject) {
         const resOaParameter = isReferenceObject(oaParameter)
@@ -109,12 +80,19 @@ export default class Parameter {
             // FIXME: Extract schema?
             const mediaTypeString = Object.keys(resOaParameter.content)[0];
             const oaMediaType = resOaParameter.content[mediaTypeString];
-            const parser = context.options.parameterParsers.get(mediaTypeString);
 
+            const parser = context.options.parameterParsers.get(mediaTypeString);
             if(!parser) {
                 throw new Error('Unable to find suitable mime type parser for ' +
                     `type ${mediaTypeString} in ${context.jsonPointer}/content`);
             }
+
+            this.parser = generateParser({
+                required: resOaParameter.required || false,
+                contentType: mediaTypeString,
+                parser,
+                uriEncoded: ['query', 'path'].indexOf(resOaParameter.in) > -1
+            });
 
             const mediaType = new MediaType<StringParser>(
                 context.childContext(['content', mediaTypeString]),
@@ -124,8 +102,6 @@ export default class Parameter {
                 resOaParameter.required || false,
                 parser
             );
-
-            this.parser = generateMediaTypeParser(this, mediaTypeString, mediaType);
             this.validate = mediaType.validator.bind(mediaType);
         } else {
             throw new Error(`Parameter ${resOaParameter.name} should have a 'schema' or a 'content'`);

@@ -1,32 +1,37 @@
-import { ValidationError } from "../../errors";
-import { ErrorType, ParameterLocation } from "../../types";
+import ld from 'lodash';
 
-export function arrayToObject(values: string | string[], loc: ParameterLocation) {
+export function arrayToObject(values: string | string[] | undefined) {
+    if(!values) {
+        return values;
+    }
+
+    if(typeof values === 'string') {
+        // ???
+        return values;
+    }
+
     const result : any = {};
-    if(typeof values === 'string' || values instanceof String) {
-        throw new ValidationError({
-            type: ErrorType.Error,
-            message: `Parameter ${loc.name} in ${loc.in} should encode an object, but is not a list.`,
-            location: loc
-        });
-    }
-    if(values.length % 2 !== 0) {
-        throw new ValidationError({
-            type: ErrorType.Error,
-            message: `Parameter ${loc.name} in ${loc.in} should encode an object, but has odd number of fields.`,
-            location: loc
-        });
-    }
     for(let i = 0; i < values.length; i = i + 2) {
+        // Note if the array is an odd length, we'll end up with an "undefined" parameter at the end.
         result[values[i]] = values[i+1];
     }
+
     return result;
 }
 
-export function isArrayValidationError(values: string | string[], loc: ParameterLocation) : ValidationError {
-    throw new ValidationError({
-        type: ErrorType.Error,
-        message: `Expected single ${loc.in} for parameter ${loc.name} but found ${values.length}`,
-        location: loc
-    });
+// Converts all simple types that are not "string" into "string".
+export function removeSimpleTypes(allowedTypes: string[]) {
+    return ld.uniq(allowedTypes.map(t => {
+        if(t === 'object') {
+            return 'object';
+        } else if(t === 'array') {
+            return 'array';
+        } else {
+            return 'string';
+        }
+    }));
+}
+
+export function allowedTypesToMap(allowedTypes: string[]) : any {
+    return allowedTypes.reduce<any>((m, t) => {m[t] = true; return m;}, {});
 }
