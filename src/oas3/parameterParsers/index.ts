@@ -10,7 +10,7 @@ import { generatePathStyleParser } from './pathStyleParser';
 import {
     RawStringParameterParser,
     ParameterParser,
-    ValuesBag,
+    RawValues,
     ParameterDescriptor,
     MediaTypeParameterDescriptor,
     StyledParameterDescriptor
@@ -41,7 +41,7 @@ function generateMediaTypeParser(
 ) : ParameterParser {
     // request and response are here for application/x-www-form-urlencoded.
 
-    let answer : ParameterParser = (location: ParameterLocation, values: ValuesBag) : any => {
+    let answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
         try {
             let value = values[location.name];
             if(value === undefined || value === null) {return value;}
@@ -124,7 +124,7 @@ function requiredParameterWrapper(
 
     return function requiredParameter(
         location: ParameterLocation,
-        rawParamValues: ValuesBag,
+        rawParamValues: RawValues,
         rawValue: string,
         parserContext: any
     ) {
@@ -142,7 +142,7 @@ function requiredParameterWrapper(
 }
 
 function toStructuredParser(parser: RawStringParameterParser) {
-    return (location: ParameterLocation, rawParamValues: ValuesBag) => {
+    return (location: ParameterLocation, rawParamValues: RawValues) => {
         const value = rawParamValues[location.name];
         if(Array.isArray(value)) {
             return value.map(parser);
@@ -154,7 +154,7 @@ function toStructuredParser(parser: RawStringParameterParser) {
 
 function deepObjectParser(
     location: ParameterLocation,
-    _rawParamValues: ValuesBag,
+    _rawParamValues: RawValues,
     rawValue: string,
     parserContext: any
 ) : any {
@@ -170,7 +170,7 @@ function _parseParameterGroup(
         location: ParameterLocation,
         parser: ParameterParser
     }[],
-    rawValues: ValuesBag,
+    rawValues: RawValues,
     rawQueryString: string
 ) : ParametersMap<any> {
     const parserContext = {};
@@ -188,7 +188,7 @@ export function parseParameterGroup(
         location: ParameterLocation,
         parser: ParameterParser
     }[],
-    rawValues: ValuesBag
+    rawValues: RawValues
 ) : ParametersMap<any> {
     return _parseParameterGroup(params, rawValues, '');
 }

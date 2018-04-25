@@ -1,12 +1,12 @@
 // Implements 'spaceDelimited' and 'pipeDelimited' from OAS 3.
 
-import { ValuesBag } from './types';
+import { RawValues } from './types';
 import * as exegesisTypes from '../../types';
 
 export function generateDelimitedParser(delimiter: string) {
     return function delimitedParser(
         location: exegesisTypes.ParameterLocation,
-        rawParamValues: ValuesBag
+        rawParamValues: RawValues
     ) : string[] | undefined {
         const value = rawParamValues[location.name];
         if(value === null || value === undefined) {

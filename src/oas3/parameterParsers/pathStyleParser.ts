@@ -1,6 +1,6 @@
 import querystring from 'querystring';
 
-import { ParameterParser, ValuesBag } from "./types";
+import { ParameterParser, RawValues } from "./types";
 import { generateStructuredParser } from "./structuredParser";
 import { ParameterLocation } from '../../types';
 
@@ -15,7 +15,7 @@ function parsePathParameter(location: ParameterLocation, value: string, structur
 export function generatePathStyleParser(schema: any, explode: boolean) : ParameterParser {
     const structuredParser = generateStructuredParser(schema, explode);
 
-    return function pathStyleParser(location: ParameterLocation, rawParamValues: ValuesBag) : any {
+    return function pathStyleParser(location: ParameterLocation, rawParamValues: RawValues) : any {
         const value = rawParamValues[location.name];
         let answer;
         if(value === null || value === undefined) {

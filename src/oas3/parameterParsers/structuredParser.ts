@@ -1,6 +1,6 @@
 import ld from 'lodash';
 
-import { ParameterParser, ValuesBag } from './types';
+import { ParameterParser, RawValues } from './types';
 import { removeSimpleTypes, allowedTypesToMap } from './common';
 import inferTypes from '../../utils/json-schema-infer-types';
 import { simpleStringParser, simpleArrayParser, generateGenericSimpleParser } from './simpleStringParser';
@@ -36,7 +36,7 @@ export function generateStructuredParser(
 
 export function structuredStringParser(
     location: ParameterLocation,
-    rawParamValues: ValuesBag
+    rawParamValues: RawValues
 ): string | string[] | undefined {
     const value = rawParamValues[location.name];
     if(!value) {
@@ -51,7 +51,7 @@ export function structuredStringParser(
 
 export function structuredArrayParser(
     location: ParameterLocation,
-    rawParamValues: ValuesBag
+    rawParamValues: RawValues
 ): string | string[] | undefined {
     const value = rawParamValues[location.name];
     if(value === undefined || value === null) {
@@ -68,7 +68,7 @@ export function structuredArrayParser(
 
 export function explodedStructuredArrayParser(
     location: ParameterLocation,
-    rawParamValues: ValuesBag
+    rawParamValues: RawValues
 ): string | string[] | undefined {
     const value = rawParamValues[location.name];
     if(value === undefined || value === null) {
@@ -83,7 +83,7 @@ export function explodedStructuredArrayParser(
 function generateGenericStructuredParser(schema: any) : ParameterParser {
     const genericSimpleParser = generateGenericSimpleParser(schema, false);
 
-    return function genericStructuredParser(location: ParameterLocation, rawParamValues: ValuesBag) : any {
+    return function genericStructuredParser(location: ParameterLocation, rawParamValues: RawValues) : any {
         const value = rawParamValues[location.name];
         if(value === undefined || value === null) {
             return value;
@@ -97,7 +97,7 @@ function generateGenericStructuredParser(schema: any) : ParameterParser {
     };
 }
 
-function explodedKeysStructuredParser(values: ValuesBag) {
+function explodedKeysStructuredParser(values: RawValues) {
     return ld.mapValues(values, v => {
         if(Array.isArray(v)) {
             return v.map(decodeURIComponent);
@@ -113,7 +113,7 @@ function generateGenericExplodedStructuredParser(schema: any) {
     const allowedTypes = removeSimpleTypes(inferTypes(schema));
     const allowedTypesMap = allowedTypesToMap(allowedTypes);
 
-    return function genericStructuredParser(location: ParameterLocation, rawParamValues: ValuesBag) : any {
+    return function genericStructuredParser(location: ParameterLocation, rawParamValues: RawValues) : any {
         const value = rawParamValues[location.name];
         if(value === undefined || value === null) {
             if(allowedTypesMap.object) {

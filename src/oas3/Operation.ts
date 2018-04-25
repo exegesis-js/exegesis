@@ -6,7 +6,7 @@ import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
 import Oas3Context from './Oas3Context';
 import Parameter from './Parameter';
-import { ValuesBag, parseParameterGroup, parseQueryParameters } from './parameterParsers';
+import { RawValues, parseParameterGroup, parseQueryParameters } from './parameterParsers';
 import {
     ParametersMap,
     ParametersByLocation,
@@ -141,9 +141,9 @@ export default class Operation {
     }
 
     parseParameters(params : {
-        headers : ValuesBag | undefined,
-        rawPathParams: ValuesBag | undefined,
-        serverParams: ValuesBag | undefined,
+        headers : RawValues | undefined,
+        rawPathParams: RawValues | undefined,
+        serverParams: RawValues | undefined,
         queryString: string | undefined
     }) : ParametersByLocation<ParametersMap<any>> {
         const {headers, rawPathParams, queryString} = params;
