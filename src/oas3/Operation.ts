@@ -21,27 +21,44 @@ import {
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import { HttpError } from '../errors';
 
+// Returns a `{securityRequirements, requiredRoles}` object for the given operation.
 function getSecurityRequirements(
     context: Oas3Context, // Operation context.
     oaOperation: oas3.OperationObject
 ) {
     const securityRequirements = oaOperation.security || context.openApiDoc.security || {};
     const securityRequirementsLength = Object.keys(securityRequirements).length;
-    let requiredRoles = oaOperation['x-exegesis-roles'] || context.openApiDoc['x-exegesis-roles'] || [];
+    let requiredRoles = oaOperation[EXEGESIS_ROLES] || context.openApiDoc[EXEGESIS_ROLES] || [];
 
     if(requiredRoles && requiredRoles.length > 0 && (securityRequirementsLength === 0)) {
-        if(oaOperation.security && !oaOperation['x-exegesis-roles']) {
+        if(oaOperation.security && !oaOperation[EXEGESIS_ROLES]) {
             // Operation explicitly sets security to `{}`, but doesn't set
             // `x-exegesis-roles`.  This is OK - we'll ingore roles for this
             // case.
             requiredRoles = [];
         } else {
-            throw new Error(`Operation ${context.jsonPointer} requires ` +
-                `roles ${requiredRoles.join(',')} but has no security requirements.`);
+            throw new Error(`Operation ${context.jsonPointer} has no security requirements, but requires roles: ` +
+                requiredRoles.join(','));
         }
     }
 
+    if(typeof requiredRoles === 'string') {
+        requiredRoles = [requiredRoles];
+    } else if(!Array.isArray(requiredRoles)) {
+        const rolesPath = oaOperation[EXEGESIS_ROLES]
+            ? context.jsonPointer + `/${EXEGESIS_ROLES}`
+            : `/${EXEGESIS_ROLES}`;
+        throw new Error(`${rolesPath} must be an array of strings.`);
+    }
+
     return {securityRequirements, requiredRoles};
+}
+
+function getMissing(required: string[], have: string[] | undefined) {
+    if((!have || have.length === 0) && required.length > 0) {
+        return required;
+    }
+    return required.filter(r => have && have.indexOf(r) === -1);
 }
 
 export default class Operation {
@@ -77,7 +94,7 @@ export default class Operation {
 
         for(const schemeName of this.securitySchemeNames) {
             if(!context.options.securityPlugins.find(p => p.scheme === schemeName)) {
-                throw new Error(`Operation ${context.jsonPointer} references security scheme ${schemeName} ` +
+                throw new Error(`Operation ${context.jsonPointer} references security scheme "${schemeName}" ` +
                     `but no security plugin was provided.`);
             }
         }
@@ -185,17 +202,23 @@ export default class Operation {
                 continue;
             }
 
-            const missingRoles = this.requiredRoles.filter(role =>
-                authenticated && (!authenticated.roles || authenticated.roles.indexOf(role) === -1));
-
-            if(missingRoles.length > 0) {
+            const missingScopes = getMissing(this.securityRequirements[scheme], authenticated && authenticated.scopes);
+            if(missingScopes.length > 0) {
                 errors = errors || [];
-                errors.push(`Authenticated using ${scheme} but missing required roles ${missingRoles.join(', ')}.`);
+                errors.push(`Authenticated using '${scheme}' but missing required ` +
+                    `scopes: ${missingScopes.join(', ')}.`);
                 continue; // Try another authentication scheme.
             }
 
-            result = Object.assign({name: scheme}, authenticated);
+            const missingRoles = getMissing(this.requiredRoles, authenticated && authenticated.roles);
+            if(missingRoles.length > 0) {
+                errors = errors || [];
+                errors.push(`Authenticated using '${scheme}' but missing required roles: ${missingRoles.join(', ')}.`);
+                continue; // Try another authentication scheme.
+            }
 
+            // Success!
+            result = Object.assign({name: scheme}, authenticated);
             break;
         }
 
