@@ -59,12 +59,55 @@ function getMissing(required: string[], have: string[] | undefined) {
     return required.filter(r => have && have.indexOf(r) === -1);
 }
 
+function validateController(
+    context: Oas3Context,
+    controller: string | undefined,
+    operationId: string | undefined
+) {
+    if(!controller && !context.options.allowMissingControllers) {
+        throw new Error(`Missing ${EXEGESIS_CONTROLLER} for ${context.jsonPointer}`);
+    }
+    if(!operationId && !context.options.allowMissingControllers) {
+        throw new Error(`Missing operationId or ${EXEGESIS_OPERATION_ID} for ${context.jsonPointer}`);
+    }
+    if(controller && operationId) {
+        if(!context.options.controllers[controller]) {
+            throw new Error(`Could not find controller ${controller} defined in ${context.jsonPointer}`);
+        } else if(!context.options.controllers[controller][operationId]) {
+            throw new Error(`Could not find operation ${controller}#${operationId} defined in ${context.jsonPointer}`);
+        }
+    }
+}
+
+/*
+ * Validate that all operations/request bodies have a controller and
+ * operationId defined.
+ */
+function validateControllers(
+    context: Oas3Context,
+    requestBody: oas3.RequestBodyObject | undefined,
+    opController: string | undefined,
+    operationId: string | undefined
+) {
+    if(requestBody) {
+        for(const mediaType of Object.keys(requestBody.content)) {
+            const mediaContext = context.childContext(['requestBody', 'content', mediaType]);
+            const mediaTypeObject = requestBody.content[mediaType];
+            const mediaController = mediaTypeObject[EXEGESIS_CONTROLLER] || opController;
+            const mediaOperationId = mediaTypeObject[EXEGESIS_OPERATION_ID] || operationId;
+            validateController(mediaContext, mediaController, mediaOperationId);
+        }
+    } else {
+        validateController(context, opController, operationId);
+    }
+}
+
 export default class Operation {
     readonly context: Oas3Context;
     readonly oaOperation: oas3.OperationObject;
     readonly oaPath: oas3.PathItemObject;
-    readonly exegesisController: string;
-    readonly operationId: string;
+    readonly exegesisController: string | undefined;
+    readonly operationId: string | undefined;
     readonly securitySchemeNames: string[];
     readonly securityRequirements: oas3.SecurityRequirementObject;
     readonly requiredRoles: string[];
@@ -100,11 +143,19 @@ export default class Operation {
         const requestBody = oaOperation.requestBody &&
             (context.resolveRef(oaOperation.requestBody) as oas3.RequestBodyObject);
 
+        validateControllers(
+            context,
+            requestBody,
+            this.exegesisController,
+            this.operationId
+        );
+
         if(requestBody && requestBody.content) {
+            const contentContext = context.childContext(['requestBody', 'content']);
             // FIX: This should not be a map of MediaTypes, but a map of request bodies.
             // Request body has a "required" flag, which we are currently ignoring.
             this._requestBodyContentTypes = contentToMediaTypeRegistry<BodyParser>(
-                context.childContext(['requestBody', 'content']),
+                contentContext,
                 context.options.bodyParsers,
                 'body',
                 requestBody.required || false,

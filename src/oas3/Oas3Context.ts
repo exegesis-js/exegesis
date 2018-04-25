@@ -5,7 +5,7 @@ import { pathToJsonPointer } from '../utils/jsonPaths';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
 
 import { JsonPath } from '../types';
-import { ExgesisCompiledOptions } from '../types/internal';
+import { ExgesisCompiledOptions } from '../options';
 
 /**
  * This has common stuff that we want to pass all the way down through the OAS

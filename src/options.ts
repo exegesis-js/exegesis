@@ -5,8 +5,19 @@ import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
 import { loadControllersSync } from './controllers/loadControllers';
 
-import { CustomFormats, ExegesisOptions, StringParser, BodyParser } from './types';
-import { ExgesisCompiledOptions } from './types/internal';
+import { CustomFormats, ExegesisOptions, StringParser, BodyParser, Controllers, SecurityPlugins } from './types';
+
+export interface ExgesisCompiledOptions {
+    customFormats: CustomFormats;
+    controllers: Controllers;
+    securityPlugins: SecurityPlugins;
+    bodyParsers: MimeTypeRegistry<BodyParser>;
+    parameterParsers: MimeTypeRegistry<StringParser>;
+    maxParameters: number;
+    defaultMaxBodySize: number;
+    ignoreServers: boolean;
+    allowMissingControllers: boolean;
+}
 
 const INT_32_MAX = 2**32 - 1;
  // Actually 18446744073709551616-1, but Javascript doesn't handle integers this large.
@@ -67,6 +78,10 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         ? loadControllersSync(options.controllers)
         : options.controllers || {};
 
+    const allowMissingControllers = 'allowMissingControllers' in options
+        ? !!options.allowMissingControllers
+        : true;
+
     return {
         bodyParsers,
         controllers,
@@ -75,6 +90,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         parameterParsers,
         maxParameters: options.maxParameters || 10000,
         defaultMaxBodySize: maxBodySize,
-        ignoreServers: options.ignoreServers || false
+        ignoreServers: options.ignoreServers || false,
+        allowMissingControllers
     };
 }

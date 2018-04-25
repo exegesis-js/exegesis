@@ -2,11 +2,7 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
 import {
-    Controllers,
-    CustomFormats,
-    StringParser,
     BodyParser,
-    SecurityPlugins,
     ParametersByLocation,
     ParametersMap,
     IValidationError,
@@ -16,18 +12,6 @@ import {
     ExegesisContext,
     JsonPath
 } from '.';
-import { MimeTypeRegistry } from "../utils/mime";
-
-export interface ExgesisCompiledOptions {
-    customFormats: CustomFormats;
-    controllers: Controllers;
-    securityPlugins: SecurityPlugins;
-    bodyParsers: MimeTypeRegistry<BodyParser>;
-    parameterParsers: MimeTypeRegistry<StringParser>;
-    maxParameters: number;
-    defaultMaxBodySize: number;
-    ignoreServers: boolean;
-}
 
 export type ParsedParameterValidator =
     ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null);

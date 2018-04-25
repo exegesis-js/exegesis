@@ -81,10 +81,20 @@ export interface ExegesisOptions {
     maxParameters?: number;
 
     /**
-     * If a bodyParser does not support
-     * `parseStream()`, this defines the maximum size of a body that will be
-     * parsed by (most) built-in body parsers.  Note that some body parsers
-     * may ignore this value, or pass a stream object directly as the body.
+     * If a bodyParser does not support `parseStream()`, this defines the
+     * maximum size of a body that will be parsed by built-in body
+     * parsers.  Note that some body parsers may ignore this value, or pass a
+     * stream object directly as the body.
      */
     defaultMaxBodySize?: number;
+
+    /**
+     * If false, then if any operations do not define a controller,
+     * Exegesis will raise an error when the API is being compiled.  If
+     * true, then Exegesis will simply pretend any operations that don't
+     * have a controller do not exist, and will not handle them.
+     *
+     * Defaults to true.
+     */
+    allowMissingControllers?: boolean;
 }

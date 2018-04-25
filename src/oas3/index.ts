@@ -2,7 +2,7 @@ import $RefParser from 'json-schema-ref-parser';
 import oas3 from 'openapi3-ts';
 
 import OpenApi from './OpenApi';
-import { ExgesisCompiledOptions } from '../types/internal';
+import { ExgesisCompiledOptions } from '../options';
 
 /**
  * Reads an OpenAPI document from a YAML or JSON file.

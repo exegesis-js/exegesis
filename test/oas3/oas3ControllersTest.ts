@@ -6,6 +6,7 @@ import { compileOptions } from '../../src/options';
 import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 import { invokeController } from '../../src/controllers/invoke';
 import { ExegesisContext } from '../../src';
+import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from '../../src/oas3/extensions';
 
 // "Integration tests" which check to veryify we can match a path and extract
 // various kinds of parameters correctly.
@@ -48,7 +49,10 @@ const controllers = {
     }
 };
 
-const options = compileOptions({controllers});
+const options = compileOptions({
+    controllers,
+    allowMissingControllers: true
+});
 
 async function findControllerTest(method: string, controllerLocation: string, operationLocation: string) {
     const context: ExegesisContext = ({} as any);
@@ -135,6 +139,48 @@ describe('oas3 integration controller extensions', function() {
             controllerName: undefined,
             operationId: undefined,
             controller: undefined
+        });
+    });
+
+    it('should throw an error if there is a controller defined, but it does not exist', function() {
+        const openApiDoc = generateOpenApi();
+        openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'idonotexist';
+        openApiDoc.paths['/path'].get.operationId = 'idonotexist';
+
+        expect(
+            () => new OpenApi(openApiDoc, options)
+        ).to.throw('Could not find controller idonotexist defined in /paths/~1path/get');
+    });
+
+    it('should throw an error if there is an operationId defined, but it does not exist', function() {
+        const openApiDoc = generateOpenApi();
+        openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'myController';
+        openApiDoc.paths['/path'].get.operationId = 'idonotexist';
+
+        expect(
+            () => new OpenApi(openApiDoc, options)
+        ).to.throw('Could not find operation myController#idonotexist defined in /paths/~1path/get');
+    });
+
+    describe('allowMissingControllers: false', function() {
+        const options2 = compileOptions({
+            controllers,
+            allowMissingControllers: false
+        });
+
+        it('should error if an operation has no controller defined', function() {
+            const openApiDoc = generateOpenApi();
+            expect(
+                () => new OpenApi(openApiDoc, options2)
+            ).to.throw(`Missing ${EXEGESIS_CONTROLLER} for /paths/~1path/get`);
+        });
+
+        it('should error if an operation has no operationId', function() {
+            const openApiDoc = generateOpenApi();
+            openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'myController';
+            expect(
+                () => new OpenApi(openApiDoc, options2)
+            ).to.throw(`Missing operationId or ${EXEGESIS_OPERATION_ID} for /paths/~1path/get`);
         });
     });
 });

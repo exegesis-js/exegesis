@@ -94,10 +94,12 @@ describe('oas3 Operation', function() {
         });
 
         it('should fail to authenticate an incoming request if no credentials are provided', async function() {
-            const options = {securityPlugins: [
-                {scheme: 'basicAuth', plugin() {return undefined;}},
-                {scheme: 'oauth', plugin() {return undefined;}}
-            ]};
+            const options = {
+                securityPlugins: [
+                    {scheme: 'basicAuth', plugin() {return undefined;}},
+                    {scheme: 'oauth', plugin() {return undefined;}}
+                ]
+            };
 
             const operation: Operation = makeOperation({}, 'get', this.operation, options);
             await expect(
@@ -124,10 +126,12 @@ describe('oas3 Operation', function() {
         });
 
         it('should always authenticate a request with no security requirements', async function() {
-            const options = {securityPlugins: [
-                {scheme: 'basicAuth', plugin() {return undefined;}},
-                {scheme: 'oauth', plugin() {return undefined;}}
-            ]};
+            const options = {
+                securityPlugins: [
+                    {scheme: 'basicAuth', plugin() {return undefined;}},
+                    {scheme: 'oauth', plugin() {return undefined;}}
+                ]
+            };
             this.operation.security = {};
             this.operation[EXEGESIS_ROLES] = [];
 
