@@ -5,7 +5,7 @@ import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
 import { ApiInterface, ResolvedPath } from '../types/internal';
-import { ParametersMap, JsonPath } from '../types';
+import { ParametersMap } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3Context from './Oas3Context';
@@ -13,12 +13,13 @@ import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
 export interface ResolvedOAS3 {
     openApiDoc: oas3.OpenAPIObject;
+    serverPtr: string | undefined;
     serverObject: oas3.ServerObject | undefined;
-    pathPath: JsonPath;
-    pathObject: oas3.PathItemObject;
-    operationPath: JsonPath | undefined;
+    pathItemPtr: string;
+    pathItemObject: oas3.PathItemObject;
+    operationPtr: string | undefined;
     operationObject: oas3.OperationObject | undefined;
-    requestBodyMediaTypePath: JsonPath | undefined;
+    requestBodyMediaTypePtr: string | undefined;
     requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
 }
 
@@ -140,12 +141,13 @@ export default class OpenApi implements ApiInterface<ResolvedOAS3> {
                     operation: resolvedOperation,
                     api: {
                         openApiDoc: this._openApiDoc,
+                        serverPtr: undefined, // FIXME
                         serverObject: oaServer,
-                        pathPath: path.context.path,
-                        pathObject: path.oaPath,
-                        operationPath: operation && operation.context.path,
+                        pathItemPtr: path.context.jsonPointer,
+                        pathItemObject: path.oaPath,
+                        operationPtr: operation && operation.context.jsonPointer,
                         operationObject: operation && operation.oaOperation,
-                        requestBodyMediaTypePath: mediaType && mediaType.context.path,
+                        requestBodyMediaTypePtr: mediaType && mediaType.context.jsonPointer,
                         requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType
                     }
                 };

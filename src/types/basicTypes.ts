@@ -1,4 +1,8 @@
+import * as http from 'http';
+
 export type Callback<T> = (err?: Error | null | undefined, value?: T) => void;
+
+export type MiddlewareFunction = (req: HttpIncomingMessage, res: http.ServerResponse, next: Callback<void>) => void;
 
 /**
  * A path to an object within a JSON document.
@@ -30,4 +34,8 @@ export interface ParametersByLocation<T> {
  */
 export interface ParametersMap<T> {
     [key: string]: T;
+}
+
+export interface HttpIncomingMessage extends http.IncomingMessage {
+    body?: any;
 }

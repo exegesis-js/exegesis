@@ -3,9 +3,18 @@ import ld from 'lodash';
 import { MimeTypeRegistry } from "./utils/mime";
 import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
+import BodyParserWrapper from './bodyParsers/BodyParserWrapper';
 import { loadControllersSync } from './controllers/loadControllers';
 
-import { CustomFormats, ExegesisOptions, StringParser, BodyParser, Controllers, SecurityPlugins } from './types';
+import {
+    CustomFormats,
+    ExegesisOptions,
+    StringParser,
+    BodyParser,
+    Controllers,
+    SecurityPlugins,
+    MimeTypeParser
+} from './types';
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
@@ -13,7 +22,6 @@ export interface ExgesisCompiledOptions {
     securityPlugins: SecurityPlugins;
     bodyParsers: MimeTypeRegistry<BodyParser>;
     parameterParsers: MimeTypeRegistry<StringParser>;
-    maxParameters: number;
     defaultMaxBodySize: number;
     ignoreServers: boolean;
     allowMissingControllers: boolean;
@@ -64,9 +72,16 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         options.mimeTypeParsers || {}
     );
 
-    const bodyParsers = new MimeTypeRegistry<BodyParser>(
-        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseReq) as {[mimeType: string]: BodyParser}
-    );
+    const wrappedBodyParsers = ld.mapValues(mimeTypeParsers, (p: MimeTypeParser) => {
+        if(p.parseReq) {
+            return p;
+        } else if(p.parseString) {
+            return new BodyParserWrapper(p, maxBodySize);
+        } else {
+            return undefined;
+        }
+    });
+    const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
     const parameterParsers = new MimeTypeRegistry<StringParser>(
         ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {[mimeType: string]: StringParser}
@@ -74,8 +89,9 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
 
     const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
 
+    const contollersPattern = options.controllersPattern || '**/*.js';
     const controllers = typeof(options.controllers) === 'string'
-        ? loadControllersSync(options.controllers)
+        ? loadControllersSync(options.controllers, contollersPattern)
         : options.controllers || {};
 
     const allowMissingControllers = 'allowMissingControllers' in options
@@ -88,7 +104,6 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         securityPlugins: options.securityPlugins || [],
         customFormats,
         parameterParsers,
-        maxParameters: options.maxParameters || 10000,
         defaultMaxBodySize: maxBodySize,
         ignoreServers: options.ignoreServers || false,
         allowMissingControllers

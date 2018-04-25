@@ -4,13 +4,14 @@ import {
     ParametersByLocation,
     ParametersMap,
     ExegesisContext,
-    ExegesisSecurityScheme
+    ExegesisSecurityScheme,
+    HttpIncomingMessage
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
 import { HttpError } from '../errors';
 
 export default class ExegesisContextImpl<T> implements ExegesisContext {
-    readonly req: http.IncomingMessage;
+    readonly req: HttpIncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponseImpl;
     params: ParametersByLocation<ParametersMap<any>> | undefined;
@@ -24,7 +25,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext {
         res: http.ServerResponse, // http2.Http2ServerResponse,
         api: T,
     ) {
-        this.req = req;
+        this.req = req as HttpIncomingMessage;
         this.origRes = res;
         this.res = new ExegesisResponseImpl(res);
         this.api = api;
@@ -34,4 +35,10 @@ export default class ExegesisContextImpl<T> implements ExegesisContext {
         return new HttpError(statusCode, message);
     }
 
+    /**
+     * Returns true if the response has already been sent.
+     */
+    isResponseFinished() {
+        return this.res.ended || this.origRes.headersSent;
+    }
 }

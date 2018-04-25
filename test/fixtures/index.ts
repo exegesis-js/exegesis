@@ -1,7 +1,8 @@
-import * as options from '../src/options';
 import * as oas3 from 'openapi3-ts';
-import Oas3Context from '../src/oas3/Oas3Context';
-import { jsonPointerToPath } from '../src/utils/jsonPaths';
+
+import * as options from '../../src/options';
+import Oas3Context from '../../src/oas3/Oas3Context';
+import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 
 export const defaultCompiledOptions : options.ExgesisCompiledOptions = options.compileOptions();
 

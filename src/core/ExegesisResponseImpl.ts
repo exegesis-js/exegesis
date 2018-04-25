@@ -1,12 +1,12 @@
 import * as http from 'http';
 import * as http2 from 'http2'; // TODO: Is this going to cause interop problems with older versions of node.js?
 import * as net from 'net';
-import { ExegesisResponse } from '../types';
+import { ExegesisResponse, HttpHeaders } from '../types';
 
 export default class ExegesisResponseImpl implements ExegesisResponse {
     statusCode: number = 200;
     statusMessage: string | undefined = undefined;
-    headers: http.OutgoingHttpHeaders = {};
+    headers: HttpHeaders = Object.create({});
     _body: any = undefined;
     ended: boolean = false;
     connection: net.Socket;
@@ -23,12 +23,12 @@ export default class ExegesisResponseImpl implements ExegesisResponse {
         return this;
     }
 
-    header(header: string, value: number | string | string[] | undefined) {
+    header(header: string, value: number | string | string[]) {
         this.setHeader(header, value);
         return this;
     }
 
-    set(header: string, value: number | string | string[] | undefined) {
+    set(header: string, value: number | string | string[]) {
         this.setHeader(header, value);
         return this;
     }
@@ -39,6 +39,15 @@ export default class ExegesisResponseImpl implements ExegesisResponse {
         }
         this.body = json;
         this.ended = true;
+    }
+
+    setBody(body: any) : this {
+        if(this.ended) {
+            throw new Error("Trying to set body after response has been ended.");
+        }
+        this.body = body;
+        this.ended = true;
+        return this;
     }
 
     set body(body: any) {
@@ -54,7 +63,7 @@ export default class ExegesisResponseImpl implements ExegesisResponse {
         this.ended = true;
     }
 
-    setHeader(name: string, value: number | string | string[] | undefined) {
+    setHeader(name: string, value: number | string | string[]) {
         if(this.ended) {
             throw new Error("Trying to set header after response has been ended.");
         }

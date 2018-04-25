@@ -1,8 +1,8 @@
 import http from 'http';
-import { Callback } from './basicTypes';
+import { Callback, HttpIncomingMessage } from './basicTypes';
 
 // Stolen from @types/connect#NextHandleFunction.
-export type ReqParserFunction = (req: http.IncomingMessage, res: http.ServerResponse, next: Callback<void>) => void;
+export type ReqParserFunction = (req: HttpIncomingMessage, res: http.ServerResponse, next: Callback<any>) => void;
 
 export type StringParserFunction = (encoded: string) => any;
 
@@ -27,7 +27,7 @@ export interface BodyParser {
      *   function can ignore the body and just call `next()`.
      * @param res - The response object.  Well behaved body parsers should *not*
      *   write anything to the response or modify it in any way.
-     * @param done - Callback to call when complete.  If no value is returned
+     * @param next - Callback to call when complete.  If no value is returned
      *   via the callback then `req.body` will be used.
      */
     parseReq: ReqParserFunction;

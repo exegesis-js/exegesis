@@ -1,5 +1,4 @@
 import * as http from 'http';
-import * as oas3 from 'openapi3-ts';
 
 import {
     BodyParser,
@@ -10,23 +9,10 @@ import {
     ValidatorFunction,
     Controller,
     ExegesisContext,
-    JsonPath
 } from '.';
 
 export type ParsedParameterValidator =
     ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null);
-
-// This bit is OAS3 specific.  May change in future versions.
-export interface ResolvedOAS3 {
-    openApiDoc: oas3.OpenAPIObject;
-    serverObject: oas3.ServerObject | undefined;
-    pathPath: JsonPath;
-    pathObject: oas3.PathItemObject;
-    operationPath: JsonPath | undefined;
-    operationObject: oas3.OperationObject | undefined;
-    requestBodyMediaTypePath: JsonPath | undefined;
-    requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
-}
 
 export interface ResolvedOperation {
     parseParameters: (() => ParametersByLocation<ParametersMap<any>>);
@@ -41,16 +27,16 @@ export interface ResolvedOperation {
     // responseContentType?;
 }
 
-export interface ResolvedPath {
+export interface ResolvedPath<T> {
     operation: ResolvedOperation | undefined;
-    openapi: ResolvedOAS3;
+    api: T;
 }
 
 // ApiInterface provides an interface into the `oas3` subdirectory.  The idea here is,
 // when `oas4` comes along we can support it by writing a new `oas4` subdirectory
 // that implements this same interface, and then we'll be able to support oas4
 // wihtout changing anything.  (We'll see if this actually works.  :P)
-export interface ApiInterface {
+export interface ApiInterface<T> {
     /**
      * Resolve an incoming request.
      *
@@ -63,5 +49,5 @@ export interface ApiInterface {
         method: string,
         url: string,
         headers: http.IncomingHttpHeaders
-    ) : ResolvedPath | undefined;
+    ) : ResolvedPath<T> | undefined;
 }

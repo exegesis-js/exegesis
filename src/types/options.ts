@@ -35,10 +35,9 @@ export interface CustomFormats {
 export interface ExegesisOptions {
     /**
      * A hash where keys are either mime types or  mimetype wildcards
-     * (e.g. 'application/*'), and values are MimeTypeParsers.  Any
-     * MimeTypeParser which implements `parseString()` will be used for parsing
-     * parameters.  Any which implements `parseReq()` will be used for parsing
-     * requests.
+     * (e.g. 'application/*'), and values are MimeTypeParsers.  In order to be
+     * used for parsing parameters, a MimeTypeParser must implement
+     * `parseString()`.
      */
     mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
 
@@ -50,12 +49,20 @@ export interface ExegesisOptions {
     securityPlugins?: SecurityPlugins;
 
     /**
-     * Either a glob for controller modules, or a hash where keys are
-     * controller file names and values are modules.  If this is not provided,
-     * then Exegesis will never resolve a controller when calling
+     * Either a folder which contains controller modules, or a hash where keys
+     * are controller names and values are modules.  If this is not
+     * provided, then Exegesis will never resolve a controller when calling
      * `ApiInterface.resolve()`.
      */
     controllers?: string | Controllers;
+
+    /**
+     * If `controllers` is a folder name, then this is a glob pattern used to
+     * load controllers (e.g. `**\/*.@(ts|js)` to allow both Typescript and
+     * Javascript files to be used as controllers.)  If `controllers` is
+     * not a folder name, this is ignored.
+     */
+    controllersPattern?: string;
 
     /**
      * A hash where keys are format names.  Values can be one of:
@@ -75,16 +82,10 @@ export interface ExegesisOptions {
     ignoreServers?: boolean;
 
     /**
-     * The maximum number of properties to parse from a query string or
-     * parameter.  Defaults to 1000.
-     */
-    maxParameters?: number;
-
-    /**
-     * If a bodyParser does not support `parseStream()`, this defines the
-     * maximum size of a body that will be parsed by built-in body
-     * parsers.  Note that some body parsers may ignore this value, or pass a
-     * stream object directly as the body.
+     * If a `MimeTypeParser` provided in `mimeTypeParsers` does not support
+     * `parseReq()`, this defines the maximum size of a body that will be parsed.
+     * Bodies longer than this will result in a "413 - Payload Too Large" error.
+     * Built in body parsers will also respect this option.
      */
     defaultMaxBodySize?: number;
 

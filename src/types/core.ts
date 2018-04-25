@@ -1,6 +1,5 @@
 import * as http from 'http';
 import * as net from 'net';
-import { Readable } from 'stream';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
 
@@ -21,10 +20,14 @@ export type CallbackSecurityPlugin =
 export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
 export type SecurityPlugins = {scheme: string, plugin: SecurityPlugin}[];
 
+export interface HttpHeaders {
+    [header: string]: number | string | string[];
+}
+
 export interface ExegesisResponse {
     statusCode: number;
     statusMessage: string | undefined;
-    headers: http.OutgoingHttpHeaders;
+    headers: HttpHeaders;
     body: any;
     connection: net.Socket;
     ended: boolean;
@@ -37,7 +40,7 @@ export interface ExegesisResponse {
     setHeader(name: string, value: number | string | string[] | undefined) : void;
     getHeader(name: string) : number | string | string[] | undefined;
     getHeaderNames() : string[];
-    getHeaders() : http.OutgoingHttpHeaders;
+    getHeaders() : HttpHeaders;
     hasHeader(name: string) : boolean;
     removeHeader(name: string) : void;
 }
@@ -53,6 +56,11 @@ export interface ExegesisContext {
     body?: any;
 
     makeError(statusCode: number, message: string) : Error;
+
+    /**
+     * Returns true if the response has already been sent.
+     */
+    isResponseFinished() : boolean;
 }
 
 export type PromiseController = (context: ExegesisContext) => any;
@@ -76,9 +84,9 @@ export type Plugin = PromisePlugin | CallbackPlugin;
  * Result returned by the exegesisRunner.
  */
 export interface HttpResult {
-    headers: {[key: string]: string | string[] | number | undefined};
+    headers: {[key: string]: string | string[] | number};
     status: number;
-    body: Readable | undefined;
+    body: NodeJS.ReadableStream | undefined;
 }
 
 /**

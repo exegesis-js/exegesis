@@ -6,9 +6,10 @@ import * as oas3 from 'openapi3-ts';
 import Operation from '../../src/oas3/Operation';
 import Oas3Context from '../../src/oas3/Oas3Context';
 import { makeOpenApiDoc } from '../fixtures';
-import { ExegesisOptions, ExegesisContext } from '../../src';
+import { ExegesisOptions } from '../../src';
 import { compileOptions } from '../../src/options';
 import { EXEGESIS_ROLES } from '../../src/oas3/extensions';
+import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 
 chai.use(chaiAsPromised);
 const {expect} = chai;
@@ -38,10 +39,10 @@ describe('oas3 Operation', function() {
         beforeEach(function() {
             this.operation = {
                 responses: {200: {description: "ok"}},
-                security: {
-                    basicAuth: [],
-                    oauth: ['admin']
-                },
+                security: [
+                    {basicAuth: []},
+                    {oauth: ['admin']}
+                ],
                 [EXEGESIS_ROLES]: ['bacon']
             };
         });
@@ -58,7 +59,7 @@ describe('oas3 Operation', function() {
             delete this.operation.security;
             delete this.operation[EXEGESIS_ROLES];
             const operation: Operation = makeOperation({
-                security: {basicAuth: []},
+                security: [{basicAuth: []}],
                 [EXEGESIS_ROLES]: ['fish']
             }, 'get', this.operation);
 
@@ -68,7 +69,7 @@ describe('oas3 Operation', function() {
 
         it('should correctly override the security requirements for an operation', function() {
             const operation: Operation = makeOperation({
-                security: {basicAuth: []},
+                security: [{basicAuth: []}],
                 [EXEGESIS_ROLES]: ['fish']
             }, 'get', this.operation);
             expect(operation.securitySchemeNames).to.eql(['basicAuth', 'oauth']);
@@ -86,7 +87,8 @@ describe('oas3 Operation', function() {
 
         it('should authenticate an incoming request', async function() {
             const operation: Operation = makeOperation({}, 'get', this.operation);
-            const authenticated = await operation.authenticate({} as ExegesisContext);
+            const context = new FakeExegesisContext();
+            const authenticated = await operation.authenticate(context);
             expect(authenticated).to.exist;
             expect(authenticated!.name).to.equal('oauth');
             expect(authenticated!.roles).to.eql(['bacon']);
@@ -102,16 +104,18 @@ describe('oas3 Operation', function() {
             };
 
             const operation: Operation = makeOperation({}, 'get', this.operation, options);
+            const context = new FakeExegesisContext();
             await expect(
-                operation.authenticate({} as ExegesisContext)
+                operation.authenticate(context)
             ).to.be.rejectedWith('Must authorize using one of the following schemes basicAuth, oauth');
         });
 
         it('should fail to auth an incoming request if the user does not have the correct roles', async function() {
             this.operation[EXEGESIS_ROLES] = ['roleYouDontHave'];
             const operation: Operation = makeOperation({}, 'get', this.operation);
+            const context = new FakeExegesisContext();
             await expect(
-                operation.authenticate({} as ExegesisContext)
+                operation.authenticate(context)
             ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: roleYouDontHave.");
         });
 
@@ -120,8 +124,9 @@ describe('oas3 Operation', function() {
                 oauth: ['scopeYouDontHave']
             };
             const operation: Operation = makeOperation({}, 'get', this.operation);
+            const context = new FakeExegesisContext();
             await expect(
-                operation.authenticate({} as ExegesisContext)
+                operation.authenticate(context)
             ).to.be.rejectedWith("Authenticated using 'oauth' but missing required scopes: scopeYouDontHave.");
         });
 
@@ -136,7 +141,8 @@ describe('oas3 Operation', function() {
             this.operation[EXEGESIS_ROLES] = [];
 
             const operation: Operation = makeOperation({}, 'get', this.operation, options);
-            const authenticated = await operation.authenticate({} as ExegesisContext);
+            const context = new FakeExegesisContext();
+            const authenticated = await operation.authenticate(context);
             expect(authenticated).to.equal(undefined);
         });
 

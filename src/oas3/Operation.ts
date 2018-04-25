@@ -237,6 +237,11 @@ export default class Operation {
         let result : ExegesisNamedSecurityScheme | undefined;
 
         for(const {scheme, plugin} of this.context.options.securityPlugins) {
+            if(context.isResponseFinished()) {
+                // Some plugin has written a response.  We're done.
+                break;
+            }
+
             if(!this.securityRequirements[scheme]) {
                 // This operation doesn't want the scheme - don't bother calling it.
                 continue;

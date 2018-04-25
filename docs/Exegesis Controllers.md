@@ -12,7 +12,21 @@
 
 ## Writing Controllers
 
-Exegesis controllers are functions that take in a context, and produce a result to return to the client.
+Exegesis controllers are functions that take in a context, and produce a result
+to return to the client.  This is one of the simplest controllers you can
+write:
+
+```js
+export function myController(context) {
+    const name = context.params.query.name;
+    return {message: `Hello ${name}`};
+}
+```
+
+This will return the object provided as a JSON response.  You can return a
+JSON object, a string, a buffer, or a readble stream.  You can also more
+explicitly set the body by setting `res.body` or calling `res.setBody()`
+or `res.json()`:
 
 ```js
 export function myController(context) {
@@ -20,11 +34,9 @@ export function myController(context) {
     context.res
         .status(200)
         .setHeader('content-type', 'application/json');
-    return {message: `Hello ${name}`};
+        .setBody({message: `Hello ${name}`});
 }
 ```
-
-You can return a JSON object, a string, a buffer, or a readble stream.
 
 Controllers can be asynchronous, supporting either callbacks or Promises:
 
@@ -35,6 +47,16 @@ export function myAsyncController(context, callback) {
 
 export function myPromiseController(context) {
     return Promise.resolve({message: 'Hello World!'});
+}
+```
+
+Controllers can, of course, also return non-JSON data:
+
+```js
+export function myController(context) {
+    const name = context.params.query.name;
+    context.res
+    return {message: `Hello ${name}`};
 }
 ```
 
@@ -88,6 +110,33 @@ Exegesis will start from the Media Type Object specified by a given request, and
 
 ## What's in a Context?
 
-- `context.req` - The Node `http.IncomingMessage` from Node.js, or `http2.Http2ServerRequest` if using http2.
-- `context.res` - TODO
-- `context.params` - This is a `{query, header, path, cookie}` object.  Each member is a hash where keys are parameter names, and values are the parsed parameters.
+- `context.req` - The Node `http.IncomingMessage` from Node.js.
+- `context.res` - A `Exegesis Response` object.  This is very similar to a
+  `http.ServerResponse`, and has many functions that will be familiar if you're
+  used to express.
+- `context.origRes` - This is the original `http.ServerResponse` from Node.js.
+  In general you should not write directly to `context.origRes`.  Exegesis will
+  be unable to do response validation if you write directly to the origRes
+  object.
+- `context.params` - This is a `{query, header, path, server, cookie}` object.
+  Each member is a hash where keys are parameter names, and values are the
+  parsed parameters.
+- `context.body` - The parsed message body, if one is present.
+- `context.security` - A `{user, roles, scope}` object, as returned by a
+  [security plugin](./OAS3%20Security.md).
+- `context.user` - An alias for `context.security.user`.
+- `context.api` - This is an object containing details about which parts of
+  the OpenAPI document were resolved to service your request.  For OAS3 this
+  will be an object with the following fields:
+
+  - `openApiDoc` - The OpenAPI document for your API.  This is a "bundled" object,
+    with all extenral $refs resolved, and only internal $refs remaining.
+  - `serverObject` - The Server Object which was matched.
+  - `serverPtr` - A JSON Pointer to the server object in `openApiDoc`.
+  - `pathItemObject` - The Path Item Object which was matched.
+  - `pathItemPath` - A JSON Pointer to the path item object.
+  - `operationObject` - The matched Operation Object.
+  - `operationPtr` - A JSON Pointer to the Operation Object.
+  - `requestBodyMediaTypeObject` - The matched MediaType Object from the operation's
+    `requestBody`, or null if none was matched or the Operation has no requestBody.
+  - `requestBodyMediaTypePtr` - A JSON Pointer to the MediaType Object.

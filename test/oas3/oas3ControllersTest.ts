@@ -5,8 +5,8 @@ import OpenApi from '../../src/oas3/OpenApi';
 import { compileOptions } from '../../src/options';
 import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 import { invokeController } from '../../src/controllers/invoke';
-import { ExegesisContext } from '../../src';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from '../../src/oas3/extensions';
+import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 
 // "Integration tests" which check to veryify we can match a path and extract
 // various kinds of parameters correctly.
@@ -55,7 +55,7 @@ const options = compileOptions({
 });
 
 async function findControllerTest(method: string, controllerLocation: string, operationLocation: string) {
-    const context: ExegesisContext = ({} as any);
+    const context = new FakeExegesisContext();
     const openApiDoc = generateOpenApi();
     ld.set(openApiDoc, jsonPointerToPath(controllerLocation), 'myController');
     ld.set(openApiDoc, jsonPointerToPath(operationLocation), 'op');
