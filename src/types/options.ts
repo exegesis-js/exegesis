@@ -1,4 +1,4 @@
-import { MimeTypeParser } from './bodyParser';
+import { StringParser, BodyParser } from './bodyParser';
 import { Controllers, SecurityPlugins } from './core';
 
 /**
@@ -35,11 +35,11 @@ export interface CustomFormats {
 export interface ExegesisOptions {
     /**
      * A hash where keys are either mime types or  mimetype wildcards
-     * (e.g. 'application/*'), and values are MimeTypeParsers.  In order to be
-     * used for parsing parameters, a MimeTypeParser must implement
-     * `parseString()`.
+     * (e.g. 'application/*'), and values are StringParsers, BodyParsers, or
+     * MimeTypeParsers.  In order to be used for parsing parameters, a
+     * parser must implement `parseString()`.
      */
-    mimeTypeParsers?: {[mimeType: string]: MimeTypeParser};
+    mimeTypeParsers?: {[mimeType: string]: StringParser | BodyParser};
 
     /**
      * An array of security plugins.  See

@@ -74,15 +74,17 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         options.mimeTypeParsers || {}
     );
 
-    const wrappedBodyParsers = ld.mapValues(mimeTypeParsers, (p: MimeTypeParser) => {
-        if(p.parseReq) {
-            return p;
-        } else if(p.parseString) {
-            return new BodyParserWrapper(p, maxBodySize);
-        } else {
-            return undefined;
+    const wrappedBodyParsers = ld.mapValues<MimeTypeParser, BodyParser | undefined>(
+        mimeTypeParsers, (p: MimeTypeParser) => {
+            if(p.parseReq) {
+                return p;
+            } else if(p.parseString) {
+                return new BodyParserWrapper(p, maxBodySize);
+            } else {
+                return undefined;
+            }
         }
-    });
+    );
     const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
     const parameterParsers = new MimeTypeRegistry<StringParser>(

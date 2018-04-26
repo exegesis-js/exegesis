@@ -61,13 +61,13 @@ for details.
 ## mimeTypeParsers
 
 A hash where keys are either mime types or mimetype wildcards (e.g. 'text/*'),
-and values are `MimeTypeParser`s.
+and values are parsers.
 
 This option is used to control how Exegesis parses message bodies and certain
 parameters.  By default, parsers are provided for 'text/*' and
 'application/json'.
 
-A `MimeTypeParser` is either an object of the form:
+A parser is either an object of the form:
 
 ```js
 {
@@ -103,8 +103,8 @@ Or:
 }
 ```
 
-In order to be used for parsing parameters, a MimeTypeParser must implement
-`parseString()`.  A MimeTypeParser that does not implement `parseReq()` can
+In order to be used for parsing parameters, a parser must implement
+`parseString()`.  A parser that does not implement `parseReq()` can
 still be used for parsing request bodies.
 
 ## defaultMaxBodySize
