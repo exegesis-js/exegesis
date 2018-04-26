@@ -13,8 +13,8 @@ import {
     BodyParser,
     IValidationError,
     ExegesisContext,
-    ExegesisNamedSecurityScheme,
-    ExegesisSecurityScheme
+    ExegesisAuthenticated,
+    Dictionary
 } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID, EXEGESIS_ROLES } from './extensions';
 import { HttpError } from '../errors';
@@ -24,11 +24,10 @@ function getSecurityRequirements(
     context: Oas3Context, // Operation context.
     oaOperation: oas3.OperationObject
 ) {
-    const securityRequirements = oaOperation.security || context.openApiDoc.security || {};
-    const securityRequirementsLength = Object.keys(securityRequirements).length;
+    const securityRequirements = (oaOperation.security || context.openApiDoc.security || []);
     let requiredRoles = oaOperation[EXEGESIS_ROLES] || context.openApiDoc[EXEGESIS_ROLES] || [];
 
-    if(requiredRoles && requiredRoles.length > 0 && (securityRequirementsLength === 0)) {
+    if(requiredRoles && requiredRoles.length > 0 && (securityRequirements.length === 0)) {
         if(oaOperation.security && !oaOperation[EXEGESIS_ROLES]) {
             // Operation explicitly sets security to `{}`, but doesn't set
             // `x-exegesis-roles`.  This is OK - we'll ingore roles for this
@@ -108,8 +107,7 @@ export default class Operation {
     readonly oaPath: oas3.PathItemObject;
     readonly exegesisController: string | undefined;
     readonly operationId: string | undefined;
-    readonly securitySchemeNames: string[];
-    readonly securityRequirements: oas3.SecurityRequirementObject;
+    readonly securityRequirements: oas3.SecurityRequirementObject[];
     readonly requiredRoles: string[];
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
@@ -129,14 +127,15 @@ export default class Operation {
         this.operationId = oaOperation[EXEGESIS_OPERATION_ID] || oaOperation.operationId;
 
         const security = getSecurityRequirements(context, oaOperation);
-        this.securitySchemeNames = Object.keys(security.securityRequirements);
         this.securityRequirements = security.securityRequirements;
         this.requiredRoles = security.requiredRoles;
 
-        for(const schemeName of this.securitySchemeNames) {
-            if(!context.options.securityPlugins.find(p => p.scheme === schemeName)) {
-                throw new Error(`Operation ${context.jsonPointer} references security scheme "${schemeName}" ` +
-                    `but no security plugin was provided.`);
+        for(const securityRequirement of this.securityRequirements) {
+            for(const schemeName of Object.keys(securityRequirement)) {
+                if(!context.options.securityPlugins[schemeName]) {
+                    throw new Error(`Operation ${context.jsonPointer} references security scheme "${schemeName}" ` +
+                        `but no security plugin was provided.`);
+                }
             }
         }
 
@@ -226,60 +225,100 @@ export default class Operation {
         return result;
     }
 
-    async authenticate(context: ExegesisContext) : Promise<ExegesisNamedSecurityScheme | undefined> {
-        if(this.securitySchemeNames.length === 0) {
+    private async _checkSecurityRequirement(
+        triedSchemes : Dictionary<ExegesisAuthenticated | null>,
+        errors: string[],
+        securityRequirement: oas3.SecurityRequirementObject,
+        exegesisContext: ExegesisContext
+    ) {
+        const requiredSchemes = Object.keys(securityRequirement);
+
+        const result : Dictionary<any> = Object.create(null);
+        let failed = false;
+
+        for(const scheme of requiredSchemes) {
+            if(exegesisContext.isResponseFinished()) {
+                // Some plugin has written a response.  We're done.  :(
+                failed = true;
+                break;
+            }
+
+            if(!(scheme in triedSchemes)) {
+                const plugin = this.context.options.securityPlugins[scheme];
+                triedSchemes[scheme] = await pb.call(plugin, null, exegesisContext);
+            }
+            const authenticated = triedSchemes[scheme];
+
+            if(!authenticated) {
+                // Couldn't authenticate.  Try the next one.
+                failed = true;
+                break;
+            }
+
+            const missingScopes = getMissing(securityRequirement[scheme], authenticated.scopes);
+            if(missingScopes.length > 0) {
+                failed = true;
+                errors.push(`Authenticated using '${scheme}' but missing required ` +
+                    `scopes: ${missingScopes.join(', ')}.`);
+                break;
+            }
+
+            const missingRoles = getMissing(this.requiredRoles, authenticated.roles);
+            if(missingRoles.length > 0) {
+                failed = true;
+                errors.push(`Authenticated using '${scheme}' but missing required ` +
+                  `roles: ${missingRoles.join(', ')}.`);
+                break;
+            }
+
+            result[scheme] = authenticated;
+        }
+
+        if(failed) {
+            return undefined;
+        } else {
+            return result;
+        }
+    }
+
+    async authenticate(exegesisContext: ExegesisContext) : Promise<Dictionary<ExegesisAuthenticated> | undefined> {
+        if(this.securityRequirements.length === 0) {
             // No auth required
             return undefined;
         }
 
-        let errors: string[] | undefined;
-        let authenticated : ExegesisSecurityScheme | undefined;
-        let result : ExegesisNamedSecurityScheme | undefined;
+        const errors: string[] = [];
+        let result : Dictionary<ExegesisAuthenticated> | undefined;
 
-        for(const {scheme, plugin} of this.context.options.securityPlugins) {
-            if(context.isResponseFinished()) {
-                // Some plugin has written a response.  We're done.
+        const triedSchemes : Dictionary<ExegesisAuthenticated> = Object.create(null);
+
+        for(const securityRequirement of this.securityRequirements) {
+            result = await this._checkSecurityRequirement(
+                triedSchemes,
+                errors,
+                securityRequirement,
+                exegesisContext
+            );
+
+            if(result || exegesisContext.isResponseFinished()) {
+                // We're done!
                 break;
             }
-
-            if(!this.securityRequirements[scheme]) {
-                // This operation doesn't want the scheme - don't bother calling it.
-                continue;
-            }
-
-            authenticated = await pb.call(plugin, null, context);
-            if(!authenticated) {
-                // Couldn't authenticate.  Try the next one.
-                continue;
-            }
-
-            const missingScopes = getMissing(this.securityRequirements[scheme], authenticated && authenticated.scopes);
-            if(missingScopes.length > 0) {
-                errors = errors || [];
-                errors.push(`Authenticated using '${scheme}' but missing required ` +
-                    `scopes: ${missingScopes.join(', ')}.`);
-                continue; // Try another authentication scheme.
-            }
-
-            const missingRoles = getMissing(this.requiredRoles, authenticated && authenticated.roles);
-            if(missingRoles.length > 0) {
-                errors = errors || [];
-                errors.push(`Authenticated using '${scheme}' but missing required roles: ${missingRoles.join(', ')}.`);
-                continue; // Try another authentication scheme.
-            }
-
-            // Success!
-            result = Object.assign({name: scheme}, authenticated);
-            break;
         }
 
         if(result) {
+            // Successs!
             return result;
-        } else if(errors) {
+        } else if(errors.length > 0) {
             throw new HttpError(403, errors.join('\n'));
         } else {
-            throw new HttpError(401, `Must authorize using one of the following ` +
-                `schemes ${this.securitySchemeNames.join(', ')}`);
+            const authSchemes = this.securityRequirements
+                .map(requirement => {
+                    const schemes = Object.keys(requirement);
+                    return schemes.length === 1 ? schemes[0] : `(${schemes.join(' + ')})`;
+                })
+                .join(', ');
+            throw new HttpError(401, `Must authenticate using one of the following schemes: ${authSchemes}.`);
         }
     }
 }

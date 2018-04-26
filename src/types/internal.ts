@@ -5,10 +5,11 @@ import {
     ParametersByLocation,
     ParametersMap,
     IValidationError,
-    ExegesisNamedSecurityScheme,
     ValidatorFunction,
     Controller,
     ExegesisContext,
+    Dictionary,
+    ExegesisAuthenticated,
 } from '.';
 
 export type ParsedParameterValidator =
@@ -22,7 +23,7 @@ export interface ResolvedOperation {
     exegesisControllerName: string | undefined;
     operationId: string | undefined;
     controller: Controller | undefined;
-    authenticate(context: ExegesisContext) : Promise<ExegesisNamedSecurityScheme | undefined>;
+    authenticate(context: ExegesisContext) : Promise<Dictionary<ExegesisAuthenticated> | undefined>;
     // responseValidator;
     // responseContentType?;
 }

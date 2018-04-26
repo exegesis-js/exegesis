@@ -1,12 +1,12 @@
 import * as http from 'http';
 import * as http2 from 'http2'; // TODO: Is this going to cause interop problems with older versions of node.js?
 import * as net from 'net';
-import { ExegesisResponse, HttpHeaders } from '../types';
+import * as types from '../types';
 
-export default class ExegesisResponseImpl implements ExegesisResponse {
+export default class ExegesisResponseImpl implements types.ExegesisResponse {
     statusCode: number = 200;
     statusMessage: string | undefined = undefined;
-    headers: HttpHeaders = Object.create({});
+    headers: types.HttpHeaders = Object.create(null);
     _body: any = undefined;
     ended: boolean = false;
     connection: net.Socket;

@@ -13,7 +13,9 @@ import {
     BodyParser,
     Controllers,
     SecurityPlugins,
-    MimeTypeParser
+    MimeTypeParser,
+    SecurityPlugin,
+    Dictionary
 } from './types';
 
 export interface ExgesisCompiledOptions {
@@ -98,10 +100,12 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         ? !!options.allowMissingControllers
         : true;
 
+    const securityPlugins : Dictionary<SecurityPlugin> = options.securityPlugins || {};
+
     return {
         bodyParsers,
         controllers,
-        securityPlugins: options.securityPlugins || [],
+        securityPlugins,
         customFormats,
         parameterParsers,
         defaultMaxBodySize: maxBodySize,

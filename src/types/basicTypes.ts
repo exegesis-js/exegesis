@@ -4,6 +4,10 @@ export type Callback<T> = (err?: Error | null | undefined, value?: T) => void;
 
 export type MiddlewareFunction = (req: HttpIncomingMessage, res: http.ServerResponse, next: Callback<void>) => void;
 
+export interface Dictionary<T> {
+    [key: string]: T;
+}
+
 /**
  * A path to an object within a JSON document.
  */

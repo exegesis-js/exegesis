@@ -4,7 +4,7 @@ import {
     ParametersByLocation,
     ParametersMap,
     ExegesisContext,
-    ExegesisSecurityScheme,
+    ExegesisAuthenticated,
     HttpIncomingMessage
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
@@ -16,7 +16,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext {
     readonly res: ExegesisResponseImpl;
     params: ParametersByLocation<ParametersMap<any>> | undefined;
     body: any;
-    security: ExegesisSecurityScheme | undefined;
+    security: ExegesisAuthenticated | undefined;
     user: any | undefined;
     api: T;
 

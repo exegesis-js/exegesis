@@ -3,22 +3,20 @@ import * as net from 'net';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
 
-export interface ExegesisSecurityScheme {
+export interface ExegesisAuthenticated {
     user?: any;
     roles? : string[] | undefined;
     scopes? : string[] | undefined;
 }
 
-export interface ExegesisNamedSecurityScheme extends ExegesisSecurityScheme {
-    name: string;
-}
-
 export type PromiseSecurityPlugin =
-    (context: ExegesisContext) => ExegesisSecurityScheme | undefined | Promise<ExegesisSecurityScheme>;
+    (context: ExegesisContext) => ExegesisAuthenticated | undefined | Promise<ExegesisAuthenticated>;
 export type CallbackSecurityPlugin =
-    (context: ExegesisContext, done: Callback<ExegesisSecurityScheme | undefined>) => void;
+    (context: ExegesisContext, done: Callback<ExegesisAuthenticated | undefined>) => void;
 export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
-export type SecurityPlugins = {scheme: string, plugin: SecurityPlugin}[];
+export interface SecurityPlugins {
+    [scheme: string]: SecurityPlugin;
+}
 
 export interface HttpHeaders {
     [header: string]: number | string | string[];
@@ -50,7 +48,7 @@ export interface ExegesisContext {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: ExegesisSecurityScheme;
+    security?: ExegesisAuthenticated;
     user?: any;
     params?: ParametersByLocation<ParametersMap<any>>;
     body?: any;

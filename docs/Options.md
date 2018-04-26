@@ -54,7 +54,8 @@ Defaults to true.
 
 ## securityPlugins
 
-An array of security plugins.  See [Security Plugins](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md)
+An hash of security plugins.  Keys are security scheme names from your
+OpenAPI document, values are Security Plugin functions.  See [Security Plugins](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md)
 for details.
 
 ## mimeTypeParsers

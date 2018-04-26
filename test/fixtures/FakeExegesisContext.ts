@@ -2,7 +2,7 @@ import * as http from 'http';
 import {
     ExegesisContext,
     ExegesisResponse,
-    ExegesisSecurityScheme,
+    ExegesisAuthenticated,
     ParametersByLocation,
     ParametersMap
 } from "../../src";
@@ -14,7 +14,7 @@ export default class FakeExegesisContext implements ExegesisContext {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: ExegesisSecurityScheme;
+    security?: ExegesisAuthenticated;
     user?: any;
     params?: ParametersByLocation<ParametersMap<any>>;
     body?: any;

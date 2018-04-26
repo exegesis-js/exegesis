@@ -1,33 +1,38 @@
 # OAS3 Security
 
-Security in OAS3 is governed by the [Security Requirement Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securityRequirementObject),
-which defines a list of named authentication methods.  Exegesis also has a
-vendor extension, "x-exegesis-roles", which is an array of strings which adds
-support for restricting which operations are available to which users after they
-have been authenticated.
+Each operation in OAS3 can have a list of [Security Requirement Objects](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securityRequirementObject)
+associated with it, in `security` (or inherited from the root document's `security`).
+Each security requirement object has a list of security schemes; in order to
+access an operation, a request must satisfy all security schemes for at least
+one of the objects in the list.
 
-A Security Plugin is a function which, given a context, returns a
-`{user, roles, scopes}` object, or `undefined` if the user couldn't be
-matched.  `user` is an arbitrary object representing the authenticated user; it
-will be made available to the controller via `context.user`.  `roles` is a list
-of roles which the user has, and `scopes` is a list of OAuth scopes the user is
-authorized for.
+Exegesis also has a vendor extension, "x-exegesis-roles", which is an array of
+strings which adds support for restricting which operations are available to
+which users after they have been authenticated.
 
-Security plugins will be run, in the order they are specified in the options,
-until either a plugin is found that returns a match (and which satisfies
-"x-exegesis-roles", if specified), or all plugins have been run.  If a match
-is found, the object returned by the security plugin will be available to
-controllers via `context.security` (along with an additional `name` field which
-gives the name of the security scheme which matched).  Also, `context.user` will
-be the user object returned by the plugin.
+When compiling your API, Exegesis will takes a `securityPlugins` option which
+maps security schemes to Security Plugins.  A Security Plugin is a function
+which, given a context, returns a `{user, roles, scopes}` object, or `undefined`
+if the scheme couldn't be satisfied.  `user` is an arbitrary object representing
+the authenticated user; it will be made available to the controller via the
+context.  `roles` is a list of roles which the user has, and `scopes` is a list
+of OAuth scopes the user is authorized for.
 
-Security plugins are always run prior to parameter and body parsing (if we fail
-to meet security requirements, we don't want to waste time parsing and
-validation; we're a busy server with requests to serve).
+When Exegesis routes a request, it will run the relevant Security Plugins and
+decide whether or not to allow the request.  Note that if an operation has
+no `security`, then no plugins will be run.
 
-## OpenAPI Security Schemes
+If a request successfully matches a security requirement object (and all plugins
+satisfy "x-exegesis-roles" if it is specified), then Exegesis will create a
+`context.security` object with the details of the matched schemes.  This
+will be available to the controller which handles the operation.
 
-An OpenAPI document has security schemes defined in `/components/securitySchemes`:
+Security plugins are run prior to body parsing, however the body is available
+via the async function `context.getBody()` if it is needed.
+
+## An Example
+
+Here's an example of the securitySchemes section from an OpenAPI document:
 
 ```yaml
   securitySchemes:
@@ -46,9 +51,7 @@ An OpenAPI document has security schemes defined in `/components/securitySchemes
             readWrite: "Read/write scope."
 ```
 
-And then operations have a list of security requirements (or default security
-requirements can be set at the root level for all operations).  Exegesis also
-allows you to specify a set of "roles" for each operation:
+And then operations have a list of security requirements:
 
 ```yaml
 paths:
@@ -56,13 +59,13 @@ paths:
     get:
         description: Get a list of kittens
         security:
-            basicAuth: []
-            oauth: ['readOnly']
+            - basicAuth: []
+            - oauth: ['readOnly']
     post:
         description: Add a new kitten
         security:
-            basicAuth: []
-            oauth: ['readWrite']
+            - basicAuth: []
+            - oauth: ['readWrite']
         x-exegesis-roles: ['admin'] # Only users with the "admin" role may call this.
 ```
 
@@ -71,10 +74,14 @@ listed security requirements.  The "post" operation can only be executed if
 the security requirements are matched, and the current "user" has the "admin"
 role.
 
+If a user authenticated using `basicAuth`, then the controller would have
+access to the object returned by the Security Plugin via
+`context.security.basicAuth`.
+
 ## Security Plugins
 
-Exegesis handles security with security plugins.  These are very similar to
-controllers, except their roll is to return an authenticated user:
+Security plguins are very similar to controllers, except their roll is to
+return an authenticated user:
 
 ```js
 import basicAuth from 'basic-auth';
