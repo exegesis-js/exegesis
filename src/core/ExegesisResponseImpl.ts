@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as http2 from 'http2'; // TODO: Is this going to cause interop problems with older versions of node.js?
 import * as net from 'net';
 import * as types from '../types';
+import { HttpHeaders } from '../types';
 
 export default class ExegesisResponseImpl implements types.ExegesisResponse {
     statusCode: number = 200;
@@ -91,5 +92,19 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
             throw new Error("Trying to remove header after response has been ended.");
         }
         delete this.headers[name];
+    }
+
+    writeHead(statusCode: number, statusMessage?: string | HttpHeaders, headers?: HttpHeaders) {
+        if(statusMessage && typeof(statusMessage) !== 'string') {
+            headers = statusMessage;
+            statusMessage = undefined;
+        }
+        this.statusCode = statusCode;
+
+        if(headers) {
+            for(const headerName of Object.keys(headers)) {
+                this.setHeader(headerName, headers[headerName]);
+            }
+        }
     }
 }

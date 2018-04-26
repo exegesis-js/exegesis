@@ -26,15 +26,26 @@ import * as exegesis from 'exegesis';
 
 // See https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md
 const options = {
-  controllers: './src/controllers'
+    controllers: './src/controllers'
 };
 
 const middleware = exegesis.compileApi(
-  path.resolve(__dirname, './openapi/openapi.yaml'),
-  options
+    path.resolve(__dirname, './openapi/openapi.yaml'),
+    options
 );
 
-const server = http.createServer(middleware).listen(3000);
+const server = http.createServer(
+    (req, res) =>
+        middleware(req, res, (err) => {
+            if(err) {
+               res.writeHead(500);
+               res.end(`Internal error: ${err.message}`);
+            } else {
+                res.writeHead(404);
+                res.end();
+            }
+        });
+).listen(3000);
 ```
 
 See [options documentation](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md) for details about options.

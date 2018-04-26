@@ -41,6 +41,8 @@ export interface ExegesisResponse {
     getHeaders() : HttpHeaders;
     hasHeader(name: string) : boolean;
     removeHeader(name: string) : void;
+    writeHead(statusCode: number, headers?: HttpHeaders) : void;
+    writeHead(statusCode: number, statusMessage?: string, headers?: HttpHeaders) : void;
 }
 
 export interface ExegesisContext {
@@ -82,7 +84,7 @@ export type Plugin = PromisePlugin | CallbackPlugin;
  * Result returned by the exegesisRunner.
  */
 export interface HttpResult {
-    headers: {[key: string]: string | string[] | number};
+    headers: HttpHeaders;
     status: number;
     body: NodeJS.ReadableStream | undefined;
 }
