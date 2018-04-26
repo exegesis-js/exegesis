@@ -56,9 +56,14 @@ Controllers can, of course, also return non-JSON data:
 export function myController(context) {
     const name = context.params.query.name;
     context.res
-    return {message: `Hello ${name}`};
+        .status(200)
+        .setHeader('content-type', 'text/xml')
+        .setBody(`<message>Hello ${name}</message>`);
 }
 ```
+
+Note, however, that response validation will not be done if the body is not a
+JSON object.
 
 ## Specifying a Controller to Run
 
