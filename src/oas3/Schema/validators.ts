@@ -39,6 +39,16 @@ function addCustomFormats(ajv: Ajv.Ajv, customFormats: CustomFormats) : {[k: str
         }, {});
 }
 
+function removeExamples(schema: any) {
+    // ajv will print "schema id ignored" to stdout if an example contains a filed
+    // named "id", so just axe all the examples.
+    traveseSchema(schema, (childSchema: any) => {
+        if(childSchema.example) {
+            delete childSchema.example;
+        }
+    });
+}
+
 export function _fixNullables(schema: any) {
     traveseSchema(schema, (childSchema: any) => {
         if(schema.properties) {
@@ -91,6 +101,7 @@ function generateValidator(
 
     const schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonPointer(schemaPath));
     _filterRequiredProperties(schema, propNameToFilter);
+    removeExamples(schema);
     // TODO: Should we do this?  Or should we rely on the schema being correct in the first place?
     // _fixNullables(schema);
 
