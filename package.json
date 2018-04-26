@@ -4,9 +4,14 @@
   "description": "Parses OpenAPI documents",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*"
+  ],
   "scripts": {
     "test": "npm run build && npm run test:lint && npm run test:unittest",
     "build": "tsc",
+    "clean": "rm -rf lib types coverage",
     "test:unittest": "tsc -p test && nyc mocha 'test/**/*.@(ts|js)'",
     "test:lint": "npm run test:lint:source && npm run test:lint:markdown && npm run test:lint:tests",
     "test:lint:source": "tslint -c tslint.json -t stylish 'src/**/*.ts'",
@@ -40,6 +45,7 @@
     "@types/body-parser": "^1.16.8",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
+    "@types/content-type": "^1.1.2",
     "@types/glob": "^5.0.35",
     "@types/json-schema": "^6.0.1",
     "@types/lodash": "^4.14.106",
@@ -61,7 +67,6 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@types/content-type": "^1.1.2",
     "ajv": "^6.4.0",
     "body-parser": "^1.18.2",
     "content-type": "^1.0.4",
@@ -74,6 +79,7 @@
     "promise-breaker": "^4.1.8",
     "pump": "^3.0.0",
     "qs": "^6.5.1",
-    "raw-body": "^2.3.2"
+    "raw-body": "^2.3.2",
+    "semver": "^5.5.0"
   }
 }
