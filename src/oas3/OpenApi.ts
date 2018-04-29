@@ -74,9 +74,6 @@ export default class OpenApi implements ApiInterface<ResolvedOAS3> {
         let oaServer : oas3.ServerObject | undefined;
         let serverParams : ParametersMap<string | string[]> | undefined;
 
-        // FIXME: Different paths and operations can have their own servers object.
-        // Need to first resolve the server, and then use the server to resolve
-        // the path.
         if(!this._servers) {
             pathToResolve = pathname;
         } else {

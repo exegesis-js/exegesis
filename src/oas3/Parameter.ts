@@ -6,6 +6,8 @@ import { isReferenceObject } from './oasUtils';
 import MediaType from './MediaType';
 
 import { ValidatorFunction, ParameterLocation, StringParser, oas3 } from '../types';
+import { extractSchema } from '../utils/jsonSchema';
+import { JSONSchema6, JSONSchema4 } from 'json-schema';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',
@@ -18,7 +20,7 @@ function getDefaultExplode(style: string) : boolean {
     return style === 'form';
 }
 
-function generateSchemaParser(self: Parameter, schema: oas3.SchemaObject) {
+function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6) {
     const style = self.oaParameter.style || DEFAULT_STYLE[self.oaParameter.in];
     const explode = (self.oaParameter.explode === null || self.oaParameter.explode === undefined)
         ? getDefaultExplode(style)
@@ -66,18 +68,17 @@ export default class Parameter {
 
         // Find the schema for this parameter.
         if(resOaParameter.schema) {
-            // FIXME: Extract schema?
-            const schema = context.resolveRef(resOaParameter.schema) as oas3.SchemaObject;
-            this.parser = generateSchemaParser(this, schema);
-            this.validate = generateRequestValidator(
-                context.childContext('schema'),
-                this.location,
-                resOaParameter.required || false
+            const schemaContext = context.childContext('schema');
+            const schema = extractSchema(
+                context.openApiDoc,
+                schemaContext.jsonPointer,
+                {resolveRef: context.resolveRef.bind(context)}
             );
+            this.parser = generateSchemaParser(this, schema);
+            this.validate = generateRequestValidator(schemaContext, this.location, resOaParameter.required || false);
 
         } else if(resOaParameter.content) {
             // `parameter.content` must have exactly one key
-            // FIXME: Extract schema?
             const mediaTypeString = Object.keys(resOaParameter.content)[0];
             const oaMediaType = resOaParameter.content[mediaTypeString];
 
@@ -87,6 +88,8 @@ export default class Parameter {
                     `type ${mediaTypeString} in ${context.jsonPointer}/content`);
             }
 
+            // FIXME: We don't handle 'application/x-www-form-urlencoded' here
+            // correctly.
             this.parser = generateParser({
                 required: resOaParameter.required || false,
                 contentType: mediaTypeString,
