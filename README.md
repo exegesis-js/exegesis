@@ -26,26 +26,36 @@ import * as exegesis from 'exegesis';
 
 // See https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md
 const options = {
-    controllers: './src/controllers'
+    controllers: path.resolve(__dirname, './src/controllers')
 };
 
-const middleware = exegesis.compileApi(
+// `compileApi()` can either be used with a callback, or if none is provided,
+// will return a Promise.
+exegesis.compileApi(
     path.resolve(__dirname, './openapi/openapi.yaml'),
-    options
-);
+    options,
+    (err, middleware) => {
+        if(err) {
+            console.error("Error creating middleware", err.stack);
+            process.exit(1);
+        }
 
-const server = http.createServer(
-    (req, res) =>
-        middleware(req, res, (err) => {
-            if(err) {
-               res.writeHead(500);
-               res.end(`Internal error: ${err.message}`);
-            } else {
-                res.writeHead(404);
-                res.end();
-            }
-        });
-).listen(3000);
+        const server = http.createServer(
+            (req, res) =>
+                middleware(req, res, (err) => {
+                    if(err) {
+                       res.writeHead(500);
+                       res.end(`Internal error: ${err.message}`);
+                    } else {
+                        res.writeHead(404);
+                        res.end();
+                    }
+                })
+        );
+
+        server.listen(3000);
+    }
+);
 ```
 
 See [options documentation](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md) for details about options.

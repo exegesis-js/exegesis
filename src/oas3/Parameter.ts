@@ -55,7 +55,8 @@ export default class Parameter {
         this.location = {
             in: resOaParameter.in,
             name: resOaParameter.name,
-            docPath: context.path
+            docPath: context.path,
+            path: []
         };
         this.name = resOaParameter.name;
 
@@ -70,8 +71,7 @@ export default class Parameter {
             this.parser = generateSchemaParser(this, schema);
             this.validate = generateRequestValidator(
                 context.childContext('schema'),
-                resOaParameter.in,
-                resOaParameter.name,
+                this.location,
                 resOaParameter.required || false
             );
 
@@ -97,8 +97,7 @@ export default class Parameter {
             const mediaType = new MediaType<StringParser>(
                 context.childContext(['content', mediaTypeString]),
                 oaMediaType,
-                resOaParameter.in,
-                resOaParameter.name,
+                this.location,
                 resOaParameter.required || false,
                 parser
             );

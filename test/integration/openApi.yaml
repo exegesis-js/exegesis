@@ -1,0 +1,42 @@
+openapi: "3.0.1"
+info:
+  version: 1.0.0
+  title: Exegesis Integration Test
+  license:
+    name: MIT
+paths:
+  /greet:
+    get:
+      summary: List all pets
+      x-exegesis-controller: greetController
+      operationId: greetGet
+      parameters:
+        - name: name
+          in: query
+          description: Name of user to greet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema:
+                required:
+                  - greeting
+                properties:
+                  greeting: {type: string}
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Error:
+      required:
+        - message
+      properties:
+        message: {type: string}

@@ -45,15 +45,13 @@ export interface ExegesisResponse {
     writeHead(statusCode: number, statusMessage?: string, headers?: HttpHeaders) : void;
 }
 
-export interface ExegesisContext {
+export interface ExegesisContextBase {
     readonly req: http.IncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
     security?: ExegesisAuthenticated;
     user?: any;
-    params?: ParametersByLocation<ParametersMap<any>>;
-    body?: any;
 
     makeError(statusCode: number, message: string) : Error;
 
@@ -61,6 +59,33 @@ export interface ExegesisContext {
      * Returns true if the response has already been sent.
      */
     isResponseFinished() : boolean;
+}
+
+export interface ExegesisPluginContext {
+    readonly req: http.IncomingMessage;
+    readonly origRes: http.ServerResponse;
+    readonly res: ExegesisResponse;
+    api: any;
+    security?: ExegesisAuthenticated;
+    user?: any;
+
+    getParams() : Promise<ParametersByLocation<ParametersMap<any>>>;
+    getParams(done: Callback<ParametersByLocation<ParametersMap<any>>>) : void;
+    getBody() : Promise<any>;
+    getBody(done: Callback<any>) : void;
+
+    makeError(statusCode: number, message: string) : Error;
+
+    /**
+     * Returns true if the response has already been sent.
+     */
+    isResponseFinished() : boolean;
+}
+
+export interface ExegesisContext extends ExegesisContextBase {
+    params: ParametersByLocation<ParametersMap<any>>;
+    body: any;
+    api: any;
 }
 
 export type PromiseController = (context: ExegesisContext) => any;
@@ -76,8 +101,8 @@ export interface Controllers {
     [controllerName: string]: ControllerModule;
 }
 
-export type PromisePlugin = (context: ExegesisContext) => Promise<void> | void;
-export type CallbackPlugin = (context: ExegesisContext, done: Callback<void>) => void;
+export type PromisePlugin = (context: ExegesisPluginContext) => Promise<void> | void;
+export type CallbackPlugin = (context: ExegesisPluginContext, done: Callback<void>) => void;
 export type Plugin = PromisePlugin | CallbackPlugin;
 
 /**

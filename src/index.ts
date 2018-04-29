@@ -18,16 +18,21 @@ import {
 // Export all our public types.
 export * from './types';
 
+/**
+ * Returns a "runner" function - call `runner(req, res)` to get back a
+ * `HttpResult` object.
+ *
+ * @param openApiDoc - A string, representing a path to the OpenAPI document,
+ *   or a JSON object.
+ * @param [options] - Options.  See docs/options.md
+ * @returns - a Promise<ExegesisRunner>.  ExegesisRunner is a
+ *   `function(req, res)` which will handle an API call, and return an
+ *   `HttpResult`, or `undefined` if the request could not be handled.
+ */
 export function compileRunner(
     openApiDoc: string | oas3.OpenAPIObject,
     options?: ExegesisOptions
 ) : Promise<ExegesisRunner>;
-
-export function compileRunner(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options: ExegesisOptions,
-    done: Callback<ExegesisRunner>
-) : void;
 
 /**
  * Returns a "runner" function - call `runner(req, res)` to get back a
@@ -36,11 +41,16 @@ export function compileRunner(
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
- * @param [done] - Optional callback.
- * @returns - null if `done` is provided, otherwise a Promise<ExegesisRunner>.
- *   ExegesisRunner is a `function(req, res)` which will handle an API call,
- *   and return an `HttpResult`.
+ * @param done - Callback which retunrs an ExegesisRunner.  ExegesisRunner is a
+ *   `function(req, res)` which will handle an API call, and return an
+ *   `HttpResult`, or `undefined` if the request could not be handled.
  */
+export function compileRunner(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions | undefined,
+    done: Callback<ExegesisRunner>
+) : void;
+
 export function compileRunner(
     openApiDoc: string | oas3.OpenAPIObject,
     options?: ExegesisOptions,
@@ -53,16 +63,30 @@ export function compileRunner(
     });
 }
 
+/**
+ * Convenience function which writes an `HttpResult` obtained from an
+ * ExegesisRunner out to an HTTP response.
+ *
+ * @param httpResult - Result to write.
+ * @param res - The response to write to.
+ * @returns - a Promise which resolves on completion.
+ */
 export function writeHttpResult(httpResult: HttpResult, res: http.ServerResponse) : Promise<void>;
+
+/**
+ * Convenience function which writes an `HttpResult` obtained from an
+ * ExegesisRunner out to an HTTP response.
+ *
+ * @param httpResult - Result to write.
+ * @param res - The response to write to.
+ * @param callback - Callback to call on completetion.
+ */
 export function writeHttpResult(
     httpResult: HttpResult,
     res: http.ServerResponse,
     done: Callback<void>
 ) : void;
 
-/**
- * Write an HttpResult returned by an `ExegesisRunner` to a response.
- */
 export function writeHttpResult(
     httpResult: HttpResult,
     res: http.ServerResponse,
@@ -82,16 +106,18 @@ export function writeHttpResult(
     });
 }
 
+/**
+ * Returns a connect/express middleware function which implements the API.
+ *
+ * @param openApiDoc - A string, representing a path to the OpenAPI document,
+ *   or a JSON object.
+ * @param [options] - Options.  See docs/options.md
+ * @returns - a Promise<MiddlewareFunction>.
+ */
 export function compileApi(
     openApiDoc: string | oas3.OpenAPIObject,
     options?: ExegesisOptions
 ) : Promise<MiddlewareFunction>;
-
-export function compileApi(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options: ExegesisOptions,
-    done: Callback<MiddlewareFunction>
-) : void;
 
 /**
  * Returns a connect/express middleware function which implements the API.
@@ -99,13 +125,18 @@ export function compileApi(
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
- * @param [done] - Optional callback.
- * @returns - null if `done` is provided, otherwise a Promise<MiddlewareFunction>.
+ * @param done - callback which returns the MiddlewareFunction.
  */
 export function compileApi(
     openApiDoc: string | oas3.OpenAPIObject,
-    options?: ExegesisOptions,
-    done?: Callback<MiddlewareFunction>
+    options: ExegesisOptions | undefined,
+    done: Callback<MiddlewareFunction>
+) : void;
+
+export function compileApi(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options?: ExegesisOptions | undefined,
+    done?: Callback<MiddlewareFunction> | undefined
 ) {
     return pb.addCallback(done, async () => {
         const runner = await compileRunner(openApiDoc, options);
@@ -130,7 +161,14 @@ export function compileApi(
                 }
                 return answer;
             })
-            .catch(err => next ? next(err) : setImmediate(() => {throw err;}));
+            .catch(err => {
+                if(next) {
+                    next(err);
+                } else {
+                    res.statusCode = err.status || 500;
+                    res.end('error');
+                }
+            });
         };
     });
 }

@@ -4,3 +4,5 @@ node_modules
 /types
 /.nyc_output
 /coverage
+/npm-debug.log
+/yarn-error.log

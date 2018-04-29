@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { makeOpenApiDoc, makeContext } from '../../fixtures';
 import * as validators from '../../../src/oas3/Schema/validators';
 
-import { ErrorType } from '../../../src/types';
+import { ErrorType, ParameterLocation } from '../../../src/types';
 
 const openApiDoc : oas3.OpenAPIObject = Object.assign(
     makeOpenApiDoc(),
@@ -42,11 +42,23 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
     }
 );
 
+const REQUEST_BODY_LOCATION: ParameterLocation = {
+    in: 'request',
+    name: 'body',
+    docPath: ['paths', '/foo', 'post', 'requestBody', 'content', 'application/json']
+};
+
+const QUERY_PARAM_LOCATION: ParameterLocation = {
+    in: 'query',
+    name: 'foo',
+    docPath: ['components', 'parameters', 'foo']
+};
+
 describe('schema validators', function() {
     it('should validate a schema', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/number');
 
-        const validator = validators.generateRequestValidator(context, 'query', 'foo', false);
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
         expect(validator(7)).to.eql(null);
 
         expect(validator("foo")).to.eql([{
@@ -64,7 +76,7 @@ describe('schema validators', function() {
     it('should not require properties marked readOnly in a request', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
-        const validator = validators.generateRequestValidator(context, 'request', 'body', false);
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
         expect(validator({b: 'hello'}), 'should validate missing "a"').to.eql(null);
         expect(validator({a: 'hello', b: 'hello'}), 'should allow "a"').to.eql(null);
 
@@ -83,7 +95,7 @@ describe('schema validators', function() {
     it('should not require properties marked writeOnly in a response', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
-        const validator = validators.generateResponseValidator(context, 'request', 'body', false);
+        const validator = validators.generateResponseValidator(context, REQUEST_BODY_LOCATION, false);
         expect(validator({a: 'hello'}), 'should validate missing "b"').to.eql(null);
         expect(validator({a: 'hello', b: 'hello'}), 'should allow "b"').to.eql(null);
 
@@ -102,7 +114,7 @@ describe('schema validators', function() {
     it('should generate a path for the errored element', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object2');
 
-        const validator = validators.generateRequestValidator(context, 'request', 'body', false);
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 
         expect(validator({a: 'hello'})).to.eql([{
             type: ErrorType.Error,
@@ -119,7 +131,7 @@ describe('schema validators', function() {
     it('should validate an integer with a format', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
-        const validator = validators.generateRequestValidator(context, 'query', 'foo', false);
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
         expect(validator(7)).to.eql(null);
 
         expect(validator(2**32)).to.eql([{
@@ -137,16 +149,16 @@ describe('schema validators', function() {
     it('should error for a missing value if required', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
-        const validator = validators.generateRequestValidator(context, 'query', 'foo', true);
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, true);
 
         expect(validator(7)).to.eql(null);
         expect(validator(undefined)).to.eql([{
             type: ErrorType.Error,
-            message: 'Missing required query:foo',
+            message: 'Missing required query parameter "foo"',
             location: {
                 in: 'query',
                 name: 'foo',
-                docPath: ['components', 'schemas', 'int32'],
+                docPath: ['components', 'parameters', 'foo'],
                 path: []
             }
         }]);
@@ -155,7 +167,7 @@ describe('schema validators', function() {
     it('should not error for a missing value if not required', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
-        const validator = validators.generateRequestValidator(context, 'query', 'foo', false);
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
 
         expect(validator(7)).to.eql(null);
         expect(validator(undefined)).to.eql(null);

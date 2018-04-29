@@ -41,7 +41,7 @@ function generateMediaTypeParser(
 ) : ParameterParser {
     // request and response are here for application/x-www-form-urlencoded.
 
-    let answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
+    const answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
         try {
             let value = values[location.name];
             if(value === undefined || value === null) {return value;}
@@ -68,10 +68,6 @@ function generateMediaTypeParser(
             });
         }
     };
-
-    if(parameterDescriptor.required) {
-        answer = requiredParameterWrapper(answer);
-    }
 
     return answer;
 }
@@ -105,40 +101,7 @@ function generateStyleParser(
             throw new Error(`Don't know how to parse parameters with style ${descriptor.style}`);
     }
 
-    if(descriptor.required) {
-        answer = requiredParameterWrapper(answer);
-    }
-
     return answer;
-}
-
-/**
- * Returns a ParameterParser which is identical to `parser`, but which throws
- * a validation exception if the parameter is not found.
- *
- * @param parser - parser to wrap.
- */
-function requiredParameterWrapper(
-    parser: ParameterParser
-) : ParameterParser {
-
-    return function requiredParameter(
-        location: ParameterLocation,
-        rawParamValues: RawValues,
-        rawValue: string,
-        parserContext: any
-    ) {
-        const result = parser(location, rawParamValues, rawValue, parserContext);
-        if(result === null || result === undefined) {
-            throw new ValidationError({
-                type: ErrorType.Error,
-                message: `Missing required parameter ${location.name}`,
-                location: location
-            });
-        }
-        return result;
-    };
-
 }
 
 function toStructuredParser(parser: RawStringParameterParser) {
@@ -198,8 +161,12 @@ export function parseQueryParameters(
         location: ParameterLocation,
         parser: ParameterParser
     }[],
-    query: string
+    query: string | undefined
 ) {
-    const rawValues = querystring.parse(query, '&', '=', {decodeURIComponent: (val: string) => val});
-    return _parseParameterGroup(params, rawValues, query);
+    if(!query) {
+        return {};
+    } else {
+        const rawValues = querystring.parse(query, '&', '=', {decodeURIComponent: (val: string) => val});
+        return _parseParameterGroup(params, rawValues, query);
+    }
 }

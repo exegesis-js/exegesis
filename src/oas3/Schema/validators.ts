@@ -6,7 +6,7 @@ import * as jsonSchema from '../../utils/jsonSchema';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import Oas3Context from '../Oas3Context';
 
-import { CustomFormats, ValidatorFunction, IValidationError, ErrorType } from '../../types';
+import { CustomFormats, ValidatorFunction, IValidationError, ErrorType, ParameterLocation } from '../../types';
 
 // TODO tests
 // * nullable
@@ -15,6 +15,33 @@ import { CustomFormats, ValidatorFunction, IValidationError, ErrorType } from '.
 // * readOnly not supplied but required
 // * writeOnly (all cases as readOnly)
 // * Make sure validation errors are correct format.
+
+function assertNever(x: never): never {
+    throw new Error("Unexpected object: " + x);
+}
+
+function getParameterDescription(
+    parameterLocation: ParameterLocation
+) {
+    let description = '';
+    switch(parameterLocation.in) {
+        case 'path':
+        case 'server':
+        case 'query':
+        case 'cookie':
+        case 'header':
+            description = `${parameterLocation.in} parameter "${parameterLocation.name}"`;
+            break;
+        case 'request':
+        case 'response':
+            description = `${parameterLocation.in} body`;
+            break;
+        default:
+            assertNever(parameterLocation.in);
+    }
+
+    return description;
+}
 
 function addCustomFormats(ajv: Ajv.Ajv, customFormats: CustomFormats) : {[k: string]: Ajv.FormatDefinition} {
     return Object.keys(customFormats)
@@ -91,8 +118,7 @@ export function _filterRequiredProperties(schema: any, propNameToFilter: string)
 
 function generateValidator(
     schemaContext: Oas3Context,
-    parameterIn: string,
-    parameterName: string,
+    parameterLocation: ParameterLocation,
     parameterRequired: boolean,
     propNameToFilter: string
 ) : ValidatorFunction {
@@ -118,11 +144,13 @@ function generateValidator(
             if(parameterRequired) {
                 return [{
                     type: ErrorType.Error,
-                    message: `Missing required ${parameterIn}:${parameterName}`,
+                    message: `Missing required ${getParameterDescription(parameterLocation)}`,
                     location: {
-                        in: parameterIn,
-                        name: parameterName,
-                        docPath: schemaPath,
+                        in: parameterLocation.in,
+                        name: parameterLocation.name,
+                        // docPath comes from parameter here, not schema, since the parameter
+                        // is the one that defines it is required.
+                        docPath: parameterLocation.docPath,
                         path: []
                     }
                 }];
@@ -137,8 +165,8 @@ function generateValidator(
                 type: ErrorType.Error,
                 message: err.message || 'Unspecified error',
                 location: {
-                    in: parameterIn,
-                    name: parameterName,
+                    in: parameterLocation.in,
+                    name: parameterLocation.name,
                     docPath: schemaPath,
                     path: err.dataPath ? jsonPaths.jsonPointerToPath(err.dataPath) : []
                 }
@@ -152,18 +180,16 @@ function generateValidator(
 
 export function generateRequestValidator(
     schemaContext: Oas3Context,
-    parameterIn: string,
-    parameterName: string,
+    parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterIn, parameterName, parameterRequired, 'readOnly');
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly');
 }
 
 export function generateResponseValidator(
     schemaContext: Oas3Context,
-    parameterIn: string,
-    parameterName: string,
+    parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterIn, parameterName, parameterRequired, 'writeOnly');
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'writeOnly');
 }

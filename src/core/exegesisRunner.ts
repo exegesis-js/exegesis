@@ -1,16 +1,10 @@
 import * as http from 'http';
-import pb from 'promise-breaker';
 import { Readable } from 'stream';
 
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import {
-    Callback,
-    ExegesisRunner,
-    HttpResult,
-    ExegesisContext
-} from '../types';
+import { ExegesisRunner, HttpResult, ExegesisContext } from '../types';
 import { ApiInterface, ResolvedOperation } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
@@ -19,30 +13,6 @@ async function handleSecurity(operation: ResolvedOperation, context: ExegesisCon
     const authenticated = await operation.authenticate(context);
     context.security = authenticated;
     context.user = authenticated && authenticated.user;
-}
-
-function parseAndValidateParameters(operation: ResolvedOperation, context: ExegesisContext) {
-    context.params = operation.parseParameters();
-    const errors = operation.validateParameters(context.params);
-    if(errors && errors.length > 0) {
-        throw new ValidationError(errors);
-    }
-}
-
-async function parseAndValidateBody(operation: ResolvedOperation, context: ExegesisContext) {
-    let body: any;
-    if(operation.bodyParser) {
-        body = await pb.call((done: Callback<void>) =>
-            operation.bodyParser!.parseReq(context.req, context.origRes, done)
-        );
-
-        const bodyErrors = operation.validateBody && operation.validateBody(body);
-        if(bodyErrors && bodyErrors.length > 0) {
-            throw new ValidationError(bodyErrors);
-        }
-    }
-    (context.req as any).body = body;
-    context.body = body;
 }
 
 function resultToHttpResponse(
@@ -99,12 +69,13 @@ export default async function generateExegesisRunner<T>(
                     throw new Error(`No operation found for ${method} ${url}`);
                 }
 
-                const context = new ExegesisContextImpl<T>(req, res, resolved.api);
+                const context = new ExegesisContextImpl<T>(req, res, resolved.api, operation);
                 await handleSecurity(operation, context);
 
                 if(!context.isResponseFinished()) {
-                    parseAndValidateParameters(operation, context);
-                    await parseAndValidateBody(operation, context);
+                    // Fill in context.params and context.body.
+                    await context.getParams();
+                    await context.getBody();
                 }
 
                 let controllerResult: any;

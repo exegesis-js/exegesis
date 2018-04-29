@@ -1,5 +1,7 @@
 import { JsonPath } from "./basicTypes";
 
+export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
+
 /**
  * The location of a parameter or property within a request.
  *
@@ -13,7 +15,7 @@ import { JsonPath } from "./basicTypes";
  *   the body is "image/gif", then this field doesn't really make sense.
  */
 export interface ParameterLocation {
-    in: string; // "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
+    in: ParameterLocationIn;
     name: string;
     docPath: JsonPath;
     path?: JsonPath;

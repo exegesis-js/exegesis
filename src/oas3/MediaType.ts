@@ -1,6 +1,6 @@
 import * as oas3 from 'openapi3-ts';
 
-import { ValidatorFunction } from '../types';
+import { ValidatorFunction, ParameterLocation } from '../types';
 import { generateRequestValidator } from './Schema/validators';
 import Oas3Context from './Oas3Context';
 
@@ -13,8 +13,7 @@ export default class MediaType<T> {
     constructor(
         context : Oas3Context,
         oaMediaType: oas3.MediaTypeObject,
-        parameterIn: string,
-        parameterName: string,
+        parameterLocation: ParameterLocation,
         parameterRequired: boolean,
         parser: T
     ) {
@@ -24,7 +23,7 @@ export default class MediaType<T> {
 
         if(oaMediaType.schema) {
             const schemaContext = context.childContext('schema');
-            this.validator = generateRequestValidator(schemaContext, parameterIn, parameterName, parameterRequired);
+            this.validator = generateRequestValidator(schemaContext, parameterLocation, parameterRequired);
         } else {
             this.validator = () => null;
         }

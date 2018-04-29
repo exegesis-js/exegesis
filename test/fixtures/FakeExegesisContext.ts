@@ -16,8 +16,14 @@ export default class FakeExegesisContext implements ExegesisContext {
     api: any;
     security?: ExegesisAuthenticated;
     user?: any;
-    params?: ParametersByLocation<ParametersMap<any>>;
-    body?: any;
+    params: ParametersByLocation<ParametersMap<any>> = {
+        query: {},
+        header: {},
+        server: {},
+        path: {},
+        cookie: {}
+    };
+    body: any = {};
 
     constructor() {
         this.req = {} as http.IncomingMessage;

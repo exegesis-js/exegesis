@@ -156,7 +156,7 @@ export default class Operation {
             this._requestBodyContentTypes = contentToMediaTypeRegistry<BodyParser>(
                 contentContext,
                 context.options.bodyParsers,
-                'body',
+                {in: 'request', name: 'body', docPath: contentContext.path},
                 requestBody.required || false,
                 requestBody.content
             );
@@ -199,8 +199,8 @@ export default class Operation {
         const {headers, rawPathParams, queryString} = params;
 
         return {
-            query: queryString ? parseQueryParameters(this._parameters.query, queryString) : {},
-            header: headers ? parseParameterGroup(this._parameters.header, headers) : {},
+            query: parseQueryParameters(this._parameters.query, queryString),
+            header: parseParameterGroup(this._parameters.header, headers || {}),
             server: params.serverParams || {},
             path: rawPathParams ? parseParameterGroup(this._parameters.path, rawPathParams) : {},
             cookie: {}

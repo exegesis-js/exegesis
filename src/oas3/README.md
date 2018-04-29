@@ -1,8 +1,10 @@
+# oas3
+
 This represents a "parsed" OpenAPI 3.x.x document.
 
 This is a rough view of the heirachy of objects in an OpenApi object:
 
-```
+```text
 OpenApi
 +- Servers
 +- Paths

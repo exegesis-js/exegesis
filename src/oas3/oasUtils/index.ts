@@ -3,6 +3,7 @@ import MediaType from '../MediaType';
 
 import * as oas3 from 'openapi3-ts';
 import Oas3Context from '../Oas3Context';
+import { ParameterLocation } from '../..';
 
 export function isSpecificationExtension(key: string) {
     return key.startsWith('x-');
@@ -21,7 +22,7 @@ export function isReferenceObject(obj: any) : obj is oas3.ReferenceObject {
 export function contentToMediaTypeRegistry<T>(
     context: Oas3Context,
     parserRegistry: MimeTypeRegistry<T>,
-    parameterIn: string,
+    parameterLocation: ParameterLocation,
     parameterRequired: boolean,
     content?: oas3.ContentObject
 ) {
@@ -41,8 +42,7 @@ export function contentToMediaTypeRegistry<T>(
             answer.set(mediaType, new MediaType<T>(
                 mediaContext,
                 oaMediaType,
-                parameterIn,
-                'body',
+                parameterLocation,
                 parameterRequired,
                 parser
             ));
