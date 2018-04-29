@@ -1,5 +1,8 @@
 # Contributing
 
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release)
+so commit messages should follow [Angular commit message conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
+
 ## Supported Node Versions
 
 Exegesis should run on node 6.x.x and up.
