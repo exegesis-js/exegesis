@@ -17,6 +17,12 @@ You probably don't want to be using this library directly.  Have a look at:
 * [exegesis-connect](https://github.com/exegesis-js/exegesis-express) - Middleware
   for serving OpenAPI 3.x APIs from [connect](https://github.com/senchalabs/connect).
 
+## WARNING
+
+🚨🚨 This is super beta. 🚨🚨
+
+This is very much a work in progress.  Wait for the v1.0.0 release, coming soon!  :)
+
 ## Usage
 
 ```js
@@ -44,7 +50,7 @@ exegesis.compileApi(
             (req, res) =>
                 middleware(req, res, (err) => {
                     if(err) {
-                       res.writeHead(500);
+                       res.writeHead(err.status || 500);
                        res.end(`Internal error: ${err.message}`);
                     } else {
                         res.writeHead(404);
