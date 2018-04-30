@@ -1,5 +1,8 @@
-# Exegesis OpenAPI Engine
 
+# Exegesis OpenAPI Engine
+[![NPM version](https://badge.fury.io/js/exegesis.svg)](https://npmjs.org/package/exegesis)
+[![Build Status](https://travis-ci.org/exegesis/exegesis.svg)](https://travis-ci.org/exegesis/exegesis)
+[![Coverage Status](https://coveralls.io/repos/exegesis/exegesis/badge.svg)](https://coveralls.io/r/exegesis/exegesis)
 [![Greenkeeper badge](https://badges.greenkeeper.io/exegesis-js/exegesis.svg)](https://greenkeeper.io/)
 
 > ## *exegesis*
