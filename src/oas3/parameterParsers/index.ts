@@ -105,7 +105,7 @@ function generateStyleParser(
             throw new Error(`Don't know how to parse parameters with style ${descriptor.style}`);
     }
 
-    if(descriptor.schema.default) {
+    if('default' in descriptor.schema) {
         answer = setDefault(answer, descriptor.schema.default);
     }
     return answer;

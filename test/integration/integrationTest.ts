@@ -65,74 +65,81 @@ describe('integration', function() {
         if(this.server) {this.server.close();}
     });
 
-    it('should succesfully call an API', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/greet?name=Jason`)
-            .expect(200)
-            .expect('content-type', 'application/json')
-            .expectBody({greeting: 'Hello, Jason!'});
+    describe('parameters', function() {
+        it('should succesfully call an API', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/greet?name=Jason`)
+                .expect(200)
+                .expect('content-type', 'application/json')
+                .expectBody({greeting: 'Hello, Jason!'});
+        });
+
+        it('should return an error for missing parameters', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/greet`)
+                .expect(400)
+                .expect('content-type', 'application/json')
+                .expectBody({
+                    "message": "Validation errors",
+                    "errors": [{
+                        "type": "error",
+                        "message": "Missing required query parameter \"name\"",
+                        "location": {
+                            "docPath": ["paths", "/greet", "get", "parameters", "0"],
+                            "in": "query",
+                            "name": "name",
+                            "path": []
+                        },
+                    }
+                    ]
+                });
+        });
     });
 
-    it('should return an error for missing parameters', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/greet`)
-            .expect(400)
-            .expect('content-type', 'application/json')
-            .expectBody({
-                "message": "Validation errors",
-                "errors": [{
-                    "type": "error",
-                    "message": "Missing required query parameter \"name\"",
-                    "location": {
-                        "docPath": ["paths", "/greet", "get", "parameters", "0"],
-                        "in": "query",
-                        "name": "name",
-                        "path": []
-                     },
-                   }
-                 ]
-            });
+    describe('security', function() {
+        it('should require authentication from a security plugin', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/secure`)
+                .expect(403)
+                .expectBody({message:"Must authenticate using one of the following schemes: sessionKey."});
+        });
+
+        it('should return an error from a security plugin', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/secure`, {
+                headers: {session: 'wrong'}
+            })
+                .expect(403)
+                .expectBody({message: "Invalid session."});
+        });
+
+        it('should require authentication from a security plugin', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/secure`, {
+                headers: {session: 'secret'}
+            })
+                .expect(200)
+                .expectBody({
+                    sessionKey: {
+                        user: {name: 'jwalton'},
+                        roles: ['readWrite', 'admin']
+                    }
+                });
+        });
     });
 
-    it('should require authentication from a security plugin', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/secure`)
-            .expect(403)
-            .expectBody({message:"Must authenticate using one of the following schemes: sessionKey."});
-    });
+    describe('post', function() {
+        it('should post a body', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithDefault`, {
+                method: 'post',
+                headers: {"content-type": 'application/json'},
+                body: JSON.stringify({name: 'Joe'})
+            })
+                .expect(200)
+                .expectBody({greeting: 'Hello, Joe!'});
+        });
 
-    it('should return an error from a security plugin', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/secure`, {
-            headers: {session: 'wrong'}
-        })
-            .expect(403)
-            .expectBody({message: "Invalid session."});
-    });
-
-    it('should require authentication from a security plugin', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/secure`, {
-            headers: {session: 'secret'}
-        })
-            .expect(200)
-            .expectBody({
-                sessionKey: {
-                    user: {name: 'jwalton'},
-                    roles: ['readWrite', 'admin']
-                }
-            });
-    });
-
-    it('should post a body', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/postWithDefault`, {
-            method: 'post',
-            headers: {"content-type": 'application/json'},
-            body: JSON.stringify({name: 'Joe'})
-        })
-            .expect(200)
-            .expectBody({greeting: 'Hello, Joe!'});
     });
 
 });

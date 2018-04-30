@@ -47,4 +47,21 @@ describe('oas3 parameter parsers', function() {
         );
         expect(unspecified, 'unspecified').to.eql({myParam: 6});
     });
+
+    it('should fill in falsey default value if not provided', function() {
+        const parser = parameterParsers.generateParser({
+            style: 'simple',
+            explode: false,
+            schema: {
+                type: 'number',
+                default: 0
+            }
+        });
+
+        const unspecified = parameterParsers.parseQueryParameters(
+            [{location: queryParameterLocation, parser}],
+            ""
+        );
+        expect(unspecified).to.eql({myParam: 0});
+    });
 });
