@@ -3,16 +3,15 @@
   "version": "0.0.1",
   "description": "Parses OpenAPI documents",
   "main": "lib/index.js",
-  "types": "types/index.d.ts",
+  "types": "lib/index.d.ts",
   "files": [
-    "lib/**/*",
-    "types/**/*"
+    "lib/**/*"
   ],
   "scripts": {
     "test": "npm run build && npm run lint && npm run test:unittest",
     "test:pre-commit": "npm run build && npm run lint && npm run test:unittest-pc",
     "build": "tsc",
-    "clean": "rm -rf lib types coverage",
+    "clean": "rm -rf lib coverage",
     "test:unittest": "tsc -p test && nyc mocha 'test/**/*.@(ts|js)'",
     "test:unittest-pc": "tsc -p test && mocha --reporter progress 'test/**/*.@(ts|js)'",
     "lint": "npm run lint:source && npm run lint:markdown && npm run lint:tests",
