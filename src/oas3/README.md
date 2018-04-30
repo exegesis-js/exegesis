@@ -14,5 +14,5 @@ OpenApi
           +- Parameter
 ```
 
-Every object has an Oas3Context which has "global" information about
+Every object has an Oas3CompileContext which has "global" information about
 configuration and about where that object came from.

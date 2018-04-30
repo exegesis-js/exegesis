@@ -2,16 +2,16 @@ import * as oas3 from 'openapi3-ts';
 
 import { ValidatorFunction, ParameterLocation } from '../types';
 import { generateRequestValidator } from './Schema/validators';
-import Oas3Context from './Oas3Context';
+import Oas3CompileContext from './Oas3CompileContext';
 
 export default class MediaType<T> {
-    readonly context: Oas3Context;
+    readonly context: Oas3CompileContext;
     readonly oaMediaType: oas3.MediaTypeObject;
     readonly parser: T;
     readonly validator: ValidatorFunction;
 
     constructor(
-        context : Oas3Context,
+        context : Oas3CompileContext,
         oaMediaType: oas3.MediaTypeObject,
         parameterLocation: ParameterLocation,
         parameterRequired: boolean,

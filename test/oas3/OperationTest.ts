@@ -4,7 +4,7 @@ import chaiAsPromised from 'chai-as-promised';
 import * as oas3 from 'openapi3-ts';
 
 import Operation from '../../src/oas3/Operation';
-import Oas3Context from '../../src/oas3/Oas3Context';
+import Oas3CompileContext from '../../src/oas3/Oas3CompileContext';
 import { makeOpenApiDoc } from '../fixtures';
 import { ExegesisOptions } from '../../src';
 import { compileOptions } from '../../src/options';
@@ -41,7 +41,7 @@ function makeOperation(
         }
     };
 
-    const context = new Oas3Context(openApiDoc, ['paths', '/path', method], compileOptions(options));
+    const context = new Oas3CompileContext(openApiDoc, ['paths', '/path', method], compileOptions(options));
     return new Operation(context, operation, openApiDoc.paths['/path'], undefined, []);
 }
 

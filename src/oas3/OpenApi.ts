@@ -8,7 +8,7 @@ import { ApiInterface, ResolvedPath } from '../types/internal';
 import { ParametersMap } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
-import Oas3Context from './Oas3Context';
+import Oas3CompileContext from './Oas3CompileContext';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 
 export interface ResolvedOAS3 {
@@ -57,7 +57,7 @@ export default class OpenApi implements ApiInterface<ResolvedOAS3> {
 
         const exegesisController = openApiDoc[EXEGESIS_CONTROLLER];
 
-        this._paths = new Paths(new Oas3Context(openApiDoc, ['paths'], options), exegesisController);
+        this._paths = new Paths(new Oas3CompileContext(openApiDoc, ['paths'], options), exegesisController);
     }
 
     resolve(

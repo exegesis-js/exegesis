@@ -1,5 +1,5 @@
 import {isSpecificationExtension} from '../oasUtils';
-import Oas3Context from '../Oas3Context';
+import Oas3CompileContext from '../Oas3CompileContext';
 import Path from '../Path';
 import PathResolver from './PathResolver';
 import { EXEGESIS_CONTROLLER } from '../extensions';
@@ -9,7 +9,7 @@ import { ParametersMap } from '../../types';
 export default class Paths {
     private readonly _pathResolver : PathResolver<Path> = new PathResolver();
 
-    constructor(context: Oas3Context, exegesisController: string | undefined) {
+    constructor(context: Oas3CompileContext, exegesisController: string | undefined) {
         const {openApiDoc} = context;
 
         exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || exegesisController;

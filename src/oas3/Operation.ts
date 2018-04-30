@@ -4,7 +4,7 @@ import * as oas3 from 'openapi3-ts';
 import {MimeTypeRegistry} from '../utils/mime';
 import {contentToMediaTypeRegistry} from './oasUtils';
 import MediaType from './MediaType';
-import Oas3Context from './Oas3Context';
+import Oas3CompileContext from './Oas3CompileContext';
 import Parameter from './Parameter';
 import { RawValues, parseParameterGroup, parseQueryParameters } from './parameterParsers';
 import {
@@ -21,7 +21,7 @@ import { HttpError } from '../errors';
 
 // Returns a `{securityRequirements, requiredRoles}` object for the given operation.
 function getSecurityRequirements(
-    context: Oas3Context, // Operation context.
+    context: Oas3CompileContext, // Operation context.
     oaOperation: oas3.OperationObject
 ) {
     const securityRequirements = (oaOperation.security || context.openApiDoc.security || []);
@@ -60,7 +60,7 @@ function getMissing(required: string[], have: string[] | undefined) {
 }
 
 function validateController(
-    context: Oas3Context,
+    context: Oas3CompileContext,
     controller: string | undefined,
     operationId: string | undefined
 ) {
@@ -84,7 +84,7 @@ function validateController(
  * operationId defined.
  */
 function validateControllers(
-    context: Oas3Context,
+    context: Oas3CompileContext,
     requestBody: oas3.RequestBodyObject | undefined,
     opController: string | undefined,
     operationId: string | undefined
@@ -103,7 +103,7 @@ function validateControllers(
 }
 
 export default class Operation {
-    readonly context: Oas3Context;
+    readonly context: Oas3CompileContext;
     readonly oaOperation: oas3.OperationObject;
     readonly oaPath: oas3.PathItemObject;
     readonly exegesisController: string | undefined;
@@ -115,7 +115,7 @@ export default class Operation {
     private readonly _parameters: ParametersByLocation<Parameter[]>;
 
     constructor(
-        context: Oas3Context,
+        context: Oas3CompileContext,
         oaOperation: oas3.OperationObject,
         oaPath: oas3.PathItemObject,
         exegesisController: string | undefined,

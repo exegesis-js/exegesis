@@ -2,7 +2,7 @@ import 'mocha';
 import {expect} from 'chai';
 
 import Paths from '../../../src/oas3/Paths';
-import Oas3Context from '../../../src/oas3/Oas3Context';
+import Oas3CompileContext from '../../../src/oas3/Oas3CompileContext';
 import { defaultCompiledOptions, makeOpenApiDoc } from '../../fixtures';
 
 const DUMMY_PATH_OBJECT = {
@@ -20,7 +20,7 @@ describe('oas3 Paths', function() {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['/foo'] = DUMMY_PATH_OBJECT;
         const paths = new Paths(
-            new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions),
+            new Oas3CompileContext(openApiDoc, ['paths'], defaultCompiledOptions),
             undefined
         );
         const resolved = paths.resolvePath('/foo');
@@ -41,7 +41,7 @@ describe('oas3 Paths', function() {
         }, DUMMY_PATH_OBJECT);
 
         const paths = new Paths(
-            new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions),
+            new Oas3CompileContext(openApiDoc, ['paths'], defaultCompiledOptions),
             undefined
         );
         const resolved = paths.resolvePath('/bar/foo');
@@ -53,7 +53,7 @@ describe('oas3 Paths', function() {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['x-my-extension'] = DUMMY_PATH_OBJECT;
         const paths = new Paths(
-            new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions),
+            new Oas3CompileContext(openApiDoc, ['paths'], defaultCompiledOptions),
             undefined
         );
         const resolved = paths.resolvePath('x-my-extension');
@@ -65,7 +65,7 @@ describe('oas3 Paths', function() {
         openApiDoc.paths['foo'] = DUMMY_PATH_OBJECT;
         expect(() =>
             new Paths(
-                new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions),
+                new Oas3CompileContext(openApiDoc, ['paths'], defaultCompiledOptions),
                 undefined
             )
         ).to.throw('Invalid path "foo"');
@@ -75,7 +75,7 @@ describe('oas3 Paths', function() {
         const openApiDoc = makeOpenApiDoc();
         expect(() =>
             new Paths(
-                new Oas3Context(openApiDoc, ['paths'], defaultCompiledOptions),
+                new Oas3CompileContext(openApiDoc, ['paths'], defaultCompiledOptions),
                 undefined
             )
         ).to.not.throw;

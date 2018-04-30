@@ -1,6 +1,6 @@
 import { generateRequestValidator } from './Schema/validators';
 import { generateParser, ParameterParser } from './parameterParsers';
-import Oas3Context from './Oas3Context';
+import Oas3CompileContext from './Oas3CompileContext';
 
 import { isReferenceObject } from './oasUtils';
 import MediaType from './MediaType';
@@ -37,7 +37,7 @@ function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6
 }
 
 export default class Parameter {
-    readonly context: Oas3Context;
+    readonly context: Oas3CompileContext;
     readonly oaParameter: oas3.ParameterObject;
 
     readonly location: ParameterLocation;
@@ -49,7 +49,7 @@ export default class Parameter {
     readonly name: string;
     readonly parser: ParameterParser;
 
-    constructor(context: Oas3Context, oaParameter: oas3.ParameterObject | oas3.ReferenceObject) {
+    constructor(context: Oas3CompileContext, oaParameter: oas3.ParameterObject | oas3.ReferenceObject) {
         const resOaParameter = isReferenceObject(oaParameter)
             ? context.resolveRef(oaParameter.$ref) as oas3.ParameterObject
             : oaParameter;

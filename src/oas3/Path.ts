@@ -1,6 +1,6 @@
 import Operation from './Operation';
 
-import Oas3Context from './Oas3Context';
+import Oas3CompileContext from './Oas3CompileContext';
 import * as oas3 from 'openapi3-ts';
 import Parameter from './Parameter';
 import { EXEGESIS_CONTROLLER } from './extensions';
@@ -12,11 +12,11 @@ interface OperationsMap {
 }
 
 export default class Path {
-    readonly context: Oas3Context;
+    readonly context: Oas3CompileContext;
     readonly oaPath: oas3.PathItemObject;
     private readonly _operations: OperationsMap;
 
-    constructor(context: Oas3Context, oaPath: oas3.PathItemObject, exegesisController: string | undefined) {
+    constructor(context: Oas3CompileContext, oaPath: oas3.PathItemObject, exegesisController: string | undefined) {
         this.context = context;
         if(oaPath.$ref) {
             this.oaPath = context.resolveRef(oaPath.$ref) as oas3.PathItemObject;

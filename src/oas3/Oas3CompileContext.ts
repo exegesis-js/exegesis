@@ -12,23 +12,23 @@ import { ExgesisCompiledOptions } from '../options';
  * heirarchy.  This also keeps track of the `path` that a given object was
  * generated from.
  */
-export default class Oas3Context {
+export default class Oas3CompileContext {
     readonly path: JsonPath;
     readonly jsonPointer: string;
     readonly openApiDoc: oas3.OpenAPIObject;
     readonly options: ExgesisCompiledOptions;
 
     /**
-     * Create a new Oas3Context.
+     * Create a new Oas3CompileContext.
      *
      * @param openApiDoc - A fully resolved OpenAPI document, with no $refs.
      * @param path - The path to the object represented by this context.
      * @param options - Options.
      */
     constructor(openApiDoc: oas3.OpenAPIObject, path: JsonPath, options: ExgesisCompiledOptions)
-    constructor(parent: Oas3Context, relativePath: JsonPath)
+    constructor(parent: Oas3CompileContext, relativePath: JsonPath)
     constructor(a: any, path: JsonPath, options?: ExgesisCompiledOptions) {
-        if(a instanceof Oas3Context) {
+        if(a instanceof Oas3CompileContext) {
             // TODO: Could make this WAY more efficient with Object.create().
             const parent = a;
             this.path = parent.path.concat(path);
@@ -39,16 +39,16 @@ export default class Oas3Context {
             this.openApiDoc = a;
             this.options = options;
         } else {
-            throw new Error("Invalid parameters to Oas3Context constructor");
+            throw new Error("Invalid parameters to Oas3CompileContext constructor");
         }
         this.jsonPointer = pathToJsonPointer(this.path);
     }
 
     childContext(relativePath: JsonPath | string) {
         if(ld.isArray(relativePath)) {
-            return new Oas3Context(this, relativePath);
+            return new Oas3CompileContext(this, relativePath);
         } else {
-            return new Oas3Context(this, [relativePath]);
+            return new Oas3CompileContext(this, [relativePath]);
         }
     }
 

@@ -2,7 +2,7 @@ import {MimeTypeRegistry} from '../../utils/mime';
 import MediaType from '../MediaType';
 
 import * as oas3 from 'openapi3-ts';
-import Oas3Context from '../Oas3Context';
+import Oas3CompileContext from '../Oas3CompileContext';
 import { ParameterLocation } from '../..';
 
 export function isSpecificationExtension(key: string) {
@@ -20,7 +20,7 @@ export function isReferenceObject(obj: any) : obj is oas3.ReferenceObject {
  * @param content - The `content` object.
  */
 export function contentToMediaTypeRegistry<T>(
-    context: Oas3Context,
+    context: Oas3CompileContext,
     parserRegistry: MimeTypeRegistry<T>,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,

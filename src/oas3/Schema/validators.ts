@@ -4,7 +4,7 @@ import traveseSchema from 'json-schema-traverse';
 import * as jsonPaths from '../../utils/jsonPaths';
 import * as jsonSchema from '../../utils/jsonSchema';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
-import Oas3Context from '../Oas3Context';
+import Oas3CompileContext from '../Oas3CompileContext';
 
 import { CustomFormats, ValidatorFunction, IValidationError, ErrorType, ParameterLocation } from '../../types';
 
@@ -117,7 +117,7 @@ export function _filterRequiredProperties(schema: any, propNameToFilter: string)
 }
 
 function generateValidator(
-    schemaContext: Oas3Context,
+    schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
     propNameToFilter: string
@@ -179,7 +179,7 @@ function generateValidator(
 }
 
 export function generateRequestValidator(
-    schemaContext: Oas3Context,
+    schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
@@ -187,7 +187,7 @@ export function generateRequestValidator(
 }
 
 export function generateResponseValidator(
-    schemaContext: Oas3Context,
+    schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
