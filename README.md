@@ -1,5 +1,7 @@
 # Exegesis OpenAPI Engine
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/exegesis-js/exegesis.svg)](https://greenkeeper.io/)
+
 > ## *exegesis*
 >
 > *n.* An explanation or critical interpretation of a text, especially an
