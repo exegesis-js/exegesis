@@ -13,9 +13,9 @@ export function getSimpleStringParser(
     } else if(allowedTypes.length === 1 && allowedTypes[0] === 'array') {
         return simpleArrayParser;
     } else if(
-        allowedTypes.indexOf('string') !== -1 &&
-        allowedTypes.indexOf('array') !== -1 &&
-        allowedTypes.indexOf('object') === -1
+        allowedTypes.includes('string') &&
+        allowedTypes.includes('array') &&
+        !allowedTypes.includes('object')
     ) {
         return simpleStringArrayParser;
     } else {

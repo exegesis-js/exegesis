@@ -94,7 +94,7 @@ export default class Parameter {
                 required: resOaParameter.required || false,
                 contentType: mediaTypeString,
                 parser,
-                uriEncoded: ['query', 'path'].indexOf(resOaParameter.in) > -1
+                uriEncoded: ['query', 'path'].includes(resOaParameter.in)
             });
 
             const mediaType = new MediaType<StringParser>(

@@ -42,7 +42,7 @@ function inferTypesPriv(
     schema: JSONSchema4 | JSONSchema6,
     stack: any[]
 ): Set<string> {
-    if(stack.indexOf(schema) > -1) {
+    if(stack.includes(schema)) {
         throw new Error("circular definition found");
     } else {
         stack = stack.concat(schema);
@@ -64,6 +64,8 @@ function inferTypesPriv(
             allowedTypes = intersection(allowedTypes, types);
         }
     }
+
+    // TODO: Dealing with "not" is hard.
 
     return allowedTypes;
 }

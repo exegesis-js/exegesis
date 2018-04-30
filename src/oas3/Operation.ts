@@ -52,10 +52,11 @@ function getSecurityRequirements(
 }
 
 function getMissing(required: string[], have: string[] | undefined) {
-    if((!have || have.length === 0) && required.length > 0) {
+    if(!have || have.length === 0) {
         return required;
+    } else {
+        return required.filter(r => !have.includes(r));
     }
-    return required.filter(r => have && have.indexOf(r) === -1);
 }
 
 function validateController(
