@@ -29,7 +29,7 @@ export interface ExgesisCompiledOptions {
     allowMissingControllers: boolean;
 }
 
-const INT_32_MAX = 2**32 - 1;
+const INT_32_MAX = Math.pow(2, 32) - 1;
  // Actually 18446744073709551616-1, but Javascript doesn't handle integers this large.
 const INT_64_MAX = 18446744073709556000;
 
