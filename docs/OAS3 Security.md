@@ -92,6 +92,7 @@ const basicAuthSecurityPlugin = async function(context) {
     const user = await db.User.find({name});
 
     if(!user) {
+        // Respond with an HTTP 403 - Forbidden error.
         throw context.makeError(403, "User not found");
     }
     if(!await bcrypt.compare(pass, user.password)) {
