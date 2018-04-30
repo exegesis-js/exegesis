@@ -1,52 +1,33 @@
 import {resolveRef} from './json-schema-resolve-ref';
+import { JSONSchema4, JSONSchema6 } from 'json-schema';
 
-const INT_REGEX = /^[0-9]+$/;
 const VALID_SCHEMA_TYPES = ['null', 'boolean', 'object', 'array', 'number', 'string', 'integer'];
 
-interface TypeSet {
-    [key: string]: boolean; // Keys are from VALID_SCHEMA_TYPES.
+const ALL_ALLOWED_TYPES = new Set(VALID_SCHEMA_TYPES);
+const NO_ALLOWED_TYPES = new Set<string>([]);
+
+function toArray(val: string | string[]) {
+    if(Array.isArray(val)) {
+        return val;
+    } else {
+        return [val];
+    }
 }
 
-const ALL_ALLOWED_TYPES : TypeSet = typesToSet(VALID_SCHEMA_TYPES);
-const NO_ALLOWED_TYPES : TypeSet = typesToSet([]);
-const OBJECT_OR_ARRAY : TypeSet = typesToSet(['object', 'array']);
-const OBJECT_TYPE : TypeSet = typesToSet('object');
-
-function typeToArray(type: string | string[]) : string[] {
-    return Array.isArray(type) ? type : [type];
+function union<T>(a: Set<T>, b: Set<T>) {
+    return new Set<T>([...a, ...b]);
 }
 
-function typesToSet(type: string | string[]) : TypeSet {
-    const types = typeToArray(type);
-    return VALID_SCHEMA_TYPES.reduce<TypeSet>(
-        (result: TypeSet, t: string) : TypeSet => {
-            result[t] = types.indexOf(t) > -1;
-            return result;
-        },
-        {}
-    );
+function intersection<T>(a: Set<T>, b: Set<T>) {
+    return new Set<T>([...a].filter(x => b.has(x)));
 }
 
-function intersection(allowedTypes1: TypeSet, allowedTypes2: TypeSet): TypeSet {
-    return VALID_SCHEMA_TYPES.reduce<TypeSet>((result: TypeSet, t: string) => {
-        result[t] = allowedTypes1[t] && allowedTypes2[t];
-        return result;
-    }, {});
-}
-
-function union(allowedTypes1: TypeSet, allowedTypes2: TypeSet): TypeSet {
-    return VALID_SCHEMA_TYPES.reduce<TypeSet>((result: TypeSet, t: string) => {
-        result[t] = allowedTypes1[t] || allowedTypes2[t];
-        return result;
-    }, {});
-}
-
-function inferTypesOneOf(rootSchema: any, oneOf: any[], stack: any[]): TypeSet {
+function inferTypesOneOf(rootSchema: any, oneOf: any[], stack: any[]): Set<string> {
     if(oneOf.length === 0) {
         return ALL_ALLOWED_TYPES;
     }
 
-    let allowedTypes: TypeSet = NO_ALLOWED_TYPES;
+    let allowedTypes = NO_ALLOWED_TYPES;
     oneOf.forEach((childSchema: any) => {
         childSchema = resolveRef(rootSchema, childSchema);
         const types = inferTypesPriv(rootSchema, childSchema, stack);
@@ -56,41 +37,31 @@ function inferTypesOneOf(rootSchema: any, oneOf: any[], stack: any[]): TypeSet {
     return allowedTypes;
 }
 
-function inferTypesPriv(rootSchema: any, schema: any, stack: any[]): TypeSet {
+function inferTypesPriv(
+    rootSchema: any,
+    schema: JSONSchema4 | JSONSchema6,
+    stack: any[]
+): Set<string> {
     if(stack.indexOf(schema) > -1) {
         throw new Error("circular definition found");
     } else {
         stack = stack.concat(schema);
     }
 
-    let allowedTypes: TypeSet = ALL_ALLOWED_TYPES;
+    let allowedTypes = ALL_ALLOWED_TYPES;
 
     allowedTypes = intersection(allowedTypes, inferTypesOneOf(rootSchema, schema.oneOf || [], stack));
     allowedTypes = intersection(allowedTypes, inferTypesOneOf(rootSchema, schema.anyOf || [], stack));
 
     if(schema.type) {
-        allowedTypes = intersection(allowedTypes, typesToSet(schema.type));
+        allowedTypes = intersection(allowedTypes, new Set(toArray(schema.type)));
     }
 
     if(schema.allOf) {
-        schema.allOf.forEach((childSchema: any) => {
-            childSchema = resolveRef(rootSchema, childSchema);
+        for(const childSchemaRef of schema.allOf) {
+            const childSchema = resolveRef(rootSchema, childSchemaRef);
             const types = inferTypesPriv(rootSchema, childSchema, stack);
             allowedTypes = intersection(allowedTypes, types);
-        });
-    }
-
-    if(schema.minProperties && schema.minProperties > 0) {
-        allowedTypes = intersection(allowedTypes, OBJECT_OR_ARRAY);
-    }
-
-    const propertyNames = Object.keys(schema.properties || {});
-    if(propertyNames.length > 0) {
-        const numeric = propertyNames.every((name: string) => !!INT_REGEX.exec(name));
-        if(numeric) {
-            allowedTypes = intersection(allowedTypes, OBJECT_OR_ARRAY);
-        } else {
-            allowedTypes = intersection(allowedTypes, OBJECT_TYPE);
         }
     }
 
@@ -101,16 +72,26 @@ function inferTypesPriv(rootSchema: any, schema: any, stack: any[]): TypeSet {
  * Given a JSON Schema, returns a list of types that an object which passes
  * schema validation would be allowed to have.
  *
- * @param schema - A JSON schema.
+ * @param schema - A JSON schema.  This is allowed to have `$ref`s, but they
+ *   must be internal refs relative to the schema (or to the `rootDocument`
+ *   if it is specified).
+ * @param [options.rootDocument] - If your JSON schema is embedded in a larger
+ *   JSON document, it can be provided here to resolve `$ref`s relative to that
+ *   parent document.
  */
-export default function inferTypes(schema : any) : string[] {
-    // FIXME: Allow for $refs.
-    const result = inferTypesPriv(schema, schema, []);
+export default function inferTypes(
+    schema : JSONSchema4 | JSONSchema6,
+    options : {
+        rootDocument?: any
+    } = {}
+) : string[] {
+    let result = inferTypesPriv(options.rootDocument || schema, schema, []);
 
     // Number includes integer, so if number is set, then integer needs to be as well.
-    if(result.number) {
-        result.integer = true;
+    if(result.has('number')) {
+        result = new Set(result);
+        result.add('integer');
     }
 
-    return Object.keys(result).filter(k => result[k]);
+    return Array.from(result);
 }
