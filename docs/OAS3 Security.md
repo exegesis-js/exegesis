@@ -27,7 +27,7 @@ async function sessionSecurityPlugin(context) {
         return undefined;
     } else if(session === 'secret') {
         return {
-            user: {name: 'jwalton}
+            user: {name: 'jwalton'}
         };
     } else {
         throw context.makeError(403, "Invalid session");
