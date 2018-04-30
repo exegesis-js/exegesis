@@ -1,22 +1,8 @@
 import * as http from 'http';
 import * as net from 'net';
+import * as oas3 from 'openapi3-ts';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
-
-export interface ExegesisAuthenticated {
-    user?: any;
-    roles? : string[] | undefined;
-    scopes? : string[] | undefined;
-}
-
-export type PromiseSecurityPlugin =
-    (context: ExegesisContext) => ExegesisAuthenticated | undefined | Promise<ExegesisAuthenticated>;
-export type CallbackSecurityPlugin =
-    (context: ExegesisContext, done: Callback<ExegesisAuthenticated | undefined>) => void;
-export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
-export interface SecurityPlugins {
-    [scheme: string]: SecurityPlugin;
-}
 
 export interface HttpHeaders {
     [header: string]: number | string | string[];
@@ -61,31 +47,28 @@ export interface ExegesisContextBase {
     isResponseFinished() : boolean;
 }
 
-export interface ExegesisPluginContext {
-    readonly req: http.IncomingMessage;
-    readonly origRes: http.ServerResponse;
-    readonly res: ExegesisResponse;
-    api: any;
-    security?: ExegesisAuthenticated;
-    user?: any;
+export interface ExegesisContext extends ExegesisContextBase {
+    params: ParametersByLocation<ParametersMap<any>>;
+    body: any;
+}
 
+export interface ExegesisPluginContext extends ExegesisContextBase {
     getParams() : Promise<ParametersByLocation<ParametersMap<any>>>;
     getParams(done: Callback<ParametersByLocation<ParametersMap<any>>>) : void;
     getBody() : Promise<any>;
     getBody(done: Callback<any>) : void;
-
-    makeError(statusCode: number, message: string) : Error;
-
-    /**
-     * Returns true if the response has already been sent.
-     */
-    isResponseFinished() : boolean;
 }
 
-export interface ExegesisContext extends ExegesisContextBase {
-    params: ParametersByLocation<ParametersMap<any>>;
-    body: any;
-    api: any;
+export interface OAS3ApiInfo {
+    openApiDoc: oas3.OpenAPIObject;
+    serverPtr: string | undefined;
+    serverObject: oas3.ServerObject | undefined;
+    pathItemPtr: string;
+    pathItemObject: oas3.PathItemObject;
+    operationPtr: string | undefined;
+    operationObject: oas3.OperationObject | undefined;
+    requestBodyMediaTypePtr: string | undefined;
+    requestBodyMediaTypeObject: oas3.MediaTypeObject | undefined;
 }
 
 export type PromiseController = (context: ExegesisContext) => any;
@@ -104,6 +87,21 @@ export interface Controllers {
 export type PromisePlugin = (context: ExegesisPluginContext) => Promise<void> | void;
 export type CallbackPlugin = (context: ExegesisPluginContext, done: Callback<void>) => void;
 export type Plugin = PromisePlugin | CallbackPlugin;
+
+export interface ExegesisAuthenticated {
+    user?: any;
+    roles? : string[] | undefined;
+    scopes? : string[] | undefined;
+}
+
+export type PromiseSecurityPlugin =
+    (context: ExegesisPluginContext) => ExegesisAuthenticated | undefined | Promise<ExegesisAuthenticated>;
+export type CallbackSecurityPlugin =
+    (context: ExegesisPluginContext, done: Callback<ExegesisAuthenticated | undefined>) => void;
+export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
+export interface SecurityPlugins {
+    [scheme: string]: SecurityPlugin;
+}
 
 /**
  * Result returned by the exegesisRunner.
