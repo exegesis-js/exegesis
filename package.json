@@ -20,13 +20,15 @@
     "lint:tests": "tslint -c test/tslint.json -t stylish 'test/**/*.ts'",
     "lint:markdown": "markdownlint **/*.md *.md",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build && npm test",
-    "commitmsg": "validate-commit-msg",
-    "precommit": "npm run test:pre-commit"
+    "prepublishOnly": "npm run build && npm test"
   },
   "lint-staged": {
-    "src/**/*.ts": ["tslint -c tslint.json -t stylish"],
-    "test/**/*.ts": ["tslint -c test/tslint.json -t stylish"]
+    "src/**/*.ts": [
+      "tslint -c tslint.json -t stylish"
+    ],
+    "test/**/*.ts": [
+      "tslint -c test/tslint.json -t stylish"
+    ]
   },
   "repository": {
     "type": "git",
@@ -59,7 +61,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.0",
-    "husky": "^0.14.3",
+    "husky": "^1.0.0-rc.2",
     "lint-staged": "^7.0.5",
     "markdownlint": "^0.8.1",
     "markdownlint-cli": "^0.8.1",
@@ -86,5 +88,11 @@
     "qs": "^6.5.1",
     "raw-body": "^2.3.2",
     "semver": "^5.5.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "validate-commit-msg",
+      "pre-commit": "npm run test:pre-commit"
+    }
   }
 }
