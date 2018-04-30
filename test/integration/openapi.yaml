@@ -23,6 +23,7 @@ paths:
           content:
             application/json:
               schema:
+                type: object
                 required:
                   - greeting
                 properties:
@@ -33,7 +34,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /secure:
+    get:
+      summary: A secure operation
+      x-exegesis-controller: secureController
+      operationId: secureGet
+      security:
+        - sessionKey: []
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema: {type: 'object'}
 components:
+  securitySchemes:
+    sessionKey:
+      type: 'apiKey'
+      name: 'session'
+      in: 'header'
   schemas:
     Error:
       required:

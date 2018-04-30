@@ -14,6 +14,7 @@ import {
     MiddlewareFunction,
     HttpIncomingMessage
 } from './types';
+export { HttpError, ValidationError } from './errors';
 
 // Export all our public types.
 export * from './types';
@@ -59,7 +60,7 @@ export function compileRunner(
     return pb.addCallback(done, async () => {
         const compiledOptions = compileOptions(options);
         const apiInterface = await compileOpenApi(openApiDoc, compiledOptions);
-        return generateExegesisRunner(apiInterface);
+        return generateExegesisRunner(apiInterface, compiledOptions);
     });
 }
 

@@ -10,6 +10,7 @@
 - [defaultMaxBodySize](#defaultmaxbodysize)
 - [customFormats](#customformats)
 - [ignoreServers](#ignoreservers)
+- [autoHandleHttpErrors](#autohandlehttperrors)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
@@ -131,3 +132,13 @@ formats, you must provide validation functions for each format used.
 
 If true, when resolving a path Exegesis will ignore the "servers" section of
 the OpenAPI doc entirely.
+
+## autoHandleHttpErrors
+
+By default, ExegesisRunner will turn `exegesis.HttpError`s (such as errors
+generated from `context.makeError()`, `exegesis.ValidationError`s, or any error
+with a `.status` into JSON replies with appropriate error messages.  If you want
+to handle these errors yourself, set this value to false.
+
+Note that all `HttpError`s will have a `.status` property with a suggested
+numeric HTTP response code.

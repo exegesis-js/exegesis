@@ -28,7 +28,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     readonly res: ExegesisResponseImpl;
     params: ParametersByLocation<ParametersMap<any>>;
     body: any;
-    security: ExegesisAuthenticated | undefined;
+    security?: {[scheme: string]: ExegesisAuthenticated};
     user: any | undefined;
     api: T;
 

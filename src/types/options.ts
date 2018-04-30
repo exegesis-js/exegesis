@@ -98,4 +98,12 @@ export interface ExegesisOptions {
      * Defaults to true.
      */
     allowMissingControllers?: boolean;
+
+    /**
+     * By default, ExegesisRunner will turn `exegesis.HttpError`s (such as errors
+     * generated from `context.makeError()` and `exegesis.ValidationError`s into JSON
+     * replies with appropriate error messages.  If you want to handle these errors
+     * yourself, set this value to false.
+     */
+    autoHandleHttpErrors?: boolean;
 }

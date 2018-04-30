@@ -4,8 +4,8 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
-import { ApiInterface, ResolvedPath } from '../types/internal';
-import { ParametersMap, OAS3ApiInfo } from '../types';
+import { ApiInterface, ResolvedPath, ParsedParameterValidator } from '../types/internal';
+import { ParametersMap, OAS3ApiInfo, ExegesisContext, ExegesisAuthenticated } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';
@@ -90,7 +90,9 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                             queryString: parsedUrl.query || undefined
                         });
                     };
-                    const validateParameters = operation.validateParameters.bind(operation);
+
+                    const validateParameters : ParsedParameterValidator =
+                        parameterValues => operation.validateParameters(parameterValues);
 
                     const bodyParser = mediaType && mediaType.parser;
                     const validateBody = mediaType && mediaType.validator;
@@ -108,6 +110,11 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         this._options.controllers[exegesisControllerName] &&
                         this._options.controllers[exegesisControllerName][operationId];
 
+                    const authenticate = (context: ExegesisContext)
+                    : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> => {
+                        return operation.authenticate(context);
+                    };
+
                     resolvedOperation = {
                         parseParameters,
                         validateParameters,
@@ -116,7 +123,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         exegesisControllerName,
                         operationId,
                         controller,
-                        authenticate: operation.authenticate.bind(operation)
+                        authenticate
                         // responseValidator,
                         // responseContentType?
                     };

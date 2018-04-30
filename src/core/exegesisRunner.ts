@@ -50,12 +50,15 @@ function resultToHttpResponse(
  * @returns runner function.
  */
 export default async function generateExegesisRunner<T>(
-    api: ApiInterface<T>
+    api: ApiInterface<T>,
+    options: {
+        autoHandleHttpErrors?: boolean
+    }={}
 ) : Promise<ExegesisRunner> {
-    return async (
+    return async function exegesisRunner(
         req: http.IncomingMessage,
         res: http.ServerResponse
-    ) : Promise<HttpResult | undefined> => {
+    ) : Promise<HttpResult | undefined> {
         const method = req.method || 'get';
         const url = req.url || '/';
 
@@ -86,7 +89,7 @@ export default async function generateExegesisRunner<T>(
 
                 return resultToHttpResponse(context, context.res.body || controllerResult);
             } catch (err) {
-                if(err instanceof ValidationError) {
+                if(options.autoHandleHttpErrors && (err instanceof ValidationError)) {
                     // TODO: Allow customization of validation error?  Or even
                     // just throw the error instead of turning it into a message?
                     const jsonError = {
@@ -97,6 +100,12 @@ export default async function generateExegesisRunner<T>(
                         status: err.status,
                         headers: {"content-type": "application/json"},
                         body: stringToStream(JSON.stringify(jsonError), 'utf-8')
+                    };
+                } else if(options.autoHandleHttpErrors && Number.isInteger((err as any).status)) {
+                    return {
+                        status: err.status,
+                        headers: {"content-type": "application/json"},
+                        body: stringToStream(JSON.stringify({message: err.message}), 'utf-8')
                     };
                 } else {
                     throw err;

@@ -36,7 +36,7 @@ export interface ExegesisContextBase {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: ExegesisAuthenticated;
+    security?: {[scheme: string]: ExegesisAuthenticated};
     user?: any;
 
     makeError(statusCode: number, message: string) : Error;

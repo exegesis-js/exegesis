@@ -282,7 +282,9 @@ export default class Operation {
         }
     }
 
-    async authenticate(exegesisContext: ExegesisContext) : Promise<Dictionary<ExegesisAuthenticated> | undefined> {
+    async authenticate(
+        exegesisContext: ExegesisContext
+    ) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> {
         if(this.securityRequirements.length === 0) {
             // No auth required
             return undefined;
@@ -319,7 +321,9 @@ export default class Operation {
                     return schemes.length === 1 ? schemes[0] : `(${schemes.join(' + ')})`;
                 })
                 .join(', ');
-            throw new HttpError(401, `Must authenticate using one of the following schemes: ${authSchemes}.`);
+
+            // TODO: Could return 401 here if the missing auth scheme or schemes are all basic auth.
+            throw new HttpError(403, `Must authenticate using one of the following schemes: ${authSchemes}.`);
         }
     }
 }

@@ -18,6 +18,30 @@ the authenticated user; it will be made available to the controller via the
 context.  `roles` is a list of roles which the user has, and `scopes` is a list
 of OAuth scopes the user is authorized for.
 
+For example:
+
+```js
+async function sessionSecurityPlugin(context) {
+    const session = context.req.headers.session;
+    if(!session) {
+        return undefined;
+    } else if(session === 'secret') {
+        return {
+            user: {name: 'jwalton}
+        };
+    } else {
+        throw context.makeError(403, "Invalid session");
+    }
+}
+
+const options : exegesis.ExegesisOptions = {
+    controllers: path.resolve(__dirname, './controllers'),
+    securityPlugins: {
+        sessionKey: sessionAuthSecurityPlugin
+    }
+};
+```
+
 When Exegesis routes a request, it will run the relevant Security Plugins and
 decide whether or not to allow the request.  Note that if an operation has
 no `security`, then no plugins will be run.
@@ -87,16 +111,25 @@ return an authenticated user:
 import basicAuth from 'basic-auth';
 import bcrypt from 'bcrypt';
 
-const basicAuthSecurityPlugin = async function(context) {
-    const {name, pass} = basicAuth(context.req);
-    const user = await db.User.find({name});
+async function basicAuthSecurityPlugin(context) {
+    const credentials = basicAuth(context.req);
+    if(!credentials) {
+        // The request failed to provide a basic auth header.  Return undefined
+        // to indicate we failed to meet the requirements.
+        return undefined;
+    }
 
+    const {name, pass} = credentials;
+    const user = await db.User.find({name});
     if(!user) {
-        // Respond with an HTTP 403 - Forbidden error.
-        throw context.makeError(403, "User not found");
+        // The user *tried* to authenticate, but gave us a bad username.
+        // We can return `undefined` here, but in this case we want to reject
+        // this request even if it matches some other secuirty scheme, because
+        // clearly something is wrong.
+        throw context.makeError(403, `User ${user} not found`);
     }
     if(!await bcrypt.compare(pass, user.password)) {
-        throw context.makeError(403, "Invalid password");
+        throw context.makeError(403, `Invalid password for ${user}`);
     }
 
     return {

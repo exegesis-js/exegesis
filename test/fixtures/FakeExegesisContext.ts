@@ -14,7 +14,7 @@ export default class FakeExegesisContext implements ExegesisContext {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: ExegesisAuthenticated;
+    security?: {[scheme: string]: ExegesisAuthenticated};
     user?: any;
     params: ParametersByLocation<ParametersMap<any>> = {
         query: {},

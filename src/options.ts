@@ -27,6 +27,7 @@ export interface ExgesisCompiledOptions {
     defaultMaxBodySize: number;
     ignoreServers: boolean;
     allowMissingControllers: boolean;
+    autoHandleHttpErrors: boolean;
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -104,6 +105,10 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
 
     const securityPlugins : Dictionary<SecurityPlugin> = options.securityPlugins || {};
 
+    const autoHandleHttpErrors = options.autoHandleHttpErrors !== undefined
+        ? !!options.autoHandleHttpErrors
+        : true;
+
     return {
         bodyParsers,
         controllers,
@@ -112,6 +117,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         parameterParsers,
         defaultMaxBodySize: maxBodySize,
         ignoreServers: options.ignoreServers || false,
-        allowMissingControllers
+        allowMissingControllers,
+        autoHandleHttpErrors
     };
 }
