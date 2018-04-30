@@ -2,17 +2,30 @@ language: node_js
 node_js:
   - 'node'
   - '10'
-  - '9'
   - '8'
-  - '7'
   - '6'
-before_install:
-  - npm install -g npm
-  - npm install -g greenkeeper-lockfile@1
-before_script:
-  - greenkeeper-lockfile-update
-after_script:
-  # Only the first job will upload the lockfile
-  - greenkeeper-lockfile-upload
-after_success:
-  - 'cat ./coverage/lcov.info | ./node_modules/.bin/coveralls'
+cache:
+    directories:
+        - ~/.npm
+jobs:
+  include:
+    - stage: test
+      before_install:
+        - npm install -g npm
+        - npm install -g nsp
+      install:
+        - travis_retry npm install
+      before_script:
+        - nsp check
+      after_success:
+        - 'cat ./coverage/lcov.info | ./node_modules/.bin/coveralls'
+
+    # Uncomment this block to enable semantic-release.
+    # - stage: release
+    #   node_js: lts/*
+    #   before_install:
+    #     - npm install -g npm
+    #   install:
+    #     - travis_retry npm install
+    #   script:
+    #     - npm run semantic-release
