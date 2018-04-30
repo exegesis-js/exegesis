@@ -25,4 +25,26 @@ describe('oas3 parameter parsers', function() {
         expect(result).to.eql({myParam: ['foo', 'bar']});
     });
 
+    it('should fill in default value if not provided', function() {
+        const parser = parameterParsers.generateParser({
+            style: 'simple',
+            explode: false,
+            schema: {
+                type: 'number',
+                default: 6
+            }
+        });
+
+        const specified = parameterParsers.parseQueryParameters(
+            [{location: queryParameterLocation, parser}],
+            "myParam=9"
+        );
+        expect(specified, 'specified').to.eql({myParam: '9'});
+
+        const unspecified = parameterParsers.parseQueryParameters(
+            [{location: queryParameterLocation, parser}],
+            ""
+        );
+        expect(unspecified, 'unspecified').to.eql({myParam: 6});
+    });
 });

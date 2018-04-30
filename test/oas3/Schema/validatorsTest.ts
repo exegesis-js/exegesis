@@ -36,6 +36,12 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                     properties: {
                         a: {type: 'number'}
                     }
+                },
+                withDefault: {
+                    type: 'object',
+                    properties: {
+                        a: {type: 'number', default: 6}
+                    }
                 }
             }
         }
@@ -171,6 +177,16 @@ describe('schema validators', function() {
 
         expect(validator(7)).to.eql(null);
         expect(validator(undefined)).to.eql(null);
+    });
+
+    it('should fill in default values', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/withDefault');
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = {};
+        expect(validator(obj)).to.eql(null);
+        expect(obj.a).to.equal(6);
     });
 
 });

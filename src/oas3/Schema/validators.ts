@@ -132,6 +132,7 @@ function generateValidator(
     // _fixNullables(schema);
 
     const ajv = new Ajv({
+        useDefaults: true,
         coerceTypes: 'array',
         removeAdditional: 'failing',
         jsonPointers: true

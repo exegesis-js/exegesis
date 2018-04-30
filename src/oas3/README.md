@@ -10,8 +10,8 @@ OpenApi
 +- Paths
    +- Path[]
       +- Operation
-         +- MediaType
-          +- Parameter
+         +- Parameter
+         +- RequestMediaType
 ```
 
 Every object has an Oas3CompileContext which has "global" information about

@@ -18,6 +18,7 @@ export interface StyledParameterDescriptor {
  */
 export interface MediaTypeParameterDescriptor {
     contentType: string;
+    schema?: any;
     parser: StringParser;
     required?: boolean;
     uriEncoded?: boolean;

@@ -1,3 +1,4 @@
+import ld from 'lodash';
 import querystring from 'querystring';
 import qs from 'qs';
 
@@ -41,7 +42,7 @@ function generateMediaTypeParser(
 ) : ParameterParser {
     // request and response are here for application/x-www-form-urlencoded.
 
-    const answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
+    let answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
         try {
             let value = values[location.name];
             if(value === undefined || value === null) {return value;}
@@ -69,6 +70,9 @@ function generateMediaTypeParser(
         }
     };
 
+    if(parameterDescriptor.schema && parameterDescriptor.schema.default) {
+        answer = setDefault(answer, parameterDescriptor.schema.default);
+    }
     return answer;
 }
 
@@ -101,7 +105,26 @@ function generateStyleParser(
             throw new Error(`Don't know how to parse parameters with style ${descriptor.style}`);
     }
 
+    if(descriptor.schema.default) {
+        answer = setDefault(answer, descriptor.schema.default);
+    }
     return answer;
+}
+
+function setDefault(parser: ParameterParser, def: any) {
+    return function addDefault(
+        location: ParameterLocation,
+        rawParamValues: RawValues,
+        rawValue: string,
+        parserContext: any
+    ) {
+        const answer = parser(location, rawParamValues, rawValue, parserContext);
+        if(answer !== undefined) {
+            return answer;
+        } else {
+            return ld.cloneDeep(def);
+        }
+    };
 }
 
 function toStructuredParser(parser: RawStringParameterParser) {
@@ -163,10 +186,6 @@ export function parseQueryParameters(
     }[],
     query: string | undefined
 ) {
-    if(!query) {
-        return {};
-    } else {
-        const rawValues = querystring.parse(query, '&', '=', {decodeURIComponent: (val: string) => val});
-        return _parseParameterGroup(params, rawValues, query);
-    }
+    const rawValues = querystring.parse(query || '', '&', '=', {decodeURIComponent: (val: string) => val});
+    return _parseParameterGroup(params, rawValues, query || '');
 }

@@ -47,6 +47,27 @@ paths:
           content:
             application/json:
               schema: {type: 'object'}
+  /postWithDefault:
+    post:
+      summary: An operation with a default body
+      x-exegesis-controller: postWithDefault
+      operationId: postWithDefault
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              default:
+                name: Tim
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema: {type: 'object'}
 components:
   securitySchemes:
     sessionKey:

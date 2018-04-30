@@ -258,7 +258,10 @@ describe('oas3 integration parameter parsing', function() {
                         {}
                     );
 
-                    expect(result!.operation!.parseParameters!().query.var).to.eql(undefined);
+                    const expected = (typeName === 'explodedObject' && style === 'form')
+                        ? {}
+                        : undefined;
+                    expect(result!.operation!.parseParameters!().query.var).to.eql(expected);
                 });
 
                 // TODO: deepObject, pipe and space delimited.

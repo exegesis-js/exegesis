@@ -1,5 +1,5 @@
 import {MimeTypeRegistry} from '../../utils/mime';
-import MediaType from '../MediaType';
+import RequestMediaType from '../RequestMediaType';
 
 import * as oas3 from 'openapi3-ts';
 import Oas3CompileContext from '../Oas3CompileContext';
@@ -19,32 +19,23 @@ export function isReferenceObject(obj: any) : obj is oas3.ReferenceObject {
  * @param path - The path to the `content` object.
  * @param content - The `content` object.
  */
-export function contentToMediaTypeRegistry<T>(
+export function contentToRequestMediaTypeRegistry(
     context: Oas3CompileContext,
-    parserRegistry: MimeTypeRegistry<T>,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
     content?: oas3.ContentObject
 ) {
-    const answer = new MimeTypeRegistry<MediaType<T>>();
+    const answer = new MimeTypeRegistry<RequestMediaType>();
 
     if(content) {
         for(const mediaType of Object.keys(content)) {
             const oaMediaType = content[mediaType];
-            const mediaContext = context.childContext(mediaType);
-            const parser = parserRegistry.get(mediaType);
-
-            if(!parser) {
-                throw new Error('Unable to find suitable mime type parser for ' +
-                    `type ${mediaType} in ${context.jsonPointer}`);
-            }
-
-            answer.set(mediaType, new MediaType<T>(
-                mediaContext,
+            answer.set(mediaType, new RequestMediaType(
+                context.childContext(mediaType),
                 oaMediaType,
+                mediaType,
                 parameterLocation,
-                parameterRequired,
-                parser
+                parameterRequired
             ));
         }
     }

@@ -124,4 +124,15 @@ describe('integration', function() {
             });
     });
 
+    it('should post a body', async function() {
+        const fetch = makeFetch(this.server);
+        await fetch(`/postWithDefault`, {
+            method: 'post',
+            headers: {"content-type": 'application/json'},
+            body: JSON.stringify({name: 'Joe'})
+        })
+            .expect(200)
+            .expectBody({greeting: 'Hello, Joe!'});
+    });
+
 });

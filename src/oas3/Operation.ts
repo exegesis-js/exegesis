@@ -1,16 +1,15 @@
 import pb from 'promise-breaker';
 import * as oas3 from 'openapi3-ts';
 
-import {MimeTypeRegistry} from '../utils/mime';
-import {contentToMediaTypeRegistry} from './oasUtils';
-import MediaType from './MediaType';
+import { MimeTypeRegistry } from '../utils/mime';
+import { contentToRequestMediaTypeRegistry } from './oasUtils';
+import RequestMediaType from './RequestMediaType';
 import Oas3CompileContext from './Oas3CompileContext';
 import Parameter from './Parameter';
 import { RawValues, parseParameterGroup, parseQueryParameters } from './parameterParsers';
 import {
     ParametersMap,
     ParametersByLocation,
-    BodyParser,
     IValidationError,
     ExegesisContext,
     ExegesisAuthenticated,
@@ -111,7 +110,7 @@ export default class Operation {
     readonly securityRequirements: oas3.SecurityRequirementObject[];
     readonly requiredRoles: string[];
 
-    private readonly _requestBodyContentTypes: MimeTypeRegistry<MediaType<BodyParser>>;
+    private readonly _requestBodyContentTypes: MimeTypeRegistry<RequestMediaType>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
 
     constructor(
@@ -154,15 +153,14 @@ export default class Operation {
             const contentContext = context.childContext(['requestBody', 'content']);
             // FIX: This should not be a map of MediaTypes, but a map of request bodies.
             // Request body has a "required" flag, which we are currently ignoring.
-            this._requestBodyContentTypes = contentToMediaTypeRegistry<BodyParser>(
+            this._requestBodyContentTypes = contentToRequestMediaTypeRegistry(
                 contentContext,
-                context.options.bodyParsers,
                 {in: 'request', name: 'body', docPath: contentContext.path},
                 requestBody.required || false,
                 requestBody.content
             );
         } else {
-            this._requestBodyContentTypes = new MimeTypeRegistry<MediaType<BodyParser>>();
+            this._requestBodyContentTypes = new MimeTypeRegistry<RequestMediaType>();
         }
 
         const localParameters = (this.oaOperation.parameters || [])
@@ -187,7 +185,7 @@ export default class Operation {
      * @returns - The MediaType object to handle this request, or undefined if
      *   no MediaType is set for the given contentType.
      */
-    getRequestMediaType(contentType: string) : MediaType<BodyParser> | undefined {
+    getRequestMediaType(contentType: string) : RequestMediaType | undefined {
         return this._requestBodyContentTypes.get(contentType);
     }
 

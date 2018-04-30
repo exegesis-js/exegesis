@@ -3,9 +3,8 @@ import { generateParser, ParameterParser } from './parameterParsers';
 import Oas3CompileContext from './Oas3CompileContext';
 
 import { isReferenceObject } from './oasUtils';
-import MediaType from './MediaType';
 
-import { ValidatorFunction, ParameterLocation, StringParser, oas3 } from '../types';
+import { ValidatorFunction, ParameterLocation, oas3 } from '../types';
 import { extractSchema } from '../utils/jsonSchema';
 import { JSONSchema6, JSONSchema4 } from 'json-schema';
 
@@ -92,19 +91,21 @@ export default class Parameter {
             // correctly.
             this.parser = generateParser({
                 required: resOaParameter.required || false,
+                schema: oaMediaType.schema,
                 contentType: mediaTypeString,
                 parser,
                 uriEncoded: ['query', 'path'].includes(resOaParameter.in)
             });
 
-            const mediaType = new MediaType<StringParser>(
-                context.childContext(['content', mediaTypeString]),
-                oaMediaType,
-                this.location,
-                resOaParameter.required || false,
-                parser
-            );
-            this.validate = mediaType.validator.bind(mediaType);
+            if(oaMediaType.schema) {
+                this.validate = generateRequestValidator(
+                    context.childContext(['content', mediaTypeString, 'schema']),
+                    this.location,
+                    resOaParameter.required || false
+                );
+            } else {
+                this.validate = () => null;
+            }
         } else {
             throw new Error(`Parameter ${resOaParameter.name} should have a 'schema' or a 'content'`);
         }
