@@ -134,7 +134,7 @@ describe('schema validators', function() {
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
         expect(validator(7)).to.eql(null);
 
-        expect(validator(2**32)).to.eql([{
+        expect(validator(Math.pow(2, 32))).to.eql([{
             type: ErrorType.Error,
             message: 'should match format "int32"',
             location: {
