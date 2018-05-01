@@ -42,6 +42,30 @@ function resultToHttpResponse(
     };
 }
 
+function handleError(err: Error) {
+    if(err instanceof ValidationError) {
+        // TODO: Allow customization of validation error?  Or even
+        // just throw the error instead of turning it into a message?
+        const jsonError = {
+            message: "Validation errors",
+            errors: err.errors
+        };
+        return {
+            status: err.status,
+            headers: {"content-type": "application/json"},
+            body: stringToStream(JSON.stringify(jsonError), 'utf-8')
+        };
+    } else if(Number.isInteger((err as any).status)) {
+        return {
+            status: (err as any).status,
+            headers: {"content-type": "application/json"},
+            body: stringToStream(JSON.stringify({message: err.message}), 'utf-8')
+        };
+    } else {
+        throw err;
+    }
+}
+
 /**
  * Returns a `(req, res) => Promise<boolean>` function, which handles incoming
  * HTTP requests.  The returned function will return true if the request was
@@ -62,10 +86,11 @@ export default async function generateExegesisRunner<T>(
         const method = req.method || 'get';
         const url = req.url || '/';
 
-        const resolved = api.resolve(method, url, req.headers);
+        try {
 
-        if(resolved && resolved.operation) {
-            try {
+            const resolved = api.resolve(method, url, req.headers);
+
+            if(resolved && resolved.operation) {
                 const {operation} = resolved;
 
                 if(!operation.controller) {
@@ -88,31 +113,16 @@ export default async function generateExegesisRunner<T>(
                 }
 
                 return resultToHttpResponse(context, context.res.body || controllerResult);
-            } catch (err) {
-                if(options.autoHandleHttpErrors && (err instanceof ValidationError)) {
-                    // TODO: Allow customization of validation error?  Or even
-                    // just throw the error instead of turning it into a message?
-                    const jsonError = {
-                        message: "Validation errors",
-                        errors: err.errors
-                    };
-                    return {
-                        status: err.status,
-                        headers: {"content-type": "application/json"},
-                        body: stringToStream(JSON.stringify(jsonError), 'utf-8')
-                    };
-                } else if(options.autoHandleHttpErrors && Number.isInteger((err as any).status)) {
-                    return {
-                        status: err.status,
-                        headers: {"content-type": "application/json"},
-                        body: stringToStream(JSON.stringify({message: err.message}), 'utf-8')
-                    };
-                } else {
-                    throw err;
-                }
+            } else {
+                return undefined;
             }
-        } else {
-            return undefined;
+
+        } catch (err) {
+            if(options.autoHandleHttpErrors) {
+                return handleError(err);
+            } else {
+                throw err;
+            }
         }
     };
 }

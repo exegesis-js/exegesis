@@ -54,7 +54,7 @@ export default class RequestMediaType {
 
         const schema = oaMediaType.schema && context.resolveRef(oaMediaType.schema);
 
-        if(schema && 'default' in schema) {
+        if(schema && ('default' in schema)) {
             this.parser = generateAddDefaultParser(parser, schema.default);
         } else {
             this.parser = parser;

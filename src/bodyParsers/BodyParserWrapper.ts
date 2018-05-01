@@ -2,6 +2,7 @@ import http from 'http';
 import contentType from 'content-type';
 import getRawBody from 'raw-body';
 
+import httpHasBody from '../utils/httpHasBody';
 import { MimeTypeParser, StringParser, HttpIncomingMessage, Callback } from "../types";
 
 export default class TextBodyParser implements MimeTypeParser {
@@ -27,10 +28,7 @@ export default class TextBodyParser implements MimeTypeParser {
         }
 
         // Make sure we have a body to parse
-        const contentLength = req.headers['content-length'];
-        const hasBody = !!req.headers['transfer-encoding'] ||
-            (contentLength && typeof(contentLength) === 'number' && contentLength > 0);
-        if(!hasBody) {
+        if(!httpHasBody(req.headers)) {
             return done();
         }
 

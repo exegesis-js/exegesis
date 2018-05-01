@@ -44,6 +44,7 @@ async function createServer() {
                 //     res.end(JSON.stringify({message: err.message}));
                 // } else if(err) {
                 if(err) {
+                    console.error(err.stack); // tslint:disable-line no-console
                     res.writeHead(500);
                     res.end(`Internal error: ${err.message}`);
                 } else {
@@ -140,6 +141,23 @@ describe('integration', function() {
                 .expectBody({greeting: 'Hello, Joe!'});
         });
 
+        it('return an error for invalid content-type', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithDefault`, {
+                method: 'post',
+                headers: {"content-type": 'application/xml'},
+                body: '<name>Joe</name>'
+            })
+                .expect(400)
+                .expectBody({message: 'Invalid content-type: application/xml'});
+        });
+
+        it('return an error for no body if body is required', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithDefault`, {method: 'post'})
+                .expect(400)
+                .expectBody({message: 'Missing content-type. Expected one of: application/json'});
+        });
     });
 
 });

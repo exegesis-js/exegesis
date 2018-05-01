@@ -53,6 +53,7 @@ paths:
       x-exegesis-controller: postWithDefault
       operationId: postWithDefault
       requestBody:
+        required: true
         content:
           "application/json":
             schema:

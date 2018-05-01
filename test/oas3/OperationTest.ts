@@ -42,7 +42,7 @@ function makeOperation(
     };
 
     const context = new Oas3CompileContext(openApiDoc, ['paths', '/path', method], compileOptions(options));
-    return new Operation(context, operation, openApiDoc.paths['/path'], undefined, []);
+    return new Operation(context, operation, openApiDoc.paths['/path'], method, undefined, []);
 }
 
 describe('oas3 Operation', function() {

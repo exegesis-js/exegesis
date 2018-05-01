@@ -10,6 +10,8 @@ import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
+import RequestMediaType from './RequestMediaType';
+import { HttpBadRequestError } from '../errors';
 
 export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
     private readonly _openApiDoc: oas3.OpenAPIObject;
@@ -78,7 +80,17 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
             if(resolvedPath) {
                 const {path, rawPathParams} = resolvedPath;
                 const operation = path.getOperation(method);
-                const mediaType = (operation && contentType) ? operation.getRequestMediaType(contentType) : undefined;
+                let mediaType : RequestMediaType | undefined;
+
+                if(operation && contentType) {
+                    mediaType = operation.getRequestMediaType(contentType);
+                    if(!mediaType) {
+                        throw new HttpBadRequestError(`Invalid content-type: ${contentType}`);
+                    }
+                } else if(operation && operation.validRequestContentTypes) {
+                    throw new HttpBadRequestError(`Missing content-type. ` +
+                        `Expected one of: ${operation.validRequestContentTypes}`);
+                }
 
                 let resolvedOperation;
                 if(operation) {
@@ -110,8 +122,9 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         this._options.controllers[exegesisControllerName] &&
                         this._options.controllers[exegesisControllerName][operationId];
 
-                    const authenticate = (context: ExegesisContext)
-                    : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> => {
+                    const authenticate = (
+                        context: ExegesisContext
+                    ) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> => {
                         return operation.authenticate(context);
                     };
 

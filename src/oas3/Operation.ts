@@ -18,6 +18,8 @@ import {
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID, EXEGESIS_ROLES } from './extensions';
 import { HttpError } from '../errors';
 
+const METHODS_WITH_BODY = ['post', 'put'];
+
 // Returns a `{securityRequirements, requiredRoles}` object for the given operation.
 function getSecurityRequirements(
     context: Oas3CompileContext, // Operation context.
@@ -108,7 +110,18 @@ export default class Operation {
     readonly exegesisController: string | undefined;
     readonly operationId: string | undefined;
     readonly securityRequirements: oas3.SecurityRequirementObject[];
+
+    /**
+     * A list of roles a user must have to call this operation.
+     */
     readonly requiredRoles: string[];
+
+    /**
+     * If this operation has a `requestBody`, this is a list of content-types
+     * the operation understands.  If this operation does not expect a request
+     * body, then this is undefined.  Note this list may contain wildcards.
+     */
+    readonly validRequestContentTypes: string[] | undefined;
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<RequestMediaType>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
@@ -117,6 +130,7 @@ export default class Operation {
         context: Oas3CompileContext,
         oaOperation: oas3.OperationObject,
         oaPath: oas3.PathItemObject,
+        method: string,
         exegesisController: string | undefined,
         parentParameters: Parameter[]
     ) {
@@ -139,8 +153,9 @@ export default class Operation {
             }
         }
 
-        const requestBody = oaOperation.requestBody &&
-            (context.resolveRef(oaOperation.requestBody) as oas3.RequestBodyObject);
+        const requestBody = oaOperation.requestBody && METHODS_WITH_BODY.includes(method)
+            ? (context.resolveRef(oaOperation.requestBody) as oas3.RequestBodyObject)
+            : undefined;
 
         validateControllers(
             context,
@@ -149,7 +164,9 @@ export default class Operation {
             this.operationId
         );
 
-        if(requestBody && requestBody.content) {
+        if(requestBody) {
+            this.validRequestContentTypes = Object.keys(requestBody.content);
+
             const contentContext = context.childContext(['requestBody', 'content']);
             // FIX: This should not be a map of MediaTypes, but a map of request bodies.
             // Request body has a "required" flag, which we are currently ignoring.
@@ -189,6 +206,12 @@ export default class Operation {
         return this._requestBodyContentTypes.get(contentType);
     }
 
+    /**
+     * Parse parameters for this operation.
+     * @param params - Raw headers, raw path params and server params from
+     *   `PathResolver`, and the raw queryString.
+     * @returns parsed parameters.
+     */
     parseParameters(params : {
         headers : RawValues | undefined,
         rawPathParams: RawValues | undefined,

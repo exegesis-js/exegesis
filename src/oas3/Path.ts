@@ -36,6 +36,7 @@ export default class Path {
                         context.childContext(method),
                         oaPath[method],
                         oaPath,
+                        method,
                         exegesisController,
                         parameters
                     );

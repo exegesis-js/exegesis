@@ -88,20 +88,28 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
         return pb.addCallback(done, async () => {
             if(!this._bodyResolved) {
                 let body: any;
+
+                // Parse the body.
                 if(this._operation.bodyParser) {
                     body = await pb.call((done: Callback<void>) =>
                         this._operation.bodyParser!.parseReq(this.req, this.origRes, done)
                     );
                     body = body || this.req.body;
-                    const bodyErrors = this._operation.validateBody && this._operation.validateBody(body);
-                    if(bodyErrors && bodyErrors.length > 0) {
-                        throw new ValidationError(bodyErrors);
-                    }
                 }
+
+                // Assign the body to the appropriate places
                 this.req.body = body;
                 this.body = body;
                 this._bodyResolved = true;
-            }
+
+                // Validate the body.  We need to validate the body even if we
+                // didn't parse a body, since this is where we check if the
+                // body is required.
+                const bodyErrors = this._operation.validateBody && this._operation.validateBody(body);
+                if(bodyErrors && bodyErrors.length > 0) {
+                    throw new ValidationError(bodyErrors);
+                }
+        }
             return this.body;
         });
     }
