@@ -1,5 +1,4 @@
 import * as http from 'http';
-import * as http2 from 'http2'; // TODO: Is this going to cause interop problems with older versions of node.js?
 import * as net from 'net';
 import * as types from '../types';
 import { HttpHeaders } from '../types';
@@ -12,7 +11,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     ended: boolean = false;
     connection: net.Socket;
 
-    constructor(res: http.ServerResponse | http2.Http2ServerResponse) {
+    constructor(res: http.ServerResponse /* | http2.Http2ServerResponse */) {
         this.connection = res.connection;
     }
 
