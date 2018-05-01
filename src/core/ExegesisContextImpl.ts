@@ -97,19 +97,22 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
                     body = body || this.req.body;
                 }
 
-                // Assign the body to the appropriate places
-                this.req.body = body;
-                this.body = body;
-                this._bodyResolved = true;
-
                 // Validate the body.  We need to validate the body even if we
                 // didn't parse a body, since this is where we check if the
                 // body is required.
-                const bodyErrors = this._operation.validateBody && this._operation.validateBody(body);
-                if(bodyErrors && bodyErrors.length > 0) {
-                    throw new ValidationError(bodyErrors);
+                if(this._operation.validateBody) {
+                    const validationResult = this._operation.validateBody(body);
+                    if(validationResult.errors && validationResult.errors.length > 0) {
+                        throw new ValidationError(validationResult.errors);
+                    }
+
+                    body = validationResult.value;
                 }
-        }
+
+                // Assign the body to the appropriate places
+                this.body = this.req.body = body;
+                this._bodyResolved = true;
+            }
             return this.body;
         });
     }

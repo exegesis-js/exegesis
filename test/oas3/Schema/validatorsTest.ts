@@ -42,6 +42,10 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                     properties: {
                         a: {type: 'number', default: 6}
                     }
+                },
+                numberWithDefault: {
+                    type: 'number',
+                    default: 7
                 }
             }
         }
@@ -65,9 +69,9 @@ describe('schema validators', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/number');
 
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
-        expect(validator(7)).to.eql(null);
+        expect(validator(7)).to.eql({errors: null, value: 7});
 
-        expect(validator("foo")).to.eql([{
+        expect(validator("foo").errors).to.eql([{
             type: ErrorType.Error,
             message: 'should be number',
             location: {
@@ -83,10 +87,10 @@ describe('schema validators', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
         const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
-        expect(validator({b: 'hello'}), 'should validate missing "a"').to.eql(null);
-        expect(validator({a: 'hello', b: 'hello'}), 'should allow "a"').to.eql(null);
+        expect(validator({b: 'hello'}).errors, 'should validate missing "a"').to.eql(null);
+        expect(validator({a: 'hello', b: 'hello'}).errors, 'should allow "a"').to.eql(null);
 
-        expect(validator({}), 'should still require "b"').to.eql([{
+        expect(validator({}).errors, 'should still require "b"').to.eql([{
             type: ErrorType.Error,
             message: "should have required property 'b'",
             location: {
@@ -102,10 +106,10 @@ describe('schema validators', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
         const validator = validators.generateResponseValidator(context, REQUEST_BODY_LOCATION, false);
-        expect(validator({a: 'hello'}), 'should validate missing "b"').to.eql(null);
-        expect(validator({a: 'hello', b: 'hello'}), 'should allow "b"').to.eql(null);
+        expect(validator({a: 'hello'}).errors, 'should validate missing "b"').to.eql(null);
+        expect(validator({a: 'hello', b: 'hello'}).errors, 'should allow "b"').to.eql(null);
 
-        expect(validator({}), 'should still require "a"').to.eql([{
+        expect(validator({}).errors, 'should still require "a"').to.eql([{
             type: ErrorType.Error,
             message: "should have required property 'a'",
             location: {
@@ -122,7 +126,7 @@ describe('schema validators', function() {
 
         const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 
-        expect(validator({a: 'hello'})).to.eql([{
+        expect(validator({a: 'hello'}).errors).to.eql([{
             type: ErrorType.Error,
             message: 'should be number',
             location: {
@@ -138,9 +142,9 @@ describe('schema validators', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
-        expect(validator(7)).to.eql(null);
+        expect(validator(7).errors).to.eql(null);
 
-        expect(validator(Math.pow(2, 32))).to.eql([{
+        expect(validator(Math.pow(2, 32)).errors).to.eql([{
             type: ErrorType.Error,
             message: 'should match format "int32"',
             location: {
@@ -157,8 +161,8 @@ describe('schema validators', function() {
 
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, true);
 
-        expect(validator(7)).to.eql(null);
-        expect(validator(undefined)).to.eql([{
+        expect(validator(7).errors).to.eql(null);
+        expect(validator(undefined).errors).to.eql([{
             type: ErrorType.Error,
             message: 'Missing required query parameter "foo"',
             location: {
@@ -175,8 +179,8 @@ describe('schema validators', function() {
 
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
 
-        expect(validator(7)).to.eql(null);
-        expect(validator(undefined)).to.eql(null);
+        expect(validator(7).errors).to.eql(null);
+        expect(validator(undefined).errors).to.eql(null);
     });
 
     it('should fill in default values', function() {
@@ -185,8 +189,26 @@ describe('schema validators', function() {
         const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 
         const obj : any = {};
-        expect(validator(obj)).to.eql(null);
+        expect(validator(obj).errors).to.eql(null);
         expect(obj.a).to.equal(6);
+    });
+
+    it('type coerce root values', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/numberWithDefault');
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = '9';
+        expect(validator(obj)).to.eql({
+            errors: null,
+            value: 9
+        });
+
+        expect(validator(undefined)).to.eql({
+            errors: null,
+            value: 7
+        });
+
     });
 
 });

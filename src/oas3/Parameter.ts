@@ -63,7 +63,7 @@ export default class Parameter {
 
         this.context = context;
         this.oaParameter = resOaParameter;
-        this.validate = () => null;
+        this.validate = (value) => ({errors: null, value});
 
         // Find the schema for this parameter.
         if(resOaParameter.schema) {
@@ -103,8 +103,6 @@ export default class Parameter {
                     this.location,
                     resOaParameter.required || false
                 );
-            } else {
-                this.validate = () => null;
             }
         } else {
             throw new Error(`Parameter ${resOaParameter.name} should have a 'schema' or a 'content'`);

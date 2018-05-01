@@ -126,10 +126,10 @@ async function basicAuthSecurityPlugin(context) {
         // We can return `undefined` here, but in this case we want to reject
         // this request even if it matches some other secuirty scheme, because
         // clearly something is wrong.
-        throw context.makeError(403, `User ${user} not found`);
+        throw context.makeError(403, `User ${name} not found`);
     }
     if(!await bcrypt.compare(pass, user.password)) {
-        throw context.makeError(403, `Invalid password for ${user}`);
+        throw context.makeError(403, `Invalid password for ${name}`);
     }
 
     return {

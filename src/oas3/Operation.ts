@@ -16,7 +16,7 @@ import {
     Dictionary
 } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID, EXEGESIS_ROLES } from './extensions';
-import { HttpError } from '../errors';
+import { HttpError } from './../errors';
 
 const METHODS_WITH_BODY = ['post', 'put'];
 
@@ -230,21 +230,25 @@ export default class Operation {
     }
 
     validateParameters(parameterValues: ParametersByLocation<ParametersMap<any>>) : IValidationError[] | null {
-        let result: IValidationError[] | null = null;
+        // TODO: We could probably make this a lot more efficient by building the schema
+        // for the parameter tree.
+        let errors: IValidationError[] | null = null;
         for(const parameterLocation of Object.keys(parameterValues)) {
             const parameters: Parameter[] = (this._parameters as any)[parameterLocation] as Parameter[];
             const values = (parameterValues as any)[parameterLocation] as ParametersMap<any>;
 
             for(const parameter of parameters) {
                 const innerResult = parameter.validate(values[parameter.oaParameter.name]);
-                if(innerResult && innerResult.length > 0) {
-                    result = result || [];
-                    result = result.concat(innerResult);
+                if(innerResult && innerResult.errors && innerResult.errors.length > 0) {
+                    errors = errors || [];
+                    errors = errors.concat(innerResult.errors);
+                } else {
+                    values[parameter.oaParameter.name] = innerResult.value;
                 }
             }
         }
 
-        return result;
+        return errors;
     }
 
     private async _checkSecurityRequirement(

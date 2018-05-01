@@ -6,7 +6,14 @@ import * as jsonSchema from '../../utils/jsonSchema';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import Oas3CompileContext from '../Oas3CompileContext';
 
-import { CustomFormats, ValidatorFunction, IValidationError, ErrorType, ParameterLocation } from '../../types';
+import {
+    CustomFormats,
+    ValidatorFunction,
+    IValidationError,
+    ErrorType,
+    ParameterLocation,
+    JsonPath
+} from '../../types';
 
 // TODO tests
 // * nullable
@@ -116,6 +123,62 @@ export function _filterRequiredProperties(schema: any, propNameToFilter: string)
     });
 }
 
+function doValidate(
+    schemaPath: JsonPath,
+    parameterLocation: ParameterLocation,
+    parameterRequired: boolean,
+    ajvValidate: Ajv.ValidateFunction,
+    json: any
+) {
+    const value = {value: json};
+    let errors : IValidationError[] | null = null;
+
+    if(json === null || json === undefined) {
+        if(parameterRequired) {
+            errors = [{
+                type: ErrorType.Error,
+                message: `Missing required ${getParameterDescription(parameterLocation)}`,
+                location: {
+                    in: parameterLocation.in,
+                    name: parameterLocation.name,
+                    // docPath comes from parameter here, not schema, since the parameter
+                    // is the one that defines it is required.
+                    docPath: parameterLocation.docPath,
+                    path: []
+                }
+            }];
+        }
+    }
+
+    if(!errors) {
+        ajvValidate(value);
+        if(ajvValidate.errors) {
+            errors = ajvValidate.errors.map(err => {
+                let path: JsonPath = [];
+                if(err.dataPath) {
+                    path = jsonPaths.jsonPointerToPath(err.dataPath);
+                    if(path[0] === 'value') {
+                        path.shift();
+                    }
+                }
+
+                return {
+                    type: ErrorType.Error,
+                    message: err.message || 'Unspecified error',
+                    location: {
+                        in: parameterLocation.in,
+                        name: parameterLocation.name,
+                        docPath: schemaPath,
+                        path
+                    }
+                };
+            });
+        }
+    }
+
+    return {errors, value: value.value};
+}
+
 function generateValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
@@ -125,11 +188,24 @@ function generateValidator(
     const {openApiDoc, path: schemaPath} = schemaContext;
     const customFormats = schemaContext.options.customFormats;
 
-    const schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonPointer(schemaPath));
+    let schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonPointer(schemaPath));
     _filterRequiredProperties(schema, propNameToFilter);
     removeExamples(schema);
     // TODO: Should we do this?  Or should we rely on the schema being correct in the first place?
     // _fixNullables(schema);
+
+    // So that we can replace the "root" value of the schema using ajv's type coercion...
+    traveseSchema(schema, node => {
+        if(node.$ref) {
+            node.$ref = `#/properties/value/${node.$ref.slice(1)}`;
+        }
+    });
+    schema = {
+        type: 'object',
+        properties: {
+            value: schema
+        }
+    };
 
     const ajv = new Ajv({
         useDefaults: true,
@@ -141,41 +217,7 @@ function generateValidator(
     const validate = ajv.compile(schema);
 
     return function(json: any) {
-        if(json === null || json === undefined) {
-            if(parameterRequired) {
-                return [{
-                    type: ErrorType.Error,
-                    message: `Missing required ${getParameterDescription(parameterLocation)}`,
-                    location: {
-                        in: parameterLocation.in,
-                        name: parameterLocation.name,
-                        // docPath comes from parameter here, not schema, since the parameter
-                        // is the one that defines it is required.
-                        docPath: parameterLocation.docPath,
-                        path: []
-                    }
-                }];
-            } else {
-                return null;
-            }
-        }
-
-        validate(json);
-        if(validate.errors) {
-            const validationErrors : IValidationError[] = validate.errors.map(err => ({
-                type: ErrorType.Error,
-                message: err.message || 'Unspecified error',
-                location: {
-                    in: parameterLocation.in,
-                    name: parameterLocation.name,
-                    docPath: schemaPath,
-                    path: err.dataPath ? jsonPaths.jsonPointerToPath(err.dataPath) : []
-                }
-            }));
-            return validationErrors;
-        }
-
-        return null;
+        return doValidate(schemaPath, parameterLocation, parameterRequired, validate, json);
     };
 }
 

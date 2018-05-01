@@ -47,8 +47,13 @@ export interface IValidationError {
  * convert strings into numbers, or convert a single element into an array,
  * in order to conform to the schema.
  *
- * @returns a list of errors, or `null` if validation was successful.
+ * @returns an `{errors, value}` object, wehre `errors` is a list of errors,
+ *   or `null` if validation was successful, and `value` is the validated
+ *   (possibly modified) value.
  */
 export interface ValidatorFunction {
-    (doc: any) : IValidationError[] | null;
+    (doc: any) : {
+        errors: IValidationError[] | null,
+        value: any
+    };
 }
