@@ -5,7 +5,7 @@
 
 - [controllers](#controllers)
 - [allowMissingControllers](#allowmissingcontrollers)
-- [securityPlugins](#securityplugins)
+- [authenticators](#authenticators)
 - [mimeTypeParsers](#mimetypeparsers)
 - [defaultMaxBodySize](#defaultmaxbodysize)
 - [customFormats](#customformats)
@@ -53,10 +53,10 @@ handle them.
 
 Defaults to true.
 
-## securityPlugins
+## authenticators
 
-An hash of security plugins.  Keys are security scheme names from your
-OpenAPI document, values are Security Plugin functions.  See [Security Plugins](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md)
+An hash of authenticators.  Keys are security scheme names from your
+OpenAPI document, values are authenticator functions.  See [OAS3 Security](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md)
 for details.
 
 ## mimeTypeParsers

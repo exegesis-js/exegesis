@@ -14,7 +14,7 @@ import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 chai.use(chaiAsPromised);
 const {expect} = chai;
 
-const DEFAULT_OAUTH_PLUGIN_RESULT = {user: 'benbria', roles: ['bacon'], scopes: ['admin']};
+const DEFAULT_OAUTH_RESULT = {user: 'benbria', roles: ['bacon'], scopes: ['admin']};
 
 function makeOperation(
     method: string,
@@ -35,9 +35,9 @@ function makeOperation(
     };
 
     const options = opts.options || {
-        securityPlugins: {
+        authenticators: {
             basicAuth() {return undefined;},
-            oauth() {return DEFAULT_OAUTH_PLUGIN_RESULT;}
+            oauth() {return DEFAULT_OAUTH_RESULT;}
         }
     };
 
@@ -105,12 +105,12 @@ describe('oas3 Operation', function() {
             expect(operation.requiredRoles).to.eql(['bacon']);
         });
 
-        it('should error if an operation requires a security scheme that we do not have a plugin for', function() {
+        it('should error if an op requires a security scheme that we do not have an authenticator for', function() {
             this.operation.security = [{foo: []}];
             expect(
                 () => makeOperation('get', this.operation)
             ).to.throw(
-                'Operation /paths/~1path/get references security scheme "foo" but no security plugin was provided'
+                'Operation /paths/~1path/get references security scheme "foo" but no authenticator was provided'
             );
         });
 
@@ -120,13 +120,13 @@ describe('oas3 Operation', function() {
 
             expect(authenticated).to.exist;
             expect(authenticated).to.eql({
-                oauth: DEFAULT_OAUTH_PLUGIN_RESULT
+                oauth: DEFAULT_OAUTH_RESULT
             });
         });
 
         it('should fail to authenticate an incoming request if no credentials are provided', async function() {
             const options = {
-                securityPlugins: {
+                authenticators: {
                     basicAuth() {return undefined;},
                     oauth() {return undefined;}
                 }
@@ -175,13 +175,13 @@ describe('oas3 Operation', function() {
             }];
             this.operation[EXEGESIS_ROLES] = ['foo', 'bar'];
 
-            const securityPlugins = {
+            const authenticators = {
                 basicAuth() {return {roles: ['foo', 'bar']};},
                 oauth() {return {roles: ['foo', 'baz']};}
             };
 
             const operation: Operation = makeOperation('get', this.operation, {options: {
-                securityPlugins
+                authenticators
             }});
 
             // TODO: This error message could be better.
@@ -192,7 +192,7 @@ describe('oas3 Operation', function() {
 
         it('should always authenticate a request with no security requirements', async function() {
             const options = {
-                securityPlugins: {
+                authenticators: {
                     basicAuth() {return undefined;},
                     oauth() {return undefined;}
                 }

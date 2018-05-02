@@ -10,49 +10,51 @@ Exegesis also has a vendor extension, "x-exegesis-roles", which is an array of
 strings which adds support for restricting which operations are available to
 which users after they have been authenticated.
 
-When compiling your API, Exegesis will takes a `securityPlugins` option which
-maps security schemes to Security Plugins.  A Security Plugin is a function
-which, given a context, returns a `{user, roles, scopes}` object, or `undefined`
-if the scheme couldn't be satisfied.  `user` is an arbitrary object representing
-the authenticated user; it will be made available to the controller via the
-context.  `roles` is a list of roles which the user has, and `scopes` is a list
-of OAuth scopes the user is authorized for.
+When compiling your API, Exegesis will takes an `authenticators` option which
+maps security schemes to authenticators.  An `authenticator` is a
+function which, given a context, returns a `{user, roles, scopes}` object, or
+`undefined` if the scheme couldn't be satisfied.  `user` is an arbitrary object
+representing the authenticated user; it will be made available to the controller
+via the context.  `roles` is a list of roles which the user has, and `scopes` is
+a list of OAuth scopes the user is authorized for.
 
 For example:
 
 ```js
-async function sessionSecurityPlugin(context) {
-    const session = context.req.headers.session;
+async function sessionAuthenticator(pluginContext) {
+    const session = pluginContext.req.headers.session;
     if(!session) {
         return undefined;
     } else if(session === 'secret') {
         return {
-            user: {name: 'jwalton'}
+            user: {name: 'jwalton', roles: ['read', 'write']}
         };
     } else {
-        throw context.makeError(403, "Invalid session");
+        // Session was supplied, but it's invalid.
+        throw pluginContext.makeError(403, "Invalid session");
     }
 }
 
 const options : exegesis.ExegesisOptions = {
     controllers: path.resolve(__dirname, './controllers'),
-    securityPlugins: {
-        sessionKey: sessionAuthSecurityPlugin
+    authenticators: {
+        sessionKey: sessionAuthenticator
     }
 };
 ```
 
-When Exegesis routes a request, it will run the relevant Security Plugins and
-decide whether or not to allow the request.  Note that if an operation has
-no `security`, then no plugins will be run.
+When Exegesis routes a request, it will run the relevant authenticators
+and decide whether or not to allow the request.  Note that if an operation has
+no `security`, then no authenticators will be run.
 
-If a request successfully matches a security requirement object (and all plugins
-satisfy "x-exegesis-roles" if it is specified), then Exegesis will create a
-`context.security` object with the details of the matched schemes.  This
-will be available to the controller which handles the operation.
+If a request successfully matches a security requirement object (and, if all
+"x-exgesis-roles" is specified, all authenticators satisfy the listed roles),
+then Exegesis will create a `context.security` object with the details of the
+matched schemes.  This will be available to the controller which handles the
+operation.
 
-Security plugins are run prior to body parsing, however the body is available
-via the async function `context.getBody()` if it is needed.
+Authenticators are run prior to body parsing, however the body is available via
+the async function `context.getBody()` if it is needed.
 
 ## An Example
 
@@ -75,7 +77,7 @@ Here's an example of the securitySchemes section from an OpenAPI document:
             readWrite: "Read/write scope."
 ```
 
-And then operations have a list of security requirements:
+Operations have a list of security requirements:
 
 ```yaml
 paths:
@@ -99,20 +101,23 @@ the security requirements are matched, and the current "user" has the "admin"
 role.
 
 If a user authenticated using `basicAuth`, then the controller would have
-access to the object returned by the Security Plugin via
-`context.security.basicAuth`.
+access to the object returned by the authenticator via `context.security.basicAuth`.
 
-## Security Plugins
+## Authenticators
 
-Security plguins are very similar to controllers, except their roll is to
-return an authenticated user:
+Authenticators are very similar to controllers, except their roll is to
+return an authenticated user.  Note that the `context` passed to an
+authenticator is a "plugin context" - this differs from a regular context
+in that `body` and `params` will be undefined as they have not been
+parsed yet (although access to the body and parameters are available via
+the async functions `getBody()` and `getParams()`).
 
 ```js
 import basicAuth from 'basic-auth';
 import bcrypt from 'bcrypt';
 
-async function basicAuthSecurityPlugin(context) {
-    const credentials = basicAuth(context.req);
+async function basicAuthSecurity(pluginContext) {
+    const credentials = basicAuth(pluginContext.req);
     if(!credentials) {
         // The request failed to provide a basic auth header.  Return undefined
         // to indicate we failed to meet the requirements.
@@ -126,10 +131,10 @@ async function basicAuthSecurityPlugin(context) {
         // We can return `undefined` here, but in this case we want to reject
         // this request even if it matches some other secuirty scheme, because
         // clearly something is wrong.
-        throw context.makeError(403, `User ${name} not found`);
+        throw pluginContext.makeError(403, `User ${name} not found`);
     }
     if(!await bcrypt.compare(pass, user.password)) {
-        throw context.makeError(403, `Invalid password for ${name}`);
+        throw pluginContext.makeError(403, `Invalid password for ${name}`);
     }
 
     return {
@@ -147,7 +152,7 @@ async function basicAuthSecurityPlugin(context) {
 Here's the exact same example, but using [Passport](http://www.passportjs.org/):
 
 ```js
-import passportSecurityPlugin from 'exegesis-passport';
+import passportSecurity from 'exegesis-passport';
 import passport from 'passport';
 import { BasicStragety } from 'passport-http';
 import bcrypt from 'bcrypt';
@@ -166,7 +171,7 @@ passport.use('basicAuth', new BasicStrategy(
     }
 ));
 
-const basicAuthSecurityPlugin = passportSecurityPlugin('basicAuth',
+const basicAuthAuthenticator = passportSecurity('basicAuth',
     (context, user, info) => ({
         user,
         roles: user.roles
@@ -174,5 +179,5 @@ const basicAuthSecurityPlugin = passportSecurityPlugin('basicAuth',
 );
 
 // Or, if you're not using roles:
-const basicAuthSecurityPlugin = passportSecurityPlugin('basicAuth');
+const basicAuthAuthenticator = passportSecurity('basicAuth');
 ```

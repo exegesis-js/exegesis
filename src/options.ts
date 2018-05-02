@@ -12,16 +12,14 @@ import {
     StringParser,
     BodyParser,
     Controllers,
-    SecurityPlugins,
-    MimeTypeParser,
-    SecurityPlugin,
-    Dictionary
+    Authenticators,
+    MimeTypeParser
 } from './types';
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
     controllers: Controllers;
-    securityPlugins: SecurityPlugins;
+    authenticators: Authenticators;
     bodyParsers: MimeTypeRegistry<BodyParser>;
     parameterParsers: MimeTypeRegistry<StringParser>;
     defaultMaxBodySize: number;
@@ -103,7 +101,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         ? !!options.allowMissingControllers
         : true;
 
-    const securityPlugins : Dictionary<SecurityPlugin> = options.securityPlugins || {};
+    const authenticators : Authenticators = options.authenticators || {};
 
     const autoHandleHttpErrors = options.autoHandleHttpErrors !== undefined
         ? !!options.autoHandleHttpErrors
@@ -112,7 +110,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
     return {
         bodyParsers,
         controllers,
-        securityPlugins,
+        authenticators,
         customFormats,
         parameterParsers,
         defaultMaxBodySize: maxBodySize,

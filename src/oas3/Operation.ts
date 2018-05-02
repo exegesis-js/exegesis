@@ -146,9 +146,9 @@ export default class Operation {
 
         for(const securityRequirement of this.securityRequirements) {
             for(const schemeName of Object.keys(securityRequirement)) {
-                if(!context.options.securityPlugins[schemeName]) {
+                if(!context.options.authenticators[schemeName]) {
                     throw new Error(`Operation ${context.jsonPointer} references security scheme "${schemeName}" ` +
-                        `but no security plugin was provided.`);
+                        `but no authenticator was provided.`);
                 }
             }
         }
@@ -264,14 +264,14 @@ export default class Operation {
 
         for(const scheme of requiredSchemes) {
             if(exegesisContext.isResponseFinished()) {
-                // Some plugin has written a response.  We're done.  :(
+                // Some authenticator has written a response.  We're done.  :(
                 failed = true;
                 break;
             }
 
             if(!(scheme in triedSchemes)) {
-                const plugin = this.context.options.securityPlugins[scheme];
-                triedSchemes[scheme] = await pb.call(plugin, null, exegesisContext);
+                const authenticator = this.context.options.authenticators[scheme];
+                triedSchemes[scheme] = await pb.call(authenticator, null, exegesisContext);
             }
             const authenticated = triedSchemes[scheme];
 

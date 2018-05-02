@@ -94,13 +94,13 @@ export interface ExegesisAuthenticated {
     scopes? : string[] | undefined;
 }
 
-export type PromiseSecurityPlugin =
+export type PromiseAuthenticator =
     (context: ExegesisPluginContext) => ExegesisAuthenticated | undefined | Promise<ExegesisAuthenticated>;
-export type CallbackSecurityPlugin =
+export type CallbackAuthenticator =
     (context: ExegesisPluginContext, done: Callback<ExegesisAuthenticated | undefined>) => void;
-export type SecurityPlugin = PromiseSecurityPlugin | CallbackSecurityPlugin;
-export interface SecurityPlugins {
-    [scheme: string]: SecurityPlugin;
+export type Authenticator = PromiseAuthenticator | CallbackAuthenticator;
+export interface Authenticators {
+    [scheme: string]: Authenticator;
 }
 
 /**
