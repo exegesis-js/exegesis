@@ -6,6 +6,26 @@ const VALID_SCHEMA_TYPES = ['null', 'boolean', 'object', 'array', 'number', 'str
 const ALL_ALLOWED_TYPES = new Set(VALID_SCHEMA_TYPES);
 const NO_ALLOWED_TYPES = new Set<string>([]);
 
+function getType(val: any) : string {
+    if(val === null || val === undefined) {
+        return 'null';
+    } else if(typeof val === 'string') {
+        return 'string';
+    } else if(val === true || val === false) {
+        return 'boolean';
+    } else if(Array.isArray(val)) {
+        return 'array';
+    } else if(Number.isInteger(val)) {
+        return 'integer';
+    } else if((typeof val === 'number') && !isNaN(val)) {
+        return 'number';
+    } else if(typeof val === 'object') {
+        return 'object';
+    } else {
+        throw new Error(`Can't work out JSON-Schema type of ${val}`);
+    }
+}
+
 function toArray(val: string | string[]) {
     if(Array.isArray(val)) {
         return val;
@@ -66,6 +86,17 @@ function inferTypesPriv(
     }
 
     // TODO: Dealing with "not" is hard.
+
+    if('const' in schema) {
+        const schemaConst = (schema as JSONSchema6).const;
+        const constType = new Set<string>([getType(schemaConst)]);
+        allowedTypes = intersection(allowedTypes, constType);
+    }
+
+    if(schema.enum) {
+        const enumTypes = new Set<string>(schema.enum.map(getType));
+        allowedTypes = intersection(allowedTypes, enumTypes);
+    }
 
     return allowedTypes;
 }

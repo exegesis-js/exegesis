@@ -83,6 +83,25 @@ describe("json-schema-infer-types", function() {
         expect(inferTypes(schema)).to.eql(['object']);
     });
 
+    it("should get the type from an object with enum", function() {
+        const schema : JSONSchema4 = {
+            enum: ['foo', 'bar', 7]
+        };
+
+        expect(new Set(inferTypes(schema))).to.have.all.keys(['string', 'integer']);
+    });
+
+    it("should get the type from an object with const", function() {
+        expect(inferTypes({const: 'foo'})).to.eql(['string']);
+        expect(inferTypes({const: {foo: 'bar'}})).to.eql(['object']);
+        expect(inferTypes({const: ['foo']})).to.eql(['array']);
+        expect(inferTypes({const: 7})).to.eql(['integer']);
+        expect(inferTypes({const: 7.2})).to.eql(['number', 'integer']);
+        expect(inferTypes({const: null})).to.eql(['null']);
+        expect(inferTypes({const: true})).to.eql(['boolean']);
+        expect(inferTypes({const: false})).to.eql(['boolean']);
+    });
+
     it("should follow $refs", function() {
         const schema : JSONSchema4 = {
             allOf: [
