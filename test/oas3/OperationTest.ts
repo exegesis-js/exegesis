@@ -61,7 +61,7 @@ describe('oas3 Operation', function() {
 
         });
 
-        it('should correctly identify the security requirements for an operation', function() {
+        it('should identify the security requirements for an operation', function() {
             this.operation[EXEGESIS_ROLES] = ['bacon', 'apples'];
             const operation: Operation = makeOperation('get', this.operation);
 
@@ -72,7 +72,7 @@ describe('oas3 Operation', function() {
             expect(operation.requiredRoles).to.eql(['bacon', 'apples']);
         });
 
-        it('should correctly identify the security requirements for an operation from root', function() {
+        it('should identify the security requirements for an operation from root', function() {
             delete this.operation.security;
             delete this.operation[EXEGESIS_ROLES];
             const operation: Operation = makeOperation('get', this.operation, {
@@ -90,7 +90,7 @@ describe('oas3 Operation', function() {
             expect(operation.requiredRoles).to.eql(['fish']);
         });
 
-        it('should correctly override the security requirements for an operation', function() {
+        it('should override the security requirements for an operation', function() {
             const operation: Operation = makeOperation('get', this.operation, {
                 openApiDoc: {
                     security: [{basicAuth: []}],
@@ -105,7 +105,7 @@ describe('oas3 Operation', function() {
             expect(operation.requiredRoles).to.eql(['bacon']);
         });
 
-        it('should error if an op requires a security scheme that we do not have an authenticator for', function() {
+        it('should error if an op requires a security scheme wihtout a configured authenticator', function() {
             this.operation.security = [{foo: []}];
             expect(
                 () => makeOperation('get', this.operation)

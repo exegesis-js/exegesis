@@ -12,7 +12,12 @@ import bufferToStream from '../utils/bufferToStream';
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
     const authenticated = await operation.authenticate(context);
     context.security = authenticated;
-    context.user = authenticated && authenticated.user;
+    if(authenticated) {
+        const matchedSchemes = Object.keys(authenticated);
+        if(matchedSchemes.length === 1) {
+            context.user = authenticated[matchedSchemes[0]].user;
+        }
+    }
 }
 
 function resultToHttpResponse(

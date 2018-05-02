@@ -1,3 +1,6 @@
 exports.secureGet = function secureGet(context) {
-    return context.security;
+    return {
+        security: context.security,
+        user: context.user
+    };
 }

@@ -251,6 +251,21 @@ export default class Operation {
         return errors;
     }
 
+    /**
+     * Checks a single security requirement from an OAS3 `security` field.
+     *
+     * @param triedSchemes - A cache where keys are names of security schemes
+     *   we've already tried, and values are the results returned by the
+     *   authenticator.
+     * @param errors - An array of strings - we can push any errors we encounter
+     *   to this list.
+     * @param securityRequirement - The security requirement to check.
+     * @param exegesisContext - The context for the request to check.
+     * @returns - If the security requirement matches, this returns an object
+     *   where keys are security schemes and the values are the results from
+     *   the authenticator.  If the requirements are not met, returns undefined
+     *   (and adds some errors to `errors`).
+     */
     private async _checkSecurityRequirement(
         triedSchemes : Dictionary<ExegesisAuthenticated | null>,
         errors: string[],

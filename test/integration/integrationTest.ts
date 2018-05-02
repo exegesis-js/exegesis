@@ -114,17 +114,20 @@ describe('integration', function() {
                 .expectBody({message: "Invalid session."});
         });
 
-        it('should require authentication from an authenticator', async function() {
+        it('should authenticate successfully', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {
                 headers: {session: 'secret'}
             })
                 .expect(200)
                 .expectBody({
-                    sessionKey: {
-                        user: {name: 'jwalton'},
-                        roles: ['readWrite', 'admin']
-                    }
+                    security: {
+                        sessionKey: {
+                            user: {name: 'jwalton'},
+                            roles: ['readWrite', 'admin']
+                        }
+                    },
+                    user: {name: 'jwalton'}
                 });
         });
     });

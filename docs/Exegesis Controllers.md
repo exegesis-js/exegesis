@@ -127,9 +127,13 @@ Exegesis will start from the Media Type Object specified by a given request, and
   Each member is a hash where keys are parameter names, and values are the
   parsed parameters.
 - `context.body` - The parsed message body, if one is present.
-- `context.security` - A `{user, roles, scope}` object, as returned by an
-  [authenticator](./OAS3%20Security.md).
-- `context.user` - An alias for `context.security.user`.
+- `context.security` - This is a dictionary where keys are security schemes,
+  and values are `{user, roles, scope}` objects (as returned by the associated
+  [authenticator](./OAS3%20Security.md)).  For OAS3, there will only be objects
+  here for the first matched security requirement.
+- `context.user` - This is a user, as returned by an authenticator.  For OAS3
+  this will only be present if the matched security requirement had exactly
+  one security scheme.
 - `context.api` - This is an object containing details about which parts of
   the OpenAPI document were resolved to service your request.  For OAS3 this
   will be an object with the following fields:
