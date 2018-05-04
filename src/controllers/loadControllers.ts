@@ -2,23 +2,27 @@ import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
 
-import { Controllers } from '../types';
+import { Controllers, ControllerModule } from '../types';
 
 /**
  * Load a set of controllers.
  *
- * @param controllers This can either be a Controllers object (in which case it
- *   will just be returned), a path to a folder, or it can be a glob pattern.
- *   If a glob, then all files matching the glob pattern will be `require()`d
- *   and added to the resulting controllers object.  Files will be added both
- *   with and without their extension.
+ * @param folder - The folder to load controllers from.
+ * @param [pattern] - A glob pattern for controllers to load.  Defaults to only
+ *   .js files.
+ * @param [loader] - The function to call to load each controller.  Defaults to
+ *   `require`.
  *
  * @example
  *   // Assuming controllers has files "foo.js" and "bar/bar.js", then `controllers`
  *   // will be a `{"foo", "foo.js", "bar/bar.js", "bar/bar"}` object.
  *   const controllers = loadControllersSync('controlers', '**\/*.js');
  */
-export function loadControllersSync(folder: string, pattern: string = "**/*.js") : Controllers {
+export function loadControllersSync(
+    folder: string,
+    pattern: string = "**/*.js",
+    loader: (path: string) => ControllerModule = require
+) : Controllers {
     const controllerNames = glob.sync(pattern, {cwd: folder});
 
     return controllerNames.reduce<Controllers>(
@@ -30,7 +34,7 @@ export function loadControllersSync(folder: string, pattern: string = "**/*.js")
             }
             try {
                 // Add the file at the full path
-                const mod = require(fullPath);
+                const mod = loader(fullPath);
                 result[controllerName] = mod;
 
                 // Add the file at the full path, minus the extension
