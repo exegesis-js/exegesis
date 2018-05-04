@@ -45,7 +45,8 @@ function generateOpenApi() : oas3.OpenAPIObject {
 
 const controllers = {
     myController: {
-        op() {return 7;}
+        otherOp() {return 7;},
+        op() {return this.otherOp();}
     }
 };
 
@@ -75,7 +76,11 @@ async function findControllerTest(method: string, controllerLocation: string, op
         controllerName: 'myController',
         operationId: 'op'
     });
-    expect(await invokeController(resolved!.operation!.controller!, context)).to.equal(7);
+    expect(await invokeController(
+        resolved!.operation!.controllerModule!,
+        resolved!.operation!.controller!,
+        context
+    )).to.equal(7);
 }
 
 describe('oas3 integration controller extensions', function() {

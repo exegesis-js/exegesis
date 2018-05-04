@@ -9,6 +9,7 @@ import {
     Controller,
     ExegesisContext,
     ExegesisAuthenticated,
+    ControllerModule,
 } from '.';
 
 export type ParsedParameterValidator =
@@ -21,6 +22,7 @@ export interface ResolvedOperation {
     validateBody: ValidatorFunction | undefined;
     exegesisControllerName: string | undefined;
     operationId: string | undefined;
+    controllerModule: ControllerModule | undefined;
     controller: Controller | undefined;
     authenticate(context: ExegesisContext) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined>;
     // responseValidator;

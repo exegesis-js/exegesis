@@ -98,7 +98,7 @@ export default async function generateExegesisRunner<T>(
             if(resolved && resolved.operation) {
                 const {operation} = resolved;
 
-                if(!operation.controller) {
+                if(!operation.controllerModule || !operation.controller) {
                     throw new Error(`No operation found for ${method} ${url}`);
                 }
 
@@ -113,7 +113,11 @@ export default async function generateExegesisRunner<T>(
 
                 let controllerResult: any;
                 if(!context.isResponseFinished()) {
-                    controllerResult = await invokeController(operation.controller, context);
+                    controllerResult = await invokeController(
+                        operation.controllerModule,
+                        operation.controller,
+                        context
+                    );
                     // TODO: Response validation goes here.
                 }
 

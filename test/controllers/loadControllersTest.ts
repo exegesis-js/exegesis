@@ -46,8 +46,8 @@ describe('controllers - loadControllers', function() {
         const controllers = load.loadControllersSync(path.resolve(__dirname, './fixtures/shadow'));
         const context = new FakeExegesisContext();
 
-        expect(await invokeController(controllers['a'].a, context)).to.equal('a');
-        expect(await invokeController(controllers['a/index'].a, context)).to.equal('index');
+        expect(await invokeController(controllers['a'], controllers['a'].a, context)).to.equal('a');
+        expect(await invokeController(controllers['a/index'], controllers['a/index'].a, context)).to.equal('index');
     });
 
 });

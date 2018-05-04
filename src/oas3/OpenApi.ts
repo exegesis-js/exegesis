@@ -117,10 +117,10 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         (mediaType && mediaType.oaMediaType[EXEGESIS_OPERATION_ID]) ||
                         operation.operationId;
 
-                    const controller =
-                        exegesisControllerName && operationId &&
-                        this._options.controllers[exegesisControllerName] &&
-                        this._options.controllers[exegesisControllerName][operationId];
+                    const controllerModule = exegesisControllerName &&
+                        this._options.controllers[exegesisControllerName];
+
+                    const controller = operationId && controllerModule && controllerModule[operationId];
 
                     const authenticate = (
                         context: ExegesisContext
@@ -135,6 +135,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         validateBody,
                         exegesisControllerName,
                         operationId,
+                        controllerModule,
                         controller,
                         authenticate
                         // responseValidator,
