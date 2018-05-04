@@ -130,8 +130,23 @@ formats, you must provide validation functions for each format used.
 
 ## ignoreServers
 
-If true, when resolving a path Exegesis will ignore the "servers" section of
-the OpenAPI doc entirely.
+OpenAPI 3.x lets you specify what servers your API is available on.  For example:
+
+```yaml
+servers:
+  - url: '/api/v2'
+```
+
+By default, exegesis will take 'servers' into account when routing requests,
+so if you have the above servers section, and a path in your API called
+"/users", then exegesis will only match the route if the incoming requests has
+the URL "/api/v2/users".
+
+If you have path templates in your servers, the variables will be available to
+your controllers via `context.params.server`.
+
+If you specify the `ignoreServers` option, however, exegesis will ignore the
+servers section, an route purely based on your paths.
 
 ## autoHandleHttpErrors
 
