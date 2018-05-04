@@ -23,7 +23,7 @@ You can read about controllers
 
 The `controllers` option tells Exegesis how to find controller functions to
 call.  This can either be the name of a folder containing controller modules,
-or it can be a has where keys are controller names.  If it is a folder,
+or it can be a hash where keys are controller names.  If it is a folder,
 you can additionally specified `controllersPattern`, which is a glob pattern
 telling Exegesis which files to load.
 
