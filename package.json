@@ -59,6 +59,7 @@
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "commitlint": "^6.2.0",
     "coveralls": "^3.0.0",
     "husky": "^1.0.0-rc.2",
     "lint-staged": "^7.0.5",
@@ -69,8 +70,7 @@
     "supertest-fetch": "^1.0.0",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",
-    "typescript": "^2.8.3",
-    "validate-commit-msg": "^2.14.0"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "ajv": "^6.4.0",
@@ -90,7 +90,7 @@
   },
   "husky": {
     "hooks": {
-      "commit-msg": "validate-commit-msg",
+      "commit-msg": "commitlint -e $GIT_PARAMS",
       "pre-commit": "npm run test:pre-commit"
     }
   }
