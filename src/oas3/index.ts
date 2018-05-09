@@ -1,4 +1,3 @@
-import $RefParser from 'json-schema-ref-parser';
 import oas3 from 'openapi3-ts';
 
 import OpenApi from './OpenApi';
@@ -10,17 +9,9 @@ import { ExgesisCompiledOptions } from '../options';
  * @param openApiDocFile - The file containing the OpenAPI document.
  * @returns - Returns the parsed OpenAPI document.
  */
-export function compile(
-    openApiDocFile: string | oas3.OpenAPIObject,
+export async function compile(
+    openApiDoc: oas3.OpenAPIObject,
     options: ExgesisCompiledOptions
 ): Promise<OpenApi> {
-    const refParser = new $RefParser();
-
-    return refParser.bundle(
-        openApiDocFile as any,
-        {dereference: {circular: false}}
-    )
-    .then((openApiDoc: any) => {
-        return new OpenApi(openApiDoc as oas3.OpenAPIObject, options);
-    });
+    return new OpenApi(openApiDoc, options);
 }

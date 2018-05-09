@@ -13,43 +13,17 @@ import {
     IValidationError,
     ExegesisContext,
     ExegesisAuthenticated,
-    Dictionary
+    Dictionary,
+    ExegesisAuthenticationFailure,
+    ExegesisAuthenticationResult
 } from '../types';
-import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID, EXEGESIS_ROLES } from './extensions';
+import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import { HttpError } from './../errors';
 
 const METHODS_WITH_BODY = ['post', 'put'];
 
-// Returns a `{securityRequirements, requiredRoles}` object for the given operation.
-function getSecurityRequirements(
-    context: Oas3CompileContext, // Operation context.
-    oaOperation: oas3.OperationObject
-) {
-    const securityRequirements = (oaOperation.security || context.openApiDoc.security || []);
-    let requiredRoles = oaOperation[EXEGESIS_ROLES] || context.openApiDoc[EXEGESIS_ROLES] || [];
-
-    if(requiredRoles && requiredRoles.length > 0 && (securityRequirements.length === 0)) {
-        if(oaOperation.security && !oaOperation[EXEGESIS_ROLES]) {
-            // Operation explicitly sets security to `{}`, but doesn't set
-            // `x-exegesis-roles`.  This is OK - we'll ingore roles for this
-            // case.
-            requiredRoles = [];
-        } else {
-            throw new Error(`Operation ${context.jsonPointer} has no security requirements, but requires roles: ` +
-                requiredRoles.join(','));
-        }
-    }
-
-    if(typeof requiredRoles === 'string') {
-        requiredRoles = [requiredRoles];
-    } else if(!Array.isArray(requiredRoles)) {
-        const rolesPath = oaOperation[EXEGESIS_ROLES]
-            ? context.jsonPointer + `/${EXEGESIS_ROLES}`
-            : `/${EXEGESIS_ROLES}`;
-        throw new Error(`${rolesPath} must be an array of strings.`);
-    }
-
-    return {securityRequirements, requiredRoles};
+function isAuthenticationFailure(result : any) : result is ExegesisAuthenticationFailure {
+    return !!((result as any).type === 'fail');
 }
 
 function getMissing(required: string[], have: string[] | undefined) {
@@ -112,11 +86,6 @@ export default class Operation {
     readonly securityRequirements: oas3.SecurityRequirementObject[];
 
     /**
-     * A list of roles a user must have to call this operation.
-     */
-    readonly requiredRoles: string[];
-
-    /**
      * If this operation has a `requestBody`, this is a list of content-types
      * the operation understands.  If this operation does not expect a request
      * body, then this is undefined.  Note this list may contain wildcards.
@@ -140,9 +109,7 @@ export default class Operation {
         this.exegesisController = oaOperation[EXEGESIS_CONTROLLER] || exegesisController;
         this.operationId = oaOperation[EXEGESIS_OPERATION_ID] || oaOperation.operationId;
 
-        const security = getSecurityRequirements(context, oaOperation);
-        this.securityRequirements = security.securityRequirements;
-        this.requiredRoles = security.requiredRoles;
+        this.securityRequirements = (oaOperation.security || context.openApiDoc.security || []);
 
         for(const securityRequirement of this.securityRequirements) {
             for(const schemeName of Object.keys(securityRequirement)) {
@@ -251,6 +218,64 @@ export default class Operation {
         return errors;
     }
 
+    private _getSecurityScheme(schemeName: string) : oas3.SecuritySchemeObject {
+        // TODO: Cache these ahead of time.
+        const schemes = this.context.openApiDoc.components &&
+            this.context.openApiDoc.components.securitySchemes || {};
+        const scheme = schemes[schemeName];
+        if(!scheme) {
+            throw new Error(`No security scheme ${schemeName} defined in document`);
+        }
+        return scheme;
+    }
+
+    private _getChallengeForScheme(schemeName: string) : string | undefined {
+        // TODO: Cache these ahead of time.
+        const scheme = this._getSecurityScheme(schemeName);
+        if(scheme.type === 'http') {
+            return scheme.scheme || 'Basic';
+        }
+        return undefined;
+    }
+
+    private async _runAuthenticator(
+        schemeName: string,
+        triedSchemes : Dictionary<ExegesisAuthenticationResult>,
+        exegesisContext: ExegesisContext,
+        requiredScopes: string[]
+    ) : Promise<ExegesisAuthenticationResult> {
+        if(!(schemeName in triedSchemes)) {
+            const authenticator = this.context.options.authenticators[schemeName];
+            const result = (await pb.call(authenticator, null, exegesisContext)) || {type: 'fail', status: 401};
+
+            if(isAuthenticationFailure(result)) {
+                result.status = result.status || 401;
+                if(result.status === 401 && !result.challenge) {
+                    result.challenge = this._getChallengeForScheme(schemeName);
+                }
+            }
+
+            triedSchemes[schemeName] = result;
+        }
+
+        let result = triedSchemes[schemeName];
+
+        if(!isAuthenticationFailure(result)) {
+            // For OAuth3, need to verify we have the oauth scopes defined in the API doc.
+            const missingScopes = getMissing(requiredScopes, result.scopes);
+            if(missingScopes.length > 0) {
+                result = {
+                    type: 'fail',
+                    status: 403,
+                    message: `Authenticated using '${schemeName}' but missing ` +
+                        `required scopes: ${missingScopes.join(', ')}.`
+                };
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Checks a single security requirement from an OAS3 `security` field.
      *
@@ -263,12 +288,11 @@ export default class Operation {
      * @param exegesisContext - The context for the request to check.
      * @returns - If the security requirement matches, this returns an object
      *   where keys are security schemes and the values are the results from
-     *   the authenticator.  If the requirements are not met, returns undefined
-     *   (and adds some errors to `errors`).
+     *   the authenticator.  If the requirements are not met, returns an array
+     *   of ExegesisAuthenticationFailure.
      */
     private async _checkSecurityRequirement(
-        triedSchemes : Dictionary<ExegesisAuthenticated | null>,
-        errors: string[],
+        triedSchemes : Dictionary<ExegesisAuthenticationResult>,
         securityRequirement: oas3.SecurityRequirementObject,
         exegesisContext: ExegesisContext
     ) {
@@ -276,6 +300,7 @@ export default class Operation {
 
         const result : Dictionary<any> = Object.create(null);
         let failed = false;
+        let failure: ExegesisAuthenticationFailure | undefined;
 
         for(const scheme of requiredSchemes) {
             if(exegesisContext.isResponseFinished()) {
@@ -284,41 +309,23 @@ export default class Operation {
                 break;
             }
 
-            if(!(scheme in triedSchemes)) {
-                const authenticator = this.context.options.authenticators[scheme];
-                triedSchemes[scheme] = await pb.call(authenticator, null, exegesisContext);
-            }
-            const authenticated = triedSchemes[scheme];
+            const requiredScopes = securityRequirement[scheme];
+            const authResult = await this._runAuthenticator(scheme, triedSchemes, exegesisContext, requiredScopes);
 
-            if(!authenticated) {
+            if(isAuthenticationFailure(authResult)) {
                 // Couldn't authenticate.  Try the next one.
                 failed = true;
+                failure = authResult;
                 break;
             }
 
-            const missingScopes = getMissing(securityRequirement[scheme], authenticated.scopes);
-            if(missingScopes.length > 0) {
-                failed = true;
-                errors.push(`Authenticated using '${scheme}' but missing required ` +
-                    `scopes: ${missingScopes.join(', ')}.`);
-                break;
-            }
-
-            const missingRoles = getMissing(this.requiredRoles, authenticated.roles);
-            if(missingRoles.length > 0) {
-                failed = true;
-                errors.push(`Authenticated using '${scheme}' but missing required ` +
-                  `roles: ${missingRoles.join(', ')}.`);
-                break;
-            }
-
-            result[scheme] = authenticated;
+            result[scheme] = authResult;
         }
 
         if(failed) {
-            return undefined;
+            return failure;
         } else {
-            return result;
+            return {type: 'authenticated', result};
         }
     }
 
@@ -327,21 +334,32 @@ export default class Operation {
     ) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> {
         if(this.securityRequirements.length === 0) {
             // No auth required
-            return undefined;
+            return {};
         }
 
-        const errors: string[] = [];
-        let result : Dictionary<ExegesisAuthenticated> | undefined;
+        let firstFailure: ExegesisAuthenticationFailure | undefined;
+        const challenges: string[] = [];
+        let result: Dictionary<ExegesisAuthenticated> | undefined;
 
         const triedSchemes : Dictionary<ExegesisAuthenticated> = Object.create(null);
 
         for(const securityRequirement of this.securityRequirements) {
-            result = await this._checkSecurityRequirement(
+            const securityRequirementResult = await this._checkSecurityRequirement(
                 triedSchemes,
-                errors,
                 securityRequirement,
                 exegesisContext
             );
+
+            if(isAuthenticationFailure(securityRequirementResult)) {
+                // No luck with this security requirement.
+                if(securityRequirementResult.status === 401 && securityRequirementResult.challenge) {
+                    challenges.push(securityRequirementResult.challenge);
+                } else if(securityRequirementResult.status !== 401 && !firstFailure) {
+                    firstFailure = securityRequirementResult;
+                }
+            } else if(securityRequirementResult && securityRequirementResult.type === 'authenticated') {
+                result = securityRequirementResult.result;
+            }
 
             if(result || exegesisContext.isResponseFinished()) {
                 // We're done!
@@ -352,18 +370,27 @@ export default class Operation {
         if(result) {
             // Successs!
             return result;
-        } else if(errors.length > 0) {
-            throw new HttpError(403, errors.join('\n'));
+        } else if(firstFailure) {
+            throw new HttpError(
+                firstFailure.status || 401,
+                firstFailure.message || 'Failed to authenticate'
+            );
         } else {
             const authSchemes = this.securityRequirements
                 .map(requirement => {
                     const schemes = Object.keys(requirement);
                     return schemes.length === 1 ? schemes[0] : `(${schemes.join(' + ')})`;
-                })
-                .join(', ');
+                });
 
-            // TODO: Could return 401 here if the missing auth scheme or schemes are all basic auth.
-            throw new HttpError(403, `Must authenticate using one of the following schemes: ${authSchemes}.`);
+            const authChallenges = challenges || (authSchemes
+                .map((schemeName) => this._getChallengeForScheme(schemeName))
+                .filter(challenge => challenge !== undefined) as string[]);
+
+            exegesisContext.res
+                .setStatus(401)
+                .set('WWW-Authenticate', authChallenges)
+                .setBody(`Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`);
+            return undefined;
         }
     }
 }

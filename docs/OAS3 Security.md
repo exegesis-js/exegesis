@@ -6,17 +6,15 @@ Each security requirement object has a list of security schemes; in order to
 access an operation, a request must satisfy all security schemes for at least
 one of the objects in the list.
 
-Exegesis also has a vendor extension, "x-exegesis-roles", which is an array of
-strings which adds support for restricting which operations are available to
-which users after they have been authenticated.
+Exegesis also has a vendor extension,
+["x-exegesis-roles"](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md#x-exegesis-roles),
+which is an array of strings which adds support for restricting which operations
+are available to which users after they have been authenticated.
 
 When compiling your API, Exegesis will takes an `authenticators` option which
 maps security schemes to authenticators.  An `authenticator` is a
-function which, given a context, returns a `{user, roles, scopes}` object, or
-`undefined` if the scheme couldn't be satisfied.  `user` is an arbitrary object
-representing the authenticated user; it will be made available to the controller
-via the context.  `roles` is a list of roles which the user has, and `scopes` is
-a list of OAuth scopes the user is authorized for.
+function which tries to authenticate the user using a given scheme.  See
+below for more details.
 
 For example:
 
@@ -24,14 +22,12 @@ For example:
 async function sessionAuthenticator(pluginContext) {
     const session = pluginContext.req.headers.session;
     if(!session) {
-        return undefined;
+        return { statusCode: 401, message: 'Session key required' };
     } else if(session === 'secret') {
-        return {
-            user: {name: 'jwalton', roles: ['read', 'write']}
-        };
+        return { user: { name: 'jwalton', roles: ['read', 'write'] } };
     } else {
         // Session was supplied, but it's invalid.
-        throw pluginContext.makeError(403, "Invalid session");
+        return { statusCode: 401, message: 'Invalid session key' };
     }
 }
 
@@ -47,11 +43,9 @@ When Exegesis routes a request, it will run the relevant authenticators
 and decide whether or not to allow the request.  Note that if an operation has
 no `security`, then no authenticators will be run.
 
-If a request successfully matches a security requirement object (and, if all
-"x-exgesis-roles" is specified, all authenticators satisfy the listed roles),
-then Exegesis will create a `context.security` object with the details of the
-matched schemes.  This will be available to the controller which handles the
-operation.
+If a request successfully matches a security requirement object then Exegesis
+will create a `context.security` object with the details of the matched schemes.
+This will be available to the controller which handles the operation.
 
 Authenticators are run prior to body parsing, however the body is available via
 the async function `context.getBody()` if it is needed.
@@ -112,6 +106,18 @@ in that `body` and `params` will be undefined as they have not been
 parsed yet (although access to the body and parameters are available via
 the async functions `getBody()` and `getParams()`).
 
+If the user is successfully authenticated, an authenticator should return a
+`{user, roles, scopes}` object.  `user` is an arbitrary object representing the
+authenticated user; it will be made available to the controller via the context.
+`roles` is a list of roles which the user has, and `scopes` is a list of OAuth
+scopes the user is authorized for.  `user` is the only required field.
+
+If the user is not authenticated, the authenticator should return a
+`{type: 'fail', challenge, status, message}` object, or undefined.  If
+`challenge` is specified it must be an
+[RFC 7235 challenge](https://tools.ietf.org/html/rfc7235#section-2.1), suitable
+for including in a WWW-Authenticate header.
+
 ```js
 import basicAuth from 'basic-auth';
 import bcrypt from 'bcrypt';
@@ -127,14 +133,18 @@ async function basicAuthSecurity(pluginContext) {
     const {name, pass} = credentials;
     const user = await db.User.find({name});
     if(!user) {
-        // The user *tried* to authenticate, but gave us a bad username.
-        // We can return `undefined` here, but in this case we want to reject
-        // this request even if it matches some other secuirty scheme, because
-        // clearly something is wrong.
-        throw pluginContext.makeError(403, `User ${name} not found`);
+        return {
+            type: 'fail',
+            challenge: 'Basic',
+            message: `User ${name} not found`
+        };
     }
     if(!await bcrypt.compare(pass, user.password)) {
-        throw pluginContext.makeError(403, `Invalid password for ${name}`);
+        return {
+            type: 'fail',
+            challenge: 'Basic',
+            message: `Invalid password for ${name}`
+        };
     }
 
     return {
@@ -152,7 +162,7 @@ async function basicAuthSecurity(pluginContext) {
 Here's the exact same example, but using [Passport](http://www.passportjs.org/):
 
 ```js
-import passportSecurity from 'exegesis-passport';
+import exegesisPassport from 'exegesis-passport';
 import passport from 'passport';
 import { BasicStragety } from 'passport-http';
 import bcrypt from 'bcrypt';
@@ -171,8 +181,8 @@ passport.use('basicAuth', new BasicStrategy(
     }
 ));
 
-const basicAuthAuthenticator = passportSecurity('basicAuth',
-    (context, user, info) => ({
+const basicAuthAuthenticator = exegesisPassport('basicAuth',
+    (context, user) => ({
         user,
         roles: user.roles
     })

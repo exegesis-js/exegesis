@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 import pb from 'promise-breaker';
 import pump from 'pump';
+import $RefParser from 'json-schema-ref-parser';
 
 import { compileOptions } from './options';
 import { compile as compileOpenApi } from './oas3';
@@ -15,9 +16,29 @@ import {
     HttpIncomingMessage
 } from './types';
 export { HttpError, ValidationError } from './errors';
+import * as RolesPlugin from './oas3/plugins/RolesPlugin';
+import { OpenAPIObject } from 'openapi3-ts';
 
 // Export all our public types.
 export * from './types';
+
+/**
+ * Reads a JSON or YAML file and bundles all $refs, resulting in a single
+ * document with only internal refs.
+ *
+ * @param openApiDocFile - The file containing the document, or a JSON object.
+ * @returns - Returns the bundled document
+ */
+function bundle(
+    openApiDocFile: string | object,
+): Promise<object> {
+    const refParser = new $RefParser();
+
+    return refParser.bundle(
+        openApiDocFile as any,
+        {dereference: {circular: false}}
+    );
+}
 
 /**
  * Returns a "runner" function - call `runner(req, res)` to get back a
@@ -59,8 +80,19 @@ export function compileRunner(
 ) {
     return pb.addCallback(done, async () => {
         const compiledOptions = compileOptions(options);
-        const apiInterface = await compileOpenApi(openApiDoc, compiledOptions);
-        return generateExegesisRunner(apiInterface, compiledOptions);
+        const bundledDoc = await bundle(openApiDoc);
+
+        const plugins = [
+            RolesPlugin.exegesisPlugin(bundledDoc)
+        ];
+
+        const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
+
+        return generateExegesisRunner(apiInterface, {
+            autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
+            plugins
+        });
+
     });
 }
 

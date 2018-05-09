@@ -29,18 +29,44 @@ Definitions at lower levels override definitions at higher levels.  Defitions in
 
 ## x-exegesis-roles
 
-An array of "role" strings.  An authenticated user must have all of the given
-roles in order to have access to an operaton.
+This is used to control which users have access to a given operation.
+Authenticators can optionally return "roles" for a user.  This can be
+specified either as an array of "role" strings, or as an array of such arrays.
+
+For example:
+
+```yaml
+x-exegesis-roles:
+  - a
+  - b
+```
+
+would only allow access to an operation if a user has both the 'a' and 'b'
+role, or:
+
+```yaml
+x-exegesis-roles:
+  - [a]
+  - [b, c]
+```
+
+would only allow access to an operation if a user has the 'a' role, or has
+both the 'b' and 'c' role.
 
 "x-exegesis-roles" can be defined on the root OpenAPI object, in which case
 all operations in the document will require those roles.  This can be overridden
-by specifying "x-exegesis-roles" in an individual operation.
+by specifying "x-exegesis-roles" in an individual operation.  An emptry array
+indicates a user requires no roles:
 
-If "x-exegesis-roles" is defined on the root document, and an operation
-overrides "security" with an empty security array, but does not override
-"x-exegesis-roles", then "x-exegesis-roles" will be ignored.  In any other case
-where "x-exegesis-roles" is defined on an operation with no "security", or on an
-operation with an empty `security`, it is an error.
+```yaml
+x-exegesis-roles: []
+```
+
+If "x-exegesis-roles" is defined on an operation which has no security
+requirements defined, this will throw an error.
+
+Roles do not apply to security schemes with the "oauth2" type; scopes apply
+there instead.
 
 Allowed in:
 

@@ -14,7 +14,7 @@ import RequestMediaType from './RequestMediaType';
 import { HttpBadRequestError } from '../errors';
 
 export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
-    private readonly _openApiDoc: oas3.OpenAPIObject;
+    readonly openApiDoc: oas3.OpenAPIObject;
     private readonly _options: ExgesisCompiledOptions;
     private _servers?: Servers;
     private _paths : Paths;
@@ -36,7 +36,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
             throw new Error(`OpenAPI version ${openApiDoc.openapi} not supported`);
         }
 
-        this._openApiDoc = openApiDoc;
+        this.openApiDoc = openApiDoc;
         this._options = options;
 
         // TODO: Optimize this case when no `servers` were present in openApi doc,
@@ -146,7 +146,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                 return {
                     operation: resolvedOperation,
                     api: {
-                        openApiDoc: this._openApiDoc,
+                        openApiDoc: this.openApiDoc,
                         serverPtr: undefined, // FIXME
                         serverObject: oaServer,
                         pathItemPtr: path.context.jsonPointer,

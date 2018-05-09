@@ -5,18 +5,24 @@ import * as exegesis from '../../src';
 
 async function sessionAuthenticator(
     context: exegesis.ExegesisPluginContext
-) : Promise<exegesis.ExegesisAuthenticated | undefined> {
+) : Promise<exegesis.ExegesisAuthenticationResult | undefined> {
     const session = context.req.headers.session;
     if(!session || typeof(session) !== 'string') {
         return undefined;
     }
-    if(session !== 'secret') {
+    if(session === 'lame') {
+        return {
+            user: {name: 'Mr. Lame'},
+            roles: []
+        };
+    } else if(session === 'secret') {
+        return {
+            user: {name: 'jwalton'},
+            roles: ['readWrite', 'admin']
+        };
+    } else {
         throw context.makeError(403, "Invalid session.");
     }
-    return {
-        user: {name: 'jwalton'},
-        roles: ['readWrite', 'admin']
-    };
 }
 
 async function createServer() {
@@ -57,7 +63,7 @@ async function createServer() {
     return server;
 }
 
-describe('integration', function() {
+describe('integration test', function() {
     beforeEach(async function() {
         this.server = await createServer();
     });
@@ -101,8 +107,8 @@ describe('integration', function() {
         it('should require authentication from an authenticator', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`)
-                .expect(403)
-                .expectBody({message:"Must authenticate using one of the following schemes: sessionKey."});
+                .expect(401)
+                .expectBody("Must authenticate using one of the following schemes: sessionKey.");
         });
 
         it('should return an error from an authenticator', async function() {
@@ -112,6 +118,15 @@ describe('integration', function() {
             })
                 .expect(403)
                 .expectBody({message: "Invalid session."});
+        });
+
+        it('should fail if user is missing required roles', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/secure`, {
+                headers: {session: 'lame'}
+            })
+                .expect(403)
+                .expectBody("Authenticated with sessionKey but missing one or more required roles.");
         });
 
         it('should authenticate successfully', async function() {

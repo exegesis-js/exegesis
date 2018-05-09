@@ -17,6 +17,7 @@ export interface ExegesisResponse {
     ended: boolean;
 
     setStatus(status: number) : this;
+    setBody(body: any) : this;
     header(header: string, value: number | string | string[] | undefined) : this;
     set(header: string, value: number | string | string[] | undefined) : this;
     json(json: any) : void;
@@ -88,16 +89,26 @@ export type PromisePlugin = (context: ExegesisPluginContext) => Promise<void> | 
 export type CallbackPlugin = (context: ExegesisPluginContext, done: Callback<void>) => void;
 export type Plugin = PromisePlugin | CallbackPlugin;
 
+export interface ExegesisAuthenticationFailure {
+    type: "fail";
+    status?: number;
+    message?: string;
+    challenge?: string;
+}
+
 export interface ExegesisAuthenticated {
-    user?: any;
+    user: any;
     roles? : string[] | undefined;
     scopes? : string[] | undefined;
 }
 
-export type PromiseAuthenticator =
-    (context: ExegesisPluginContext) => ExegesisAuthenticated | undefined | Promise<ExegesisAuthenticated>;
+export type ExegesisAuthenticationResult = ExegesisAuthenticated | ExegesisAuthenticationFailure;
+
+export type PromiseAuthenticator = (
+    context: ExegesisPluginContext
+) => ExegesisAuthenticationResult | undefined | Promise<ExegesisAuthenticationResult | undefined>;
 export type CallbackAuthenticator =
-    (context: ExegesisPluginContext, done: Callback<ExegesisAuthenticated | undefined>) => void;
+    (context: ExegesisPluginContext, done: Callback<ExegesisAuthenticationResult | undefined>) => void;
 export type Authenticator = PromiseAuthenticator | CallbackAuthenticator;
 export interface Authenticators {
     [scheme: string]: Authenticator;

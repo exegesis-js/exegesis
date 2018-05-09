@@ -5,7 +5,7 @@ import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
 import { ExegesisRunner, HttpResult, ExegesisContext } from '../types';
-import { ApiInterface, ResolvedOperation } from '../types/internal';
+import { ApiInterface, ResolvedOperation, ExegesisPluginInstance } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
 
@@ -81,9 +81,13 @@ function handleError(err: Error) {
 export default async function generateExegesisRunner<T>(
     api: ApiInterface<T>,
     options: {
-        autoHandleHttpErrors?: boolean
+        autoHandleHttpErrors?: boolean,
+        plugins?: ExegesisPluginInstance[]
     }={}
 ) : Promise<ExegesisRunner> {
+
+    const plugins = options.plugins || [];
+
     return async function exegesisRunner(
         req: http.IncomingMessage,
         res: http.ServerResponse
@@ -104,6 +108,12 @@ export default async function generateExegesisRunner<T>(
 
                 const context = new ExegesisContextImpl<T>(req, res, resolved.api, operation);
                 await handleSecurity(operation, context);
+
+                for(const plugin of plugins) {
+                    if(!context.isResponseFinished() && plugin.preController) {
+                        await plugin.preController(context);
+                    }
+                }
 
                 if(!context.isResponseFinished()) {
                     // Fill in context.params and context.body.

@@ -8,7 +8,6 @@ import Oas3CompileContext from '../../src/oas3/Oas3CompileContext';
 import { makeOpenApiDoc } from '../fixtures';
 import { ExegesisOptions } from '../../src';
 import { compileOptions } from '../../src/options';
-import { EXEGESIS_ROLES } from '../../src/oas3/extensions';
 import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 
 chai.use(chaiAsPromised);
@@ -25,6 +24,12 @@ function makeOperation(
     } = {}
 ) {
     const openApiDoc = makeOpenApiDoc();
+
+    openApiDoc.components = openApiDoc.components || {};
+    openApiDoc.components.securitySchemes = {
+        basicAuth: {type: 'http', scheme: 'basic'},
+        oauth: {type: 'oauth2', flows: {}}
+    };
 
     if(opts.openApiDoc) {
         Object.assign(openApiDoc, opts.openApiDoc);
@@ -53,8 +58,7 @@ describe('oas3 Operation', function() {
                 security: [
                     {basicAuth: []},
                     {oauth: ['admin']}
-                ],
-                [EXEGESIS_ROLES]: ['bacon']
+                ]
             };
 
             this.exegesisContext = new FakeExegesisContext();
@@ -62,50 +66,37 @@ describe('oas3 Operation', function() {
         });
 
         it('should identify the security requirements for an operation', function() {
-            this.operation[EXEGESIS_ROLES] = ['bacon', 'apples'];
             const operation: Operation = makeOperation('get', this.operation);
 
             expect(operation.securityRequirements).to.eql([
                 {basicAuth: []},
                 {oauth: ['admin']}
             ]);
-            expect(operation.requiredRoles).to.eql(['bacon', 'apples']);
         });
 
         it('should identify the security requirements for an operation from root', function() {
             delete this.operation.security;
-            delete this.operation[EXEGESIS_ROLES];
             const operation: Operation = makeOperation('get', this.operation, {
                 openApiDoc: {
-                    security: [
-                        {basicAuth: []}
-                    ],
-                    [EXEGESIS_ROLES]: ['fish']
+                    security: [{basicAuth: []}]
                 }
             });
 
-            expect(operation.securityRequirements).to.eql([
-                {basicAuth: []}
-            ]);
-            expect(operation.requiredRoles).to.eql(['fish']);
+            expect(operation.securityRequirements).to.eql([{basicAuth: []}]);
         });
 
         it('should override the security requirements for an operation', function() {
             const operation: Operation = makeOperation('get', this.operation, {
-                openApiDoc: {
-                    security: [{basicAuth: []}],
-                    [EXEGESIS_ROLES]: ['fish']
-                }
+                openApiDoc: {security: [{basicAuth: []}]}
             });
 
             expect(operation.securityRequirements).to.eql([
                 {basicAuth: []},
                 {oauth: ['admin']}
             ]);
-            expect(operation.requiredRoles).to.eql(['bacon']);
         });
 
-        it('should error if an op requires a security scheme wihtout a configured authenticator', function() {
+        it('should error if an op requires a security scheme without a configured authenticator', function() {
             this.operation.security = [{foo: []}];
             expect(
                 () => makeOperation('get', this.operation)
@@ -133,18 +124,20 @@ describe('oas3 Operation', function() {
             };
 
             const operation: Operation = makeOperation('get', this.operation, {options});
-            await expect(
-                operation.authenticate(this.exegesisContext)
-            ).to.be.rejectedWith('Must authenticate using one of the following schemes: basicAuth, oauth');
+            await operation.authenticate(this.exegesisContext);
+            expect(this.exegesisContext.res.statusCode).to.equal(401);
+            expect(this.exegesisContext.res.body).to.equal(
+                'Must authenticate using one of the following schemes: basicAuth, oauth.');
+            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
-        it('should fail to auth an incoming request if the user does not have the correct roles', async function() {
-            this.operation[EXEGESIS_ROLES] = ['roleYouDontHave'];
-            const operation: Operation = makeOperation('get', this.operation);
-            await expect(
-                operation.authenticate(this.exegesisContext)
-            ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: roleYouDontHave.");
-        });
+        // it('should fail to auth an incoming request if the user does not have the correct roles', async function() {
+        //     this.operation[EXEGESIS_ROLES] = ['roleYouDontHave'];
+        //     const operation: Operation = makeOperation('get', this.operation);
+        //     await expect(
+        //         operation.authenticate(this.exegesisContext)
+        //     ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: roleYouDontHave.");
+        // });
 
         it('should fail to auth an incoming request if the user does not have the correct scopes', async function() {
             this.operation.security = [
@@ -163,32 +156,37 @@ describe('oas3 Operation', function() {
             }];
             const operation: Operation = makeOperation('get', this.operation);
 
-            await expect(
-                operation.authenticate(this.exegesisContext)
-            ).to.be.rejectedWith("Must authenticate using one of the following schemes: (basicAuth + oauth).");
+            await operation.authenticate(this.exegesisContext);
+            expect(this.exegesisContext.res.statusCode).to.equal(401);
+            expect(this.exegesisContext.res.body).to.equal(
+                'Must authenticate using one of the following schemes: (basicAuth + oauth).');
+            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
-        it('should fail to authenticate if user has roles for one security scheme but not the other', async function() {
-            this.operation.security = [{
-                basicAuth: [],
-                oauth: []
-            }];
-            this.operation[EXEGESIS_ROLES] = ['foo', 'bar'];
+        // it(
+        //   'should fail to authenticate if user has roles for one security ' +
+        //     'scheme but not the other',
+        //   async function() {
+        //     this.operation.security = [{
+        //         basicAuth: [],
+        //         oauth: []
+        //     }];
+        //     this.operation[EXEGESIS_ROLES] = ['foo', 'bar'];
 
-            const authenticators = {
-                basicAuth() {return {roles: ['foo', 'bar']};},
-                oauth() {return {roles: ['foo', 'baz']};}
-            };
+        //     const authenticators = {
+        //         basicAuth() {return {roles: ['foo', 'bar']};},
+        //         oauth() {return {roles: ['foo', 'baz']};}
+        //     };
 
-            const operation: Operation = makeOperation('get', this.operation, {options: {
-                authenticators
-            }});
+        //     const operation: Operation = makeOperation('get', this.operation, {options: {
+        //         authenticators
+        //     }});
 
-            // TODO: This error message could be better.
-            await expect(
-                operation.authenticate(this.exegesisContext)
-            ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: bar.");
-        });
+        //     // TODO: This error message could be better.
+        //     await expect(
+        //         operation.authenticate(this.exegesisContext)
+        //     ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: bar.");
+        // });
 
         it('should always authenticate a request with no security requirements', async function() {
             const options = {
@@ -198,29 +196,28 @@ describe('oas3 Operation', function() {
                 }
             };
             this.operation.security = [];
-            this.operation[EXEGESIS_ROLES] = [];
 
             const operation: Operation = makeOperation('get', this.operation, {options});
             const authenticated = await operation.authenticate(this.exegesisContext);
-            expect(authenticated).to.equal(undefined);
+            expect(authenticated).to.eql({});
         });
 
-        it('should error at compile time if you define an operation with roles but no security', async function() {
-            this.operation.security = [];
-            this.operation[EXEGESIS_ROLES] = ['role'];
+        // it('should error at compile time if you define an operation with roles but no security', async function() {
+        //     this.operation.security = [];
+        //     this.operation[EXEGESIS_ROLES] = ['role'];
 
-            expect(
-                () => makeOperation('get', this.operation)
-            ).to.throw('Operation /paths/~1path/get has no security requirements, but requires roles: role');
-        });
+        //     expect(
+        //         () => makeOperation('get', this.operation)
+        //     ).to.throw('Operation /paths/~1path/get has no security requirements, but requires roles: role');
+        // });
 
-        it('should error at compile time if x-exegesis-roles is not a an array of strings', async function() {
-            this.operation[EXEGESIS_ROLES] = {role: 'roleYouDontHave'};
+        // it('should error at compile time if x-exegesis-roles is not a an array of strings', async function() {
+        //     this.operation[EXEGESIS_ROLES] = {role: 'roleYouDontHave'};
 
-            expect(
-                () => makeOperation('get', this.operation)
-            ).to.throw('/paths/~1path/get/x-exegesis-roles must be an array of strings.');
-        });
+        //     expect(
+        //         () => makeOperation('get', this.operation)
+        //     ).to.throw('/paths/~1path/get/x-exegesis-roles must be an array of strings.');
+        // });
     });
 
     describe('body', function() {

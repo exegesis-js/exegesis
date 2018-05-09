@@ -45,7 +45,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         if(this.ended) {
             throw new Error("Trying to set body after response has been ended.");
         }
-        this.body = body;
+        this._body = body;
         this.ended = true;
         return this;
     }
@@ -67,7 +67,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         if(this.ended) {
             throw new Error("Trying to set header after response has been ended.");
         }
-        this.headers[name] = value;
+        this.headers[name.toLowerCase()] = value;
     }
 
     getHeader(name: string) {
