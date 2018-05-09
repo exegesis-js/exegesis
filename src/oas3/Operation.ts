@@ -398,7 +398,7 @@ export default class Operation {
             exegesisContext.res
                 .setStatus(401)
                 .set('WWW-Authenticate', authChallenges)
-                .setBody(`Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`);
+                .setBody({message: `Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`});
             return undefined;
         }
     }

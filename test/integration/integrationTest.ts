@@ -110,7 +110,9 @@ describe('integration test', function() {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`)
                 .expect(401)
-                .expectBody("Must authenticate using one of the following schemes: sessionKey.");
+                .expectBody({
+                    message: "Must authenticate using one of the following schemes: sessionKey."
+                });
         });
 
         it('should return an error from an authenticator', async function() {
@@ -128,7 +130,9 @@ describe('integration test', function() {
                 headers: {session: 'lame'}
             })
                 .expect(403)
-                .expectBody("Authenticated with sessionKey but missing one or more required roles.");
+                .expectBody({
+                    message: "Authenticated with sessionKey but missing one or more required roles."
+                });
         });
 
         it('should authenticate successfully', async function() {
