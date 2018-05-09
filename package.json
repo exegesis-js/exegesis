@@ -1,6 +1,6 @@
 {
   "name": "exegesis",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Parses OpenAPI documents",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
