@@ -370,6 +370,9 @@ export default class Operation {
         if(result) {
             // Successs!
             return result;
+        } else if(exegesisContext.isResponseFinished()) {
+            // Someone already wrote a response.
+            return undefined;
         } else if(firstFailure) {
             throw new HttpError(
                 firstFailure.status || 401,
