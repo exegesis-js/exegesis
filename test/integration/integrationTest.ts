@@ -5,18 +5,20 @@ import * as exegesis from '../../src';
 
 async function sessionAuthenticator(
     context: exegesis.ExegesisPluginContext
-) : Promise<exegesis.ExegesisAuthenticationResult | undefined> {
+) : Promise<exegesis.AuthenticationResult | undefined> {
     const session = context.req.headers.session;
     if(!session || typeof(session) !== 'string') {
         return undefined;
     }
     if(session === 'lame') {
         return {
+            type: 'success',
             user: {name: 'Mr. Lame'},
             roles: []
         };
     } else if(session === 'secret') {
         return {
+            type: 'success',
             user: {name: 'jwalton'},
             roles: ['readWrite', 'admin']
         };
@@ -138,6 +140,7 @@ describe('integration test', function() {
                 .expectBody({
                     security: {
                         sessionKey: {
+                            type: 'success',
                             user: {name: 'jwalton'},
                             roles: ['readWrite', 'admin']
                         }

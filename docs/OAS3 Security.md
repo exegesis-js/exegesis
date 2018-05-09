@@ -22,12 +22,12 @@ For example:
 async function sessionAuthenticator(pluginContext) {
     const session = pluginContext.req.headers.session;
     if(!session) {
-        return { statusCode: 401, message: 'Session key required' };
+        return { type: 'fail', statusCode: 401, message: 'Session key required' };
     } else if(session === 'secret') {
-        return { user: { name: 'jwalton', roles: ['read', 'write'] } };
+        return { type: 'success', user: { name: 'jwalton', roles: ['read', 'write'] } };
     } else {
         // Session was supplied, but it's invalid.
-        return { statusCode: 401, message: 'Invalid session key' };
+        return { type: 'fail', statusCode: 401, message: 'Invalid session key' };
     }
 }
 
@@ -107,10 +107,13 @@ parsed yet (although access to the body and parameters are available via
 the async functions `getBody()` and `getParams()`).
 
 If the user is successfully authenticated, an authenticator should return a
-`{user, roles, scopes}` object.  `user` is an arbitrary object representing the
-authenticated user; it will be made available to the controller via the context.
-`roles` is a list of roles which the user has, and `scopes` is a list of OAuth
-scopes the user is authorized for.  `user` is the only required field.
+`{type: "success", user, roles, scopes}` object.  `user` is an arbitrary object
+representing the authenticated user; it will be made available to the controller
+via the context. `roles` is a list of roles which the user has, and `scopes` is
+a list of OAuth scopes the user is authorized for.  Authenticators may also add
+additional data to this object (for example, when authenticating via OAuth,
+you might set the `user` to the user the OAuth token is for, and also set an
+`oauthClient` property to identify that this user was authenticated by OAuth.)
 
 If the user is not authenticated, the authenticator should return a
 `{type: 'fail', challenge, status, message}` object, or undefined.  If
@@ -148,6 +151,7 @@ async function basicAuthSecurity(pluginContext) {
     }
 
     return {
+        type: 'success',
         user,
         roles: user.roles, // e.g. `['admin']`, or `[]` if this user has no roles.
         scopes: [] // Ignored in this case, but if `basicAuth` was an OAuth

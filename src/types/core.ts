@@ -37,7 +37,7 @@ export interface ExegesisContextBase {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: {[scheme: string]: ExegesisAuthenticated};
+    security?: {[scheme: string]: AuthenticationSuccess};
     user?: any;
 
     makeError(statusCode: number, message: string) : Error;
@@ -89,26 +89,28 @@ export type PromisePlugin = (context: ExegesisPluginContext) => Promise<void> | 
 export type CallbackPlugin = (context: ExegesisPluginContext, done: Callback<void>) => void;
 export type Plugin = PromisePlugin | CallbackPlugin;
 
-export interface ExegesisAuthenticationFailure {
+export interface AuthenticationFailure {
     type: "fail";
     status?: number;
     message?: string;
     challenge?: string;
 }
 
-export interface ExegesisAuthenticated {
-    user: any;
+export interface AuthenticationSuccess {
+    type: "success";
+    user?: any;
     roles? : string[] | undefined;
     scopes? : string[] | undefined;
+    [name: string]: any;
 }
 
-export type ExegesisAuthenticationResult = ExegesisAuthenticated | ExegesisAuthenticationFailure;
+export type AuthenticationResult = AuthenticationSuccess | AuthenticationFailure;
 
 export type PromiseAuthenticator = (
     context: ExegesisPluginContext
-) => ExegesisAuthenticationResult | undefined | Promise<ExegesisAuthenticationResult | undefined>;
+) => AuthenticationResult | undefined | Promise<AuthenticationResult | undefined>;
 export type CallbackAuthenticator =
-    (context: ExegesisPluginContext, done: Callback<ExegesisAuthenticationResult | undefined>) => void;
+    (context: ExegesisPluginContext, done: Callback<AuthenticationResult | undefined>) => void;
 export type Authenticator = PromiseAuthenticator | CallbackAuthenticator;
 export interface Authenticators {
     [scheme: string]: Authenticator;

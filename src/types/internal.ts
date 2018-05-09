@@ -8,7 +8,7 @@ import {
     ValidatorFunction,
     Controller,
     ExegesisContext,
-    ExegesisAuthenticated,
+    AuthenticationSuccess,
     ControllerModule,
     ExegesisPluginContext
 } from '.';
@@ -27,7 +27,7 @@ export interface ResolvedOperation {
     controller: Controller | undefined;
 
     // Returns the authentication data, or undefined if user could not be authenticated.
-    authenticate(context: ExegesisContext) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined>;
+    authenticate(context: ExegesisContext) : Promise<{[scheme: string]: AuthenticationSuccess} | undefined>;
     // responseValidator;
     // responseContentType?;
 }

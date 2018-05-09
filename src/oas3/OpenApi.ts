@@ -5,7 +5,7 @@ import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
 import { ApiInterface, ResolvedPath, ParsedParameterValidator } from '../types/internal';
-import { ParametersMap, OAS3ApiInfo, ExegesisContext, ExegesisAuthenticated } from '../types';
+import { ParametersMap, OAS3ApiInfo, ExegesisContext, AuthenticationSuccess } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';
@@ -124,7 +124,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
 
                     const authenticate = (
                         context: ExegesisContext
-                    ) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> => {
+                    ) : Promise<{[scheme: string]: AuthenticationSuccess} | undefined> => {
                         return operation.authenticate(context);
                     };
 

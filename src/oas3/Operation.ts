@@ -12,17 +12,17 @@ import {
     ParametersByLocation,
     IValidationError,
     ExegesisContext,
-    ExegesisAuthenticated,
+    AuthenticationSuccess,
     Dictionary,
-    ExegesisAuthenticationFailure,
-    ExegesisAuthenticationResult
+    AuthenticationFailure,
+    AuthenticationResult
 } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import { HttpError } from './../errors';
 
 const METHODS_WITH_BODY = ['post', 'put'];
 
-function isAuthenticationFailure(result : any) : result is ExegesisAuthenticationFailure {
+function isAuthenticationFailure(result : any) : result is AuthenticationFailure {
     return !!((result as any).type === 'fail');
 }
 
@@ -240,10 +240,10 @@ export default class Operation {
 
     private async _runAuthenticator(
         schemeName: string,
-        triedSchemes : Dictionary<ExegesisAuthenticationResult>,
+        triedSchemes : Dictionary<AuthenticationResult>,
         exegesisContext: ExegesisContext,
         requiredScopes: string[]
-    ) : Promise<ExegesisAuthenticationResult> {
+    ) : Promise<AuthenticationResult> {
         if(!(schemeName in triedSchemes)) {
             const authenticator = this.context.options.authenticators[schemeName];
             const result = (await pb.call(authenticator, null, exegesisContext)) || {type: 'fail', status: 401};
@@ -286,13 +286,15 @@ export default class Operation {
      *   to this list.
      * @param securityRequirement - The security requirement to check.
      * @param exegesisContext - The context for the request to check.
-     * @returns - If the security requirement matches, this returns an object
+     * @returns - If the security requirement matches, this returns a
+     *   `{type: 'authenticated', result}` object, where result is an object
      *   where keys are security schemes and the values are the results from
-     *   the authenticator.  If the requirements are not met, returns an array
-     *   of ExegesisAuthenticationFailure.
+     *   the authenticator.  If the requirements are not met, returns a
+     *   `{type: 'fail', failure}` object, where `failure` is the the
+     *   failure that caused this security requirement to not pass.
      */
     private async _checkSecurityRequirement(
-        triedSchemes : Dictionary<ExegesisAuthenticationResult>,
+        triedSchemes : Dictionary<AuthenticationResult>,
         securityRequirement: oas3.SecurityRequirementObject,
         exegesisContext: ExegesisContext
     ) {
@@ -300,7 +302,7 @@ export default class Operation {
 
         const result : Dictionary<any> = Object.create(null);
         let failed = false;
-        let failure: ExegesisAuthenticationFailure | undefined;
+        let failure: AuthenticationFailure | undefined;
 
         for(const scheme of requiredSchemes) {
             if(exegesisContext.isResponseFinished()) {
@@ -323,7 +325,7 @@ export default class Operation {
         }
 
         if(failed) {
-            return failure;
+            return {type: 'fail', failure};
         } else {
             return {type: 'authenticated', result};
         }
@@ -331,17 +333,17 @@ export default class Operation {
 
     async authenticate(
         exegesisContext: ExegesisContext
-    ) : Promise<{[scheme: string]: ExegesisAuthenticated} | undefined> {
+    ) : Promise<{[scheme: string]: AuthenticationSuccess} | undefined> {
         if(this.securityRequirements.length === 0) {
             // No auth required
             return {};
         }
 
-        let firstFailure: ExegesisAuthenticationFailure | undefined;
+        let firstFailure: AuthenticationFailure | undefined;
         const challenges: string[] = [];
-        let result: Dictionary<ExegesisAuthenticated> | undefined;
+        let result: Dictionary<AuthenticationSuccess> | undefined;
 
-        const triedSchemes : Dictionary<ExegesisAuthenticated> = Object.create(null);
+        const triedSchemes : Dictionary<AuthenticationSuccess> = Object.create(null);
 
         for(const securityRequirement of this.securityRequirements) {
             const securityRequirementResult = await this._checkSecurityRequirement(
@@ -350,15 +352,19 @@ export default class Operation {
                 exegesisContext
             );
 
-            if(isAuthenticationFailure(securityRequirementResult)) {
+            if(securityRequirementResult.type === 'fail') {
+                const failure = securityRequirementResult.failure!;
                 // No luck with this security requirement.
-                if(securityRequirementResult.status === 401 && securityRequirementResult.challenge) {
-                    challenges.push(securityRequirementResult.challenge);
-                } else if(securityRequirementResult.status !== 401 && !firstFailure) {
-                    firstFailure = securityRequirementResult;
+                if(failure.status === 401 && failure.challenge) {
+                    challenges.push(failure.challenge);
+                } else if(failure.status !== 401 && !firstFailure) {
+                    firstFailure = failure;
                 }
-            } else if(securityRequirementResult && securityRequirementResult.type === 'authenticated') {
+            } else if(securityRequirementResult.type === 'authenticated') {
                 result = securityRequirementResult.result;
+            } else {
+                /* istanbul ignore this */
+                throw new Error("Invalid result from `_checkSecurityRequirement()`");
             }
 
             if(result || exegesisContext.isResponseFinished()) {
