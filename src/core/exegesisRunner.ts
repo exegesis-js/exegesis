@@ -25,6 +25,8 @@ function resultToHttpResponse(
     result: any
 ) : HttpResult {
     let output: Readable | undefined;
+    const headers = context.res.headers;
+
     if(result) {
         if(result instanceof Buffer) {
             output = bufferToStream(result);
@@ -33,8 +35,8 @@ function resultToHttpResponse(
         } else if(result && result.pipe && (typeof result.pipe === 'function')) {
             output = result as Readable;
         } else {
-            if(!context.res.getHeader('content-type')) {
-                context.res.setHeader('content-type', 'application/json');
+            if(!headers['content-type']) {
+                headers['content-type'] = 'application/json';
             }
             output = stringToStream(JSON.stringify(result), 'utf-8');
         }
@@ -42,7 +44,7 @@ function resultToHttpResponse(
 
     return {
         status: context.res.statusCode,
-        headers: context.res.headers,
+        headers,
         body: output
     };
 }

@@ -34,11 +34,9 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     json(json: any) {
-        if(this.ended) {
-            throw new Error("Trying to set JSON content after response has been ended.");
-        }
-        this.body = json;
-        this.ended = true;
+        this.set('content-type', 'application/json')
+            .setBody(json);
+        return this;
     }
 
     setBody(body: any) : this {

@@ -20,7 +20,7 @@ export interface ExegesisResponse {
     setBody(body: any) : this;
     header(header: string, value: number | string | string[] | undefined) : this;
     set(header: string, value: number | string | string[] | undefined) : this;
-    json(json: any) : void;
+    json(json: any) : this;
     end(): void;
     setHeader(name: string, value: number | string | string[] | undefined) : void;
     getHeader(name: string) : number | string | string[] | undefined;

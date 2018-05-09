@@ -126,8 +126,9 @@ describe('oas3 Operation', function() {
             const operation: Operation = makeOperation('get', this.operation, {options});
             await operation.authenticate(this.exegesisContext);
             expect(this.exegesisContext.res.statusCode).to.equal(401);
-            expect(this.exegesisContext.res.body).to.equal(
-                'Must authenticate using one of the following schemes: basicAuth, oauth.');
+            expect(this.exegesisContext.res.body).to.eql({
+                message: 'Must authenticate using one of the following schemes: basicAuth, oauth.'
+            });
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
@@ -158,8 +159,9 @@ describe('oas3 Operation', function() {
 
             await operation.authenticate(this.exegesisContext);
             expect(this.exegesisContext.res.statusCode).to.equal(401);
-            expect(this.exegesisContext.res.body).to.equal(
-                'Must authenticate using one of the following schemes: (basicAuth + oauth).');
+            expect(this.exegesisContext.res.body).to.eql({
+                message: 'Must authenticate using one of the following schemes: (basicAuth + oauth).'
+            });
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
