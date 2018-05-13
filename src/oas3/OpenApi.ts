@@ -4,8 +4,8 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
 import { ExgesisCompiledOptions } from '../options';
-import { ApiInterface, ResolvedPath, ParsedParameterValidator } from '../types/internal';
-import { ParametersMap, OAS3ApiInfo, ExegesisContext, AuthenticationSuccess } from '../types';
+import { ApiInterface, ResolvedPath, ParsedParameterValidator, ResolvedOperation } from '../types/internal';
+import { ParametersMap, OAS3ApiInfo, ExegesisContext, AuthenticationSuccess, ExegesisResponse } from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';
@@ -92,7 +92,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         `Expected one of: ${operation.validRequestContentTypes}`);
                 }
 
-                let resolvedOperation;
+                let resolvedOperation : ResolvedOperation | undefined;
                 if(operation) {
                     const parseParameters = function() {
                         return operation.parseParameters({
@@ -108,6 +108,12 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
 
                     const bodyParser = mediaType && mediaType.parser;
                     const validateBody = mediaType && mediaType.validator;
+
+                    const validateResponse = (
+                        response: ExegesisResponse,
+                        validateDefaultResponses: boolean
+                    ) =>
+                        operation.validateResponse(response, validateDefaultResponses);
 
                     const exegesisControllerName =
                         (mediaType && mediaType.oaMediaType[EXEGESIS_CONTROLLER]) ||
@@ -133,13 +139,12 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         validateParameters,
                         bodyParser,
                         validateBody,
+                        validateResponse,
                         exegesisControllerName,
                         operationId,
                         controllerModule,
                         controller,
                         authenticate
-                        // responseValidator,
-                        // responseContentType?
                     };
                 }
 
@@ -154,7 +159,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         operationPtr: operation && operation.context.jsonPointer,
                         operationObject: operation && operation.oaOperation,
                         requestBodyMediaTypePtr: mediaType && mediaType.context.jsonPointer,
-                        requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType
+                        requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType,
                     }
                 };
             }

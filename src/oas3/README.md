@@ -12,6 +12,8 @@ OpenApi
       +- Operation
          +- Parameter
          +- RequestMediaType
+         +- Responses
+           +- Response
 ```
 
 Every object has an Oas3CompileContext which has "global" information about

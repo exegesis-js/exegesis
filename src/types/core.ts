@@ -3,6 +3,7 @@ import * as net from 'net';
 import * as oas3 from 'openapi3-ts';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
+import { Readable } from 'stream';
 
 export interface HttpHeaders {
     [header: string]: number | string | string[];
@@ -12,12 +13,18 @@ export interface ExegesisResponse {
     statusCode: number;
     statusMessage: string | undefined;
     headers: HttpHeaders;
-    body: any;
+    body: Buffer | string | Readable | any;
     connection: net.Socket;
     ended: boolean;
 
     setStatus(status: number) : this;
     setBody(body: any) : this;
+
+    /**
+     * Set the value of a header.
+     * @param header - the header to set.
+     * @param value - the value to set the header to.
+     */
     header(header: string, value: number | string | string[] | undefined) : this;
     set(header: string, value: number | string | string[] | undefined) : this;
     json(json: any) : this;

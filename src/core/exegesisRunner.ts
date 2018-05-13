@@ -4,10 +4,11 @@ import { Readable } from 'stream';
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import { ExegesisRunner, HttpResult, ExegesisContext } from '../types';
+import { ExegesisRunner, HttpResult, ExegesisContext, ResponseValidationCallback } from '../types';
 import { ApiInterface, ResolvedOperation, ExegesisPluginInstance } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
+import { isReadable } from '../utils/typeUtils';
 
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
     const authenticated = await operation.authenticate(context);
@@ -32,8 +33,8 @@ function resultToHttpResponse(
             output = bufferToStream(result);
         } else if(typeof result === 'string') {
             output = stringToStream(result);
-        } else if(result && result.pipe && (typeof result.pipe === 'function')) {
-            output = result as Readable;
+        } else if(isReadable(result)) {
+            output = result;
         } else {
             if(!headers['content-type']) {
                 headers['content-type'] = 'application/json';
@@ -83,12 +84,13 @@ function handleError(err: Error) {
 export default async function generateExegesisRunner<T>(
     api: ApiInterface<T>,
     options: {
-        autoHandleHttpErrors?: boolean,
-        plugins?: ExegesisPluginInstance[]
-    }={}
+        autoHandleHttpErrors: boolean,
+        plugins: ExegesisPluginInstance[],
+        onResponseValidationError: ResponseValidationCallback,
+        validateDefaultResponses: boolean
+    }
 ) : Promise<ExegesisRunner> {
-
-    const plugins = options.plugins || [];
+    const plugins = options.plugins;
 
     return async function exegesisRunner(
         req: http.IncomingMessage,
@@ -96,6 +98,8 @@ export default async function generateExegesisRunner<T>(
     ) : Promise<HttpResult | undefined> {
         const method = req.method || 'get';
         const url = req.url || '/';
+
+        let result: HttpResult | undefined;
 
         try {
 
@@ -105,7 +109,7 @@ export default async function generateExegesisRunner<T>(
                 const {operation} = resolved;
 
                 if(!operation.controllerModule || !operation.controller) {
-                    throw new Error(`No operation found for ${method} ${url}`);
+                    throw new Error(`No controller found for ${method} ${url}`);
                 }
 
                 const context = new ExegesisContextImpl<T>(req, res, resolved.api, operation);
@@ -130,13 +134,31 @@ export default async function generateExegesisRunner<T>(
                         operation.controller,
                         context
                     );
-                    // TODO: Response validation goes here.
                 }
 
-                return resultToHttpResponse(context, context.res.body || controllerResult);
-            } else {
-                return undefined;
+                if(!context.isResponseFinished()) {
+                    if(options.onResponseValidationError) {
+                        const responseValidationResult = resolved.operation.validateResponse(
+                            context.res,
+                            options.validateDefaultResponses
+                        );
+                        try {
+                            if(responseValidationResult.errors && responseValidationResult.errors.length) {
+                                options.onResponseValidationError(responseValidationResult as any);
+                            }
+                        } catch(err) {
+                            err.status = err.status || 500;
+                            throw err;
+                        }
+                    }
+                }
+
+                if(!context.origRes.headersSent) {
+                    result = resultToHttpResponse(context, context.res.body || controllerResult);
+                }
             }
+
+            return result;
 
         } catch (err) {
             if(options.autoHandleHttpErrors) {

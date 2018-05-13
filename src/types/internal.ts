@@ -10,11 +10,13 @@ import {
     ExegesisContext,
     AuthenticationSuccess,
     ControllerModule,
-    ExegesisPluginContext
+    ExegesisPluginContext,
+    ExegesisResponse,
+    ResponseValidationResult
 } from '.';
 
 export type ParsedParameterValidator =
-    ((parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null);
+    (parameterValues: ParametersByLocation<ParametersMap<any>>) => IValidationError[] | null;
 
 export interface ResolvedOperation {
     parseParameters: (() => ParametersByLocation<ParametersMap<any>>);
@@ -26,10 +28,13 @@ export interface ResolvedOperation {
     controllerModule: ControllerModule | undefined;
     controller: Controller | undefined;
 
+    validateResponse(
+        response: ExegesisResponse,
+        validateDefaultResponses: boolean
+    ) : ResponseValidationResult;
+
     // Returns the authentication data, or undefined if user could not be authenticated.
     authenticate(context: ExegesisContext) : Promise<{[scheme: string]: AuthenticationSuccess} | undefined>;
-    // responseValidator;
-    // responseContentType?;
 }
 
 export interface ResolvedPath<T> {

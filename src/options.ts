@@ -13,7 +13,8 @@ import {
     BodyParser,
     Controllers,
     Authenticators,
-    MimeTypeParser
+    MimeTypeParser,
+    ResponseValidationCallback
 } from './types';
 
 export interface ExgesisCompiledOptions {
@@ -26,6 +27,8 @@ export interface ExgesisCompiledOptions {
     ignoreServers: boolean;
     allowMissingControllers: boolean;
     autoHandleHttpErrors: boolean;
+    onResponseValidationError: ResponseValidationCallback;
+    validateDefaultResponses: boolean;
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -107,6 +110,8 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         ? !!options.autoHandleHttpErrors
         : true;
 
+    const validateDefaultResponses = 'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
+
     return {
         bodyParsers,
         controllers,
@@ -116,6 +121,8 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         defaultMaxBodySize: maxBodySize,
         ignoreServers: options.ignoreServers || false,
         allowMissingControllers,
-        autoHandleHttpErrors
+        autoHandleHttpErrors,
+        onResponseValidationError: options.onResponseValidationError || (() => void 0),
+        validateDefaultResponses
     };
 }

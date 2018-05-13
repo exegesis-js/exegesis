@@ -11,6 +11,8 @@
 - [customFormats](#customformats)
 - [ignoreServers](#ignoreservers)
 - [autoHandleHttpErrors](#autohandlehttperrors)
+- [onResponseValidationError](#onresponsevalidationerror)
+- [validateDefaultResponses](#validatedefaultresponses)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
@@ -157,3 +159,29 @@ to handle these errors yourself, set this value to false.
 
 Note that all `HttpError`s will have a `.status` property with a suggested
 numeric HTTP response code.
+
+## onResponseValidationError
+
+This is a function to call when response validation fails.  If you provide this
+function, Exegesis will validate the responses that controllers generate before
+they are sent to the client.  If you throw an exception in this function,  a
+500 error will be generated and the reply will not be sent.
+
+Note that when bodies are strings, buffers, or streams, Exegesis will not try
+to parse your body to see if it conforms to the response schema; only JSON
+objects are validated.
+
+If provided, this should be a `function(result)` function, where
+`result.errors` is a list of validation errors, and (for OAS3) `result.isDefault`
+is true if we validated against a 'default' status code.  Validation errors
+are `{type, message, location: {in: 'response', name: 'body', docPath}}` objects.
+
+## validateDefaultResponses
+
+Controls how Exegesis validates responses.  If this is set to false, then in
+OAS3 Exegesis will not do validation for responses unless the response status
+code matches an explicit status code in the responses object (not the "default"
+status code).  If this is set to true, then all responses will be validated.
+
+This option is ignored if `onResponseValidationError` is not set.  If
+`onResponseValidationError` is set, the default is true.

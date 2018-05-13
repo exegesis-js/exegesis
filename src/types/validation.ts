@@ -57,3 +57,15 @@ export interface ValidatorFunction {
         value: any
     };
 }
+
+export interface ResponseValidationResult {
+    errors: IValidationError[] | null;
+    isDefault: boolean;
+}
+
+export interface ResponseValidationCallback {
+    (result: {
+        errors: IValidationError[];
+        isDefault: boolean;
+    }): void;
+}

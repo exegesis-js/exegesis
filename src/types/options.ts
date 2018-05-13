@@ -1,5 +1,6 @@
 import { StringParser, BodyParser } from './bodyParser';
 import { Controllers, Authenticators } from './core';
+import { ResponseValidationCallback } from './validation';
 
 /**
  * A function which validates custom formats.
@@ -106,4 +107,33 @@ export interface ExegesisOptions {
      * yourself, set this value to false.  Defaults to true.
      */
     autoHandleHttpErrors?: boolean;
+
+    /**
+     * If you provide this function, Exegesis will validate responses controllers
+     * generate before they are sent to the client.  If you throw an exception,
+     * a 500 error will be generated instead of sending the reply to the
+     * client.
+     *
+     * Note that when bodies are strings, buffers, or streams, Exegesis
+     * will not try to parse your body to see if it conforms to the
+     * response schema; only JSON objects are validated.
+     *
+     * @param result.errors - A list of error objects.
+     * @param result.isDefault - For OAS3, this is true if we validated against
+     *   the `default` status code in the Responses object.
+     */
+    onResponseValidationError?: ResponseValidationCallback;
+
+    /**
+     * Controls how Exegesis validates responses.  If this is set to false, then
+     * in OAS3 Exegesis will not do validation for responses unless the
+     * response status code matches an explicit status code in the
+     * responses object (not the "default" status code).  If this is set
+     * to true, then all responses will be validated.
+     *
+     * This option is ignored if `onResponseValidationError` is not set.  If
+     * `onResponseValidationError` is set, the default is true.
+     */
+    validateDefaultResponses?: boolean;
+
 }

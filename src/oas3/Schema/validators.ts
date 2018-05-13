@@ -180,7 +180,8 @@ function generateValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
-    propNameToFilter: string
+    propNameToFilter: string,
+    allowTypeCoercion: boolean
 ) : ValidatorFunction {
     const {openApiDoc, path: schemaPath} = schemaContext;
     const customFormats = schemaContext.options.customFormats;
@@ -206,8 +207,8 @@ function generateValidator(
 
     const ajv = new Ajv({
         useDefaults: true,
-        coerceTypes: 'array',
-        removeAdditional: 'failing',
+        coerceTypes: allowTypeCoercion ? 'array' : false,
+        removeAdditional: allowTypeCoercion ? 'failing' : false,
         jsonPointers: true
     });
     addCustomFormats(ajv, customFormats);
@@ -223,7 +224,7 @@ export function generateRequestValidator(
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly');
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', true);
 }
 
 export function generateResponseValidator(
@@ -231,5 +232,5 @@ export function generateResponseValidator(
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'writeOnly');
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'writeOnly', false);
 }

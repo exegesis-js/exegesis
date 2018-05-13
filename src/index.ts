@@ -90,7 +90,9 @@ export function compileRunner(
 
         return generateExegesisRunner(apiInterface, {
             autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
-            plugins
+            plugins,
+            onResponseValidationError: compiledOptions.onResponseValidationError,
+            validateDefaultResponses: compiledOptions.validateDefaultResponses
         });
 
     });
