@@ -171,10 +171,12 @@ Note that when bodies are strings, buffers, or streams, Exegesis will not try
 to parse your body to see if it conforms to the response schema; only JSON
 objects are validated.
 
-If provided, this should be a `function(result)` function, where
-`result.errors` is a list of validation errors, and (for OAS3) `result.isDefault`
-is true if we validated against a 'default' status code.  Validation errors
-are `{type, message, location: {in: 'response', name: 'body', docPath}}` objects.
+If provided, this should be a `function(result)` function, where:
+
+- `result.errors` is a list of validation errors.  Validation errors
+  are `{type, message, location: {in: 'response', name: 'body', docPath}}` objects.
+- (for OAS3) `result.isDefault` is true if we validated against a 'default' status code.
+- `result.context` is the context passed to the controller.
 
 ## validateDefaultResponses
 

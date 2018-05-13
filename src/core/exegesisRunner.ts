@@ -143,7 +143,11 @@ export default async function generateExegesisRunner<T>(
                         );
                         try {
                             if(responseValidationResult.errors && responseValidationResult.errors.length) {
-                                options.onResponseValidationError(responseValidationResult as any);
+                                options.onResponseValidationError({
+                                    errors: responseValidationResult.errors,
+                                    isDefault: responseValidationResult.isDefault,
+                                    context
+                                });
                             }
                         } catch(err) {
                             err.status = err.status || 500;

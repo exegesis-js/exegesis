@@ -1,4 +1,5 @@
 import { JsonPath } from "./basicTypes";
+import { ExegesisContext } from ".";
 
 export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
 
@@ -17,7 +18,7 @@ export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "hea
 export interface ParameterLocation {
     in: ParameterLocationIn;
     name: string;
-    docPath: JsonPath;
+    docPath: JsonPath; // TODO: JSON pointer instead.
     path?: JsonPath;
 }
 
@@ -67,5 +68,6 @@ export interface ResponseValidationCallback {
     (result: {
         errors: IValidationError[];
         isDefault: boolean;
+        context: ExegesisContext;
     }): void;
 }
