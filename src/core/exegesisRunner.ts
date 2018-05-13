@@ -127,16 +127,15 @@ export default async function generateExegesisRunner<T>(
                     await context.getBody();
                 }
 
-                let controllerResult: any;
                 if(!context.isResponseFinished()) {
-                    controllerResult = await invokeController(
+                    await invokeController(
                         operation.controllerModule,
                         operation.controller,
                         context
                     );
                 }
 
-                if(!context.isResponseFinished()) {
+                if(!context.origRes.headersSent) {
                     if(options.onResponseValidationError) {
                         const responseValidationResult = resolved.operation.validateResponse(
                             context.res,
@@ -154,7 +153,7 @@ export default async function generateExegesisRunner<T>(
                 }
 
                 if(!context.origRes.headersSent) {
-                    result = resultToHttpResponse(context, context.res.body || controllerResult);
+                    result = resultToHttpResponse(context, context.res.body);
                 }
             }
 
