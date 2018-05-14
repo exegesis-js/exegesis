@@ -10,7 +10,6 @@ import {
     ExegesisContext,
     AuthenticationSuccess,
     ControllerModule,
-    ExegesisPluginContext,
     ExegesisResponse,
     ResponseValidationResult
 } from '.';
@@ -60,19 +59,4 @@ export interface ApiInterface<T> {
         url: string,
         headers: http.IncomingHttpHeaders
     ) : ResolvedPath<T> | undefined;
-}
-
-export interface ExegesisPluginInstance {
-    /**
-     * This function will be run after authentication is complete, but before
-     * the controller is called.
-     *
-     * @param context - The exegsis plugin context.
-     * @returns - Promise which resolves when complete.
-     */
-    preController(context: ExegesisPluginContext) : void | Promise<void>;
-}
-
-export interface ExegesisPlugin {
-    makePlugin(doc: any) : ExegesisPluginInstance;
 }

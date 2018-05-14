@@ -124,17 +124,6 @@ describe('integration test', function() {
                 .expectBody({message: "Invalid session."});
         });
 
-        it('should fail if user is missing required roles', async function() {
-            const fetch = makeFetch(this.server);
-            await fetch(`/secure`, {
-                headers: {session: 'lame'}
-            })
-                .expect(403)
-                .expectBody({
-                    message: "Authenticated with sessionKey but missing one or more required roles."
-                });
-        });
-
         it('should authenticate successfully', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {

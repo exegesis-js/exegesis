@@ -13,7 +13,7 @@ import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 chai.use(chaiAsPromised);
 const {expect} = chai;
 
-const DEFAULT_OAUTH_RESULT = {user: 'benbria', roles: ['bacon'], scopes: ['admin']};
+const DEFAULT_OAUTH_RESULT = {user: 'benbria', scopes: ['admin']};
 
 function makeOperation(
     method: string,
@@ -132,14 +132,6 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
-        // it('should fail to auth an incoming request if the user does not have the correct roles', async function() {
-        //     this.operation[EXEGESIS_ROLES] = ['roleYouDontHave'];
-        //     const operation: Operation = makeOperation('get', this.operation);
-        //     await expect(
-        //         operation.authenticate(this.exegesisContext)
-        //     ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: roleYouDontHave.");
-        // });
-
         it('should fail to auth an incoming request if the user does not have the correct scopes', async function() {
             this.operation.security = [
                 {oauth: ['scopeYouDontHave']}
@@ -165,31 +157,6 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
         });
 
-        // it(
-        //   'should fail to authenticate if user has roles for one security ' +
-        //     'scheme but not the other',
-        //   async function() {
-        //     this.operation.security = [{
-        //         basicAuth: [],
-        //         oauth: []
-        //     }];
-        //     this.operation[EXEGESIS_ROLES] = ['foo', 'bar'];
-
-        //     const authenticators = {
-        //         basicAuth() {return {roles: ['foo', 'bar']};},
-        //         oauth() {return {roles: ['foo', 'baz']};}
-        //     };
-
-        //     const operation: Operation = makeOperation('get', this.operation, {options: {
-        //         authenticators
-        //     }});
-
-        //     // TODO: This error message could be better.
-        //     await expect(
-        //         operation.authenticate(this.exegesisContext)
-        //     ).to.be.rejectedWith("Authenticated using 'oauth' but missing required roles: bar.");
-        // });
-
         it('should always authenticate a request with no security requirements', async function() {
             const options = {
                 authenticators: {
@@ -204,22 +171,6 @@ describe('oas3 Operation', function() {
             expect(authenticated).to.eql({});
         });
 
-        // it('should error at compile time if you define an operation with roles but no security', async function() {
-        //     this.operation.security = [];
-        //     this.operation[EXEGESIS_ROLES] = ['role'];
-
-        //     expect(
-        //         () => makeOperation('get', this.operation)
-        //     ).to.throw('Operation /paths/~1path/get has no security requirements, but requires roles: role');
-        // });
-
-        // it('should error at compile time if x-exegesis-roles is not a an array of strings', async function() {
-        //     this.operation[EXEGESIS_ROLES] = {role: 'roleYouDontHave'};
-
-        //     expect(
-        //         () => makeOperation('get', this.operation)
-        //     ).to.throw('/paths/~1path/get/x-exegesis-roles must be an array of strings.');
-        // });
     });
 
     describe('body', function() {

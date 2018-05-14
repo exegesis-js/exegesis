@@ -39,8 +39,6 @@ paths:
       summary: A secure operation
       x-exegesis-controller: secureController
       operationId: secureGet
-      x-exegesis-roles:
-        - admin
       security:
         - sessionKey: []
       responses:

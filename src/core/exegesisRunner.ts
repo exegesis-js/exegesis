@@ -5,10 +5,11 @@ import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
 import { ExegesisRunner, HttpResult, ExegesisContext, ResponseValidationCallback } from '../types';
-import { ApiInterface, ResolvedOperation, ExegesisPluginInstance } from '../types/internal';
+import { ApiInterface, ResolvedOperation } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
 import { isReadable } from '../utils/typeUtils';
+import PluginsManager from './PluginsManager';
 
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
     const authenticated = await operation.authenticate(context);
@@ -85,7 +86,7 @@ export default async function generateExegesisRunner<T>(
     api: ApiInterface<T>,
     options: {
         autoHandleHttpErrors: boolean,
-        plugins: ExegesisPluginInstance[],
+        plugins: PluginsManager,
         onResponseValidationError: ResponseValidationCallback,
         validateDefaultResponses: boolean
     }
@@ -104,21 +105,29 @@ export default async function generateExegesisRunner<T>(
         try {
 
             const resolved = api.resolve(method, url, req.headers);
+            if(!resolved) {
+                return result;
+            }
 
-            if(resolved && resolved.operation) {
+            const context = new ExegesisContextImpl<T>(req, res, resolved.api);
+
+            if(!context.isResponseFinished()) {
+                await plugins.postRouting(context);
+            }
+
+            if(resolved.operation) {
                 const {operation} = resolved;
+
+                context._setOperation(operation);
 
                 if(!operation.controllerModule || !operation.controller) {
                     throw new Error(`No controller found for ${method} ${url}`);
                 }
 
-                const context = new ExegesisContextImpl<T>(req, res, resolved.api, operation);
                 await handleSecurity(operation, context);
 
-                for(const plugin of plugins) {
-                    if(!context.isResponseFinished() && plugin.preController) {
-                        await plugin.preController(context);
-                    }
+                if(!context.isResponseFinished()) {
+                    await plugins.postSecurity(context);
                 }
 
                 if(!context.isResponseFinished()) {
@@ -133,6 +142,10 @@ export default async function generateExegesisRunner<T>(
                         operation.controller,
                         context
                     );
+                }
+
+                if(!context.origRes.headersSent) {
+                    await plugins.postController(context);
                 }
 
                 if(!context.origRes.headersSent) {

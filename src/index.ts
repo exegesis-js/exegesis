@@ -16,8 +16,8 @@ import {
     HttpIncomingMessage
 } from './types';
 export { HttpError, ValidationError } from './errors';
-import * as RolesPlugin from './oas3/plugins/RolesPlugin';
 import { OpenAPIObject } from 'openapi3-ts';
+import PluginsManager from './core/PluginsManager';
 
 // Export all our public types.
 export * from './types';
@@ -82,9 +82,9 @@ export function compileRunner(
         const compiledOptions = compileOptions(options);
         const bundledDoc = await bundle(openApiDoc);
 
-        const plugins = [
-            RolesPlugin.exegesisPlugin(bundledDoc)
-        ];
+        const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
+
+        await plugins.preCompile({apiDoc: bundledDoc});
 
         const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
 

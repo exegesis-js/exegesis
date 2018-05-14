@@ -6,11 +6,6 @@ Each security requirement object has a list of security schemes; in order to
 access an operation, a request must satisfy all security schemes for at least
 one of the objects in the list.
 
-Exegesis also has a vendor extension,
-["x-exegesis-roles"](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md#x-exegesis-roles),
-which is an array of strings which adds support for restricting which operations
-are available to which users after they have been authenticated.
-
 When compiling your API, Exegesis will takes an `authenticators` option which
 maps security schemes to authenticators.  An `authenticator` is a
 function which tries to authenticate the user using a given scheme.  See
@@ -81,21 +76,15 @@ paths:
         security:
             - basicAuth: []
             - oauth: ['readOnly']
-    post:
-        description: Add a new kitten
-        security:
-            - basicAuth: []
-            - oauth: ['readWrite']
-        x-exegesis-roles: ['admin'] # Only users with the "admin" role may call this.
 ```
 
 The "get" operation can only be executed if the request matches one of the two
-listed security requirements.  The "post" operation can only be executed if
-the security requirements are matched, and the current "user" has the "admin"
-role.
+listed security requirements.
 
 If a user authenticated using `basicAuth`, then the controller would have
 access to the object returned by the authenticator via `context.security.basicAuth`.
+Simliarly, if the request used oauth, then `context.security.oauth` would be
+populated with the result of the oauth authenticator.
 
 ## Authenticators
 
@@ -109,11 +98,13 @@ the async functions `getBody()` and `getParams()`).
 If the user is successfully authenticated, an authenticator should return a
 `{type: "success", user, roles, scopes}` object.  `user` is an arbitrary object
 representing the authenticated user; it will be made available to the controller
-via the context. `roles` is a list of roles which the user has, and `scopes` is
-a list of OAuth scopes the user is authorized for.  Authenticators may also add
-additional data to this object (for example, when authenticating via OAuth,
-you might set the `user` to the user the OAuth token is for, and also set an
-`oauthClient` property to identify that this user was authenticated by OAuth.)
+via the context. `roles` is a list of roles which the user has (used by
+[exegsis-plugin-roles](https://github.com/exegesis-js/exegesis-plugin-roles)),
+and `scopes` is a list of OAuth scopes the user is authorized for.  Authenticators
+may also add additional data to this object (for example, when authenticating
+via OAuth, you might set the `user` to the user the OAuth token is for, and also
+set an `oauthClient` property to identify that this user was authenticated by
+OAuth.)
 
 If the user is not authenticated, the authenticator should return a
 `{type: 'fail', challenge, status, message}` object, or undefined.  If

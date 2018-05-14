@@ -1,5 +1,5 @@
 import { StringParser, BodyParser } from './bodyParser';
-import { Controllers, Authenticators } from './core';
+import { Controllers, Authenticators, ExegesisPlugin } from './core';
 import { ResponseValidationCallback } from './validation';
 
 /**
@@ -136,4 +136,8 @@ export interface ExegesisOptions {
      */
     validateDefaultResponses?: boolean;
 
+    /**
+     * Array of plugins to run.
+     */
+    plugins?: ExegesisPlugin[];
 }

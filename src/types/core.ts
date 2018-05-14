@@ -92,10 +92,6 @@ export interface Controllers {
     [controllerName: string]: ControllerModule;
 }
 
-export type PromisePlugin = (context: ExegesisPluginContext) => Promise<void> | void;
-export type CallbackPlugin = (context: ExegesisPluginContext, done: Callback<void>) => void;
-export type Plugin = PromisePlugin | CallbackPlugin;
-
 export interface AuthenticationFailure {
     type: "fail";
     status?: number;
@@ -143,3 +139,71 @@ export type ExegesisRunner = (
     req: http.IncomingMessage,
     res: http.ServerResponse
 ) => Promise<HttpResult | undefined>;
+
+export interface ExegesisPluginInstance {
+    /**
+     * Called exactly once, before Exegesis "compiles" the API document.
+     * Plugins must not modify apiDoc here.
+     *
+     * @param data.apiDoc - the API document.
+     */
+    preCompile?:
+        ((data: {apiDoc: any}) => void | Promise<void>) |
+        ((data: {apiDoc: any}, done: Callback<void>) => void);
+
+    /**
+     * Called immediately after the routing phase.  Note that this is
+     * called before Exegesis verifies routing was valid - the
+     * `pluginContext.api` object will have information about the
+     * matched route, but will this information may be incomplete.
+     * For example, for OAS3 we may have matched a route, but not
+     * matched an operation within the route. Or we may have matched
+     * an operation but that operation may have no controller defined.
+     * (If we failed to match a route at all, this will not be called.)
+     *
+     * If your API added a route to the API document, this function is a
+     * good place to write a reply.
+     *
+     * @param pluginContext - the plugin context.
+     */
+    postRouting?:
+        ((pluginContext: ExegesisPluginContext) => void | Promise<void>) |
+        ((pluginContext: ExegesisPluginContext, done: Callback<void>) => void);
+
+    /**
+     * Called for each request, after security phase and before input
+     * is parsed and the controller is run.  This is a good place to
+     * do extra security checks.  The `exegesis-plugin-roles` plugin,
+     * for example, generates a 403 response here if the authenticated
+     * user has insufficient privliedges to access this path.
+     *
+     * Note that this function will not be called if a previous pluing
+     * has already written a response.
+     *
+     * @param pluginContext - the plugin context.
+     */
+    postSecurity?:
+        ((pluginContext: ExegesisPluginContext) => void | Promise<void>) |
+        ((pluginContext: ExegesisPluginContext, done: Callback<void>) => void);
+
+    /**
+     * Called immediately after the controller has been run, but before
+     * any response validation.  This is a good place to do custom
+     * response validation.  If you have to deal with something weird
+     * like XML, this is where you'd handle it.
+     *
+     * This function can modify the contents of the response.
+     *
+     * @param context - The exegsis plugin context.
+     */
+    postController?:
+        ((pluginContext: ExegesisContext) => void | Promise<void>) |
+        ((pluginContext: ExegesisContext, done: Callback<void>) => void);
+}
+
+export interface ExegesisPlugin {
+    info: {
+        name: string
+    };
+    makeExegesisPlugin(data: {apiDoc: any}) : ExegesisPluginInstance;
+}

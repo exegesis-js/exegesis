@@ -32,26 +32,28 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     user: any | undefined;
     api: T;
 
-    private readonly _operation: ResolvedOperation;
+    private _operation: ResolvedOperation | undefined;
     private _paramsResolved: boolean = false;
     private _bodyResolved: boolean = false;
 
     constructor(
         req: http.IncomingMessage, // http2.Http2ServerRequest,
         res: http.ServerResponse, // http2.Http2ServerResponse,
-        api: T,
-        operation: ResolvedOperation
+        api: T
     ) {
         this.req = req as HttpIncomingMessage;
         this.origRes = res;
         this.res = new ExegesisResponseImpl(res);
         this.api = api;
-        this._operation = operation;
 
         // Temporarily set params to EMPTY_PARAMS.  While we're being a
         // 'plugin context', this will be empty, but it will be filled in
         // before we get to the controllers.
         this.params = EMPTY_PARAMS;
+    }
+
+    _setOperation(operation: ResolvedOperation) {
+        this._operation = operation;
     }
 
     makeError(statusCode: number, message: string) : HttpError {
@@ -70,6 +72,9 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     getParams(done?: Callback<any>) : Promise<ParametersByLocation<ParametersMap<any>>> | void {
         return pb.addCallback(done, () => {
             if(!this._paramsResolved) {
+                if(!this._operation) {
+                    throw new Error("Cannot get parameters - no resolved operation.");
+                }
                 this.params = this._operation.parseParameters();
                 const errors = this._operation.validateParameters(this.params);
                 if(errors && errors.length > 0) {
@@ -86,13 +91,17 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     getBody(done: Callback<any>) : void;
     getBody(done?: Callback<any>) : Promise<any> | void {
         return pb.addCallback(done, async () => {
+            if(!this._operation) {
+                throw new Error("Cannot get parameters - no resolved operation.");
+            }
+
             if(!this._bodyResolved) {
                 let body: any;
 
                 // Parse the body.
                 if(this._operation.bodyParser) {
                     body = await pb.call((done: Callback<void>) =>
-                        this._operation.bodyParser!.parseReq(this.req, this.origRes, done)
+                        this._operation!.bodyParser!.parseReq(this.req, this.origRes, done)
                     );
                     body = body || this.req.body;
                 }
