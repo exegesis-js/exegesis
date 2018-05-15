@@ -4,6 +4,7 @@ import * as oas3 from 'openapi3-ts';
 import { ValidatorFunction, ParameterLocation, BodyParser } from '../types';
 import { generateRequestValidator } from './Schema/validators';
 import Oas3CompileContext from './Oas3CompileContext';
+import * as urlEncodedBodyParser from './urlEncodedBodyParser';
 
 function generateAddDefaultParser(parser: BodyParser, def: any) : BodyParser {
     return {
@@ -45,7 +46,12 @@ export default class RequestMediaType {
         this.context = context;
         this.oaMediaType = oaMediaType;
 
-        const parser = this.context.options.bodyParsers.get(mediaType);
+        let parser = this.context.options.bodyParsers.get(mediaType);
+
+        // OAS3 has special handling for 'application/x-www-form-urlencoded'.
+        if(!parser && mediaType === 'application/x-www-form-urlencoded') {
+            parser = urlEncodedBodyParser.generateBodyParser(context, oaMediaType, parameterLocation);
+        }
 
         if(!parser) {
             throw new Error('Unable to find suitable mime type parser for ' +

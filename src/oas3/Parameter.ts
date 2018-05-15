@@ -1,12 +1,11 @@
-import { generateRequestValidator } from './Schema/validators';
-import { generateParser, ParameterParser } from './parameterParsers';
-import Oas3CompileContext from './Oas3CompileContext';
-
-import { isReferenceObject } from './oasUtils';
-
-import { ValidatorFunction, ParameterLocation, oas3 } from '../types';
+import { JSONSchema4, JSONSchema6 } from 'json-schema';
+import { ParameterLocation, ValidatorFunction, oas3 } from '../types';
 import { extractSchema } from '../utils/jsonSchema';
-import { JSONSchema6, JSONSchema4 } from 'json-schema';
+import Oas3CompileContext from './Oas3CompileContext';
+import { generateRequestValidator } from './Schema/validators';
+import { isReferenceObject } from './oasUtils';
+import { ParameterParser, generateParser } from './parameterParsers';
+import * as urlEncodedBodyParser from './urlEncodedBodyParser';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',
@@ -80,8 +79,15 @@ export default class Parameter {
             // `parameter.content` must have exactly one key
             const mediaTypeString = Object.keys(resOaParameter.content)[0];
             const oaMediaType = resOaParameter.content[mediaTypeString];
+            const mediaTypeContext = context.childContext(['content', mediaTypeString]);
 
-            const parser = context.options.parameterParsers.get(mediaTypeString);
+            let parser = context.options.parameterParsers.get(mediaTypeString);
+
+            // OAS3 has special handling for 'application/x-www-form-urlencoded'.
+            if(!parser && mediaTypeString === 'application/x-www-form-urlencoded') {
+                parser = urlEncodedBodyParser.generateStringParser(mediaTypeContext, oaMediaType, this.location);
+            }
+
             if(!parser) {
                 throw new Error('Unable to find suitable mime type parser for ' +
                     `type ${mediaTypeString} in ${context.jsonPointer}/content`);
@@ -99,7 +105,7 @@ export default class Parameter {
 
             if(oaMediaType.schema) {
                 this.validate = generateRequestValidator(
-                    context.childContext(['content', mediaTypeString, 'schema']),
+                    mediaTypeContext.childContext('schema'),
                     this.location,
                     resOaParameter.required || false
                 );

@@ -67,8 +67,13 @@ A hash where keys are either mime types or mimetype wildcards (e.g. 'text/*'),
 and values are parsers.
 
 This option is used to control how Exegesis parses message bodies and certain
-parameters.  By default, parsers are provided for 'text/*' and
-'application/json'.
+parameters.  By default, parsers are provided for 'text/*', and
+'application/json', however you can override either of these.
+
+OpenAPI 3.x defines special handling for 'application/x-www-form-urlencoded',
+and Exegseis will automatically generate an appropriate parser for this content,
+however you can override the built-in implementation by supplying your own
+parser for this media type.
 
 A parser is either an object of the form:
 

@@ -5,7 +5,7 @@ import getRawBody from 'raw-body';
 import httpHasBody from '../utils/httpHasBody';
 import { MimeTypeParser, StringParser, HttpIncomingMessage, Callback } from "../types";
 
-export default class TextBodyParser implements MimeTypeParser {
+export default class BodyParserWrapper implements MimeTypeParser {
     private _parser: StringParser;
     private _maxBodySize: number;
 

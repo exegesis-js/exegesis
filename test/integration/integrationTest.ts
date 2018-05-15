@@ -174,4 +174,17 @@ describe('integration test', function() {
         });
     });
 
+    it('should correctly parse application/x-www-form-urlencoded', async function() {
+        const fetch = makeFetch(this.server);
+        await fetch(`/wwwFormUrlencoded`, {
+            method: 'post',
+            headers: {"content-type": 'application/x-www-form-urlencoded'},
+            body: 'arr=a,b&other=foo'
+        })
+            .expectBody({
+                arr: ['a', 'b'],
+                other: 'foo'
+            });
+    });
+
 });
