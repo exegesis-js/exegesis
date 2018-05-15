@@ -1,11 +1,11 @@
-import * as jsonPaths from './jsonPaths';
+import * as jsonPtr from 'json-ptr';
 
 function resolveRefPriv(document: any, ref: string) : any {
-    if(!ref.startsWith('#/') && !ref.startsWith('/')) {
+    if(!ref.startsWith('#/') && !ref.startsWith('/') && ref !== '') {
         throw new Error(`Cannot resolve non-local ref ${ref}`);
     }
 
-    const path = jsonPaths.jsonPointerToPath(ref);
+    const path = jsonPtr.decode(ref);
     let currentDoc = document;
     while(path.length > 0) {
         const pathname = path.shift() as string;

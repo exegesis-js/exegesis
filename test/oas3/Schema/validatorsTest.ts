@@ -4,7 +4,6 @@ import { makeOpenApiDoc, makeContext } from '../../fixtures';
 import * as validators from '../../../src/oas3/Schema/validators';
 
 import { ParameterLocation } from '../../../src/types';
-import { pathToJsonPointer } from '../../../src/utils/jsonPaths';
 
 const openApiDoc : oas3.OpenAPIObject = Object.assign(
     makeOpenApiDoc(),
@@ -56,13 +55,13 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
 const REQUEST_BODY_LOCATION: ParameterLocation = {
     in: 'request',
     name: 'body',
-    docPath: pathToJsonPointer(['paths', '/foo', 'post', 'requestBody', 'content', 'application/json'])
+    docPath: 'paths/~1foo/post/requestBody/content/application~1/json'
 };
 
 const QUERY_PARAM_LOCATION: ParameterLocation = {
     in: 'query',
     name: 'foo',
-    docPath: pathToJsonPointer(['components', 'parameters', 'foo'])
+    docPath: '/components/parameters/foo'
 };
 
 describe('schema validators', function() {
@@ -78,7 +77,7 @@ describe('schema validators', function() {
                 in: 'query',
                 name: 'foo',
                 docPath: '/components/schemas/number',
-                path: '/'
+                path: ''
             }
         }]);
     });
@@ -96,7 +95,7 @@ describe('schema validators', function() {
                 in: 'request',
                 name: 'body',
                 docPath: '/components/schemas/object',
-                path: '/'
+                path: ''
             }
         }]);
     });
@@ -114,7 +113,7 @@ describe('schema validators', function() {
                 in: 'request',
                 name: 'body',
                 docPath: '/components/schemas/object',
-                path: '/'
+                path: ''
             }
         }]);
     });
@@ -147,7 +146,7 @@ describe('schema validators', function() {
                 in: 'query',
                 name: 'foo',
                 docPath: '/components/schemas/int32',
-                path: '/'
+                path: ''
             }
         }]);
     });
@@ -164,7 +163,7 @@ describe('schema validators', function() {
                 in: 'query',
                 name: 'foo',
                 docPath: '/components/parameters/foo',
-                path: '/'
+                path: ''
             }
         }]);
     });

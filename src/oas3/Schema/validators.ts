@@ -1,18 +1,9 @@
 import Ajv from 'ajv';
 import traveseSchema from 'json-schema-traverse';
-
-import * as jsonPaths from '../../utils/jsonPaths';
-import * as jsonSchema from '../../utils/jsonSchema';
+import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction } from '../../types';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
+import * as jsonSchema from '../../utils/jsonSchema';
 import Oas3CompileContext from '../Oas3CompileContext';
-
-import {
-    CustomFormats,
-    ValidatorFunction,
-    IValidationError,
-    ParameterLocation,
-    JsonPath
-} from '../../types';
 
 // TODO tests
 // * nullable
@@ -139,7 +130,7 @@ function doValidate(
                     // docPath comes from parameter here, not schema, since the parameter
                     // is the one that defines it is required.
                     docPath: parameterLocation.docPath,
-                    path: '/'
+                    path: ''
                 }
             }];
         }
@@ -149,12 +140,9 @@ function doValidate(
         ajvValidate(value);
         if(ajvValidate.errors) {
             errors = ajvValidate.errors.map(err => {
-                let path: JsonPath = [];
-                if(err.dataPath) {
-                    path = jsonPaths.jsonPointerToPath(err.dataPath);
-                    if(path[0] === 'value') {
-                        path.shift();
-                    }
+                let pathPtr = err.dataPath || '';
+                if(pathPtr.startsWith("/value")) {
+                    pathPtr = pathPtr.slice(6);
                 }
 
                 return {
@@ -163,7 +151,7 @@ function doValidate(
                         in: parameterLocation.in,
                         name: parameterLocation.name,
                         docPath: schemaPtr,
-                        path: jsonPaths.pathToJsonPointer(path)
+                        path: pathPtr
                     }
                 };
             });

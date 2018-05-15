@@ -1,9 +1,9 @@
 import * as oas3 from 'openapi3-ts';
+import * as jsonPtr from 'json-ptr';
 import querystring from 'querystring';
 import BodyParserWrapper from '../bodyParsers/BodyParserWrapper';
 import { MimeTypeParser, ParameterLocation, StringParser } from '../types';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
-import { pathToJsonPointer } from '../utils/jsonPaths';
 import { extractSchema } from '../utils/jsonSchema';
 import Oas3CompileContext from './Oas3CompileContext';
 import { ParameterDescriptor, ParameterParser, generateParser, parseQueryParameters } from './parameterParsers';
@@ -58,7 +58,7 @@ export function generateStringParser(
                 throw new Error(`Cannot find parameter ${parameterName} in schema for ${context.jsonPointer}`);
             }
 
-            const parameterSchema = extractSchema(context.openApiDoc, pathToJsonPointer(parameterSchemaPath));
+            const parameterSchema = extractSchema(context.openApiDoc, jsonPtr.encodePointer(parameterSchemaPath));
 
             let parameterDescriptor: ParameterDescriptor;
             if(encoding.contentType) {

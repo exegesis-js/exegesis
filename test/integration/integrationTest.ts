@@ -96,7 +96,7 @@ describe('integration test', function() {
                             "docPath": "/paths/~1greet/get/parameters/0",
                             "in": "query",
                             "name": "name",
-                            "path": "/"
+                            "path": ""
                         },
                     }
                     ]

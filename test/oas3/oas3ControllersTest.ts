@@ -1,9 +1,9 @@
 import ld from 'lodash';
 import oas3 from 'openapi3-ts';
 import { expect } from 'chai';
+import * as jsonPtr from 'json-ptr';
 import OpenApi from '../../src/oas3/OpenApi';
 import { compileOptions } from '../../src/options';
-import { jsonPointerToPath } from '../../src/utils/jsonPaths';
 import { invokeController } from '../../src/controllers/invoke';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from '../../src/oas3/extensions';
 import FakeExegesisContext from '../fixtures/FakeExegesisContext';
@@ -58,8 +58,8 @@ const options = compileOptions({
 async function findControllerTest(method: string, controllerLocation: string, operationLocation: string) {
     const context = new FakeExegesisContext();
     const openApiDoc = generateOpenApi();
-    ld.set(openApiDoc, jsonPointerToPath(controllerLocation), 'myController');
-    ld.set(openApiDoc, jsonPointerToPath(operationLocation), 'op');
+    ld.set(openApiDoc, jsonPtr.decode(controllerLocation), 'myController');
+    ld.set(openApiDoc, jsonPtr.decode(operationLocation), 'op');
 
     const openApi = new OpenApi(openApiDoc, options);
 

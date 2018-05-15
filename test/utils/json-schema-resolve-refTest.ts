@@ -27,7 +27,7 @@ describe("resolveRef", function() {
     });
 
     it('should resolve root ref', function() {
-        expect(resolveRef(doc, '#/')).to.eql(doc);
+        expect(resolveRef(doc, '')).to.eql(doc);
     });
 
     it('should resolve a JSON Reference to a JSON Reference', function() {

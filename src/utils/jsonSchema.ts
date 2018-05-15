@@ -1,6 +1,7 @@
 import ld from 'lodash';
 import traveseSchema from 'json-schema-traverse';
 import * as jsonPaths from './jsonPaths';
+import * as jsonPtr from 'json-ptr';
 import { JSONSchema6, JSONSchema4 } from 'json-schema';
 import {resolveRef} from './json-schema-resolve-ref';
 
@@ -45,7 +46,7 @@ function extractSchemaPriv(
 
                 // Find a name to store this under in 'definitions'.
                 const origRef = schema.$ref;
-                const jsonPath = jsonPaths.jsonPointerToPath(schema.$ref);
+                const jsonPath = jsonPtr.decode(schema.$ref);
                 let newRefSuffix : string | undefined = jsonPath.length > 0 ? jsonPath[jsonPath.length - 1] : undefined;
                 while(!newRefSuffix || ctx.result.definitions[newRefSuffix]) {
                     newRefSuffix = `schema${ctx.schemaCount++}`;

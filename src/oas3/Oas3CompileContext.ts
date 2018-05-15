@@ -1,11 +1,15 @@
 import * as ld from 'lodash';
 
 import * as oas3 from 'openapi3-ts';
-import { pathToJsonPointer } from '../utils/jsonPaths';
+import * as jsonPtr from 'json-ptr';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
 
-import { JsonPath } from '../types';
 import { ExgesisCompiledOptions } from '../options';
+
+/**
+ * A path to an object within a JSON document.
+ */
+export type JsonPath = string[];
 
 /**
  * This has common stuff that we want to pass all the way down through the OAS
@@ -41,7 +45,7 @@ export default class Oas3CompileContext {
         } else {
             throw new Error("Invalid parameters to Oas3CompileContext constructor");
         }
-        this.jsonPointer = pathToJsonPointer(this.path);
+        this.jsonPointer = jsonPtr.encodePointer(this.path);
     }
 
     childContext(relativePath: JsonPath | string) {

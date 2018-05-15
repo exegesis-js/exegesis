@@ -9,11 +9,6 @@ export interface Dictionary<T> {
 }
 
 /**
- * A path to an object within a JSON document.
- */
-export type JsonPath = string[];
-
-/**
  * A dictionary of parameters, where keys are the source of the parameters.
  */
 export interface ParametersByLocation<T> {

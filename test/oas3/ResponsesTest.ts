@@ -129,7 +129,7 @@ describe('oas3 Responses', function() {
                   docPath: "/paths/~1path/get/responses/200/content/application~1json/schema",
                   in: "response",
                   name: "body",
-                  path: "/"
+                  path: ""
                 },
                 message: "should have required property 'foo'"
               }
@@ -220,7 +220,7 @@ describe('oas3 Responses', function() {
                   docPath: "/paths/~1path/get/responses/default/content/application~1json/schema",
                   in: "response",
                   name: "body",
-                  path: '/'
+                  path: ''
                 },
                 message: "should have required property 'message'"
               }
