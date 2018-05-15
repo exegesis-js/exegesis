@@ -91,7 +91,6 @@ describe('integration test', function() {
                 .expectBody({
                     "message": "Validation errors",
                     "errors": [{
-                        "type": "error",
                         "message": "Missing required query parameter \"name\"",
                         "location": {
                             "docPath": ["paths", "/greet", "get", "parameters", "0"],

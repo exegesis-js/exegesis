@@ -125,7 +125,6 @@ describe('oas3 Responses', function() {
             isDefault: false,
             errors: [
               {
-                type: 'error',
                 location: {
                   docPath: [ "paths", "/path", "get", "responses", "200", "content", "application/json", "schema" ],
                   in: "response",
@@ -152,7 +151,6 @@ describe('oas3 Responses', function() {
             isDefault: false,
             errors: [
               {
-                type: 'error',
                 location: {
                   docPath: [ "paths", "/path", "get", "responses", "200" ],
                   in: "response",
@@ -218,7 +216,6 @@ describe('oas3 Responses', function() {
             isDefault: true,
             errors: [
               {
-                type: 'error',
                 location: {
                   docPath: [ "paths", "/path", "get", "responses", "default", "content", "application/json", "schema" ],
                   in: "response",

@@ -1,6 +1,6 @@
 import * as oas3 from 'openapi3-ts';
 import Oas3CompileContext from './Oas3CompileContext';
-import { ValidatorFunction, IValidationError, ErrorType, ParameterLocation, HttpHeaders } from '../types';
+import { ValidatorFunction, IValidationError, ParameterLocation, HttpHeaders } from '../types';
 import { MimeTypeRegistry } from '../utils/mime';
 import { generateResponseValidator } from './Schema/validators';
 import { isReadable } from '../utils/typeUtils';
@@ -49,13 +49,11 @@ export default class Responses {
             if(body) {
                 return [{
                     location: this._location,
-                    type: ErrorType.Error,
                     message: 'Response is missing content-type.'
                 }];
             } else if(this._hasResponses) {
                 return [{
                     location: this._location,
-                    type: ErrorType.Error,
                     message: 'Response expects body.'
                 }];
             } else {
@@ -64,7 +62,6 @@ export default class Responses {
         } else if(typeof contentType !== 'string') {
             return [{
                 location: this._location,
-                type: ErrorType.Error,
                 message: `Invalid content type: ${contentType}`
             }];
         } else {
@@ -73,13 +70,11 @@ export default class Responses {
             if(body === null || body === undefined) {
                 return [{
                     location: this._location,
-                    type: ErrorType.Error,
                     message: `Missing response body.`
                 }];
             } else if(!validator) {
                 return [{
                     location: this._location,
-                    type: ErrorType.Error,
                     message: `Unexpected content-type for response: ${contentType}.`
                 }];
             } else if(typeof body === 'string' || body instanceof Buffer || isReadable(body)) {

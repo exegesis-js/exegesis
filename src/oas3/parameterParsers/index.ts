@@ -2,7 +2,7 @@ import ld from 'lodash';
 import querystring from 'querystring';
 import qs from 'qs';
 
-import { ErrorType, ParametersMap, ParameterLocation } from '../../types';
+import { ParametersMap, ParameterLocation } from '../../types';
 import { ValidationError } from '../../errors';
 import { pipeDelimitedParser, spaceDelimitedParser } from './delimitedParser';
 import { generateStructuredParser } from './structuredParser';
@@ -62,7 +62,6 @@ function generateMediaTypeParser(
             }
         } catch (err) {
             throw new ValidationError({
-                type: ErrorType.Error,
                 message: `Error parsing parameter ${location.name} of ` +
                     `type ${parameterDescriptor.contentType}: ${err.message}`,
                 location

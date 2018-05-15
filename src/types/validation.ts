@@ -22,11 +22,6 @@ export interface ParameterLocation {
     path?: JsonPath;
 }
 
-export enum ErrorType {
-    Error = "error",
-    Warning = "warning"
-}
-
 /**
  * A validation error.
  *
@@ -36,7 +31,6 @@ export enum ErrorType {
  *   error.
  */
 export interface IValidationError {
-    type: ErrorType;
     message: string;
     location?: ParameterLocation;
 }

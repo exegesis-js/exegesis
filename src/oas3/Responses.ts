@@ -1,7 +1,7 @@
 import * as oas3 from 'openapi3-ts';
 import Oas3CompileContext from './Oas3CompileContext';
 import Response from './Response';
-import { ParameterLocation, ErrorType, ResponseValidationResult, HttpHeaders } from '../types';
+import { ParameterLocation, ResponseValidationResult, HttpHeaders } from '../types';
 
 export default class Responses {
     readonly context: Oas3CompileContext;
@@ -34,7 +34,6 @@ export default class Responses {
             return {
                 errors: [{
                     location: this._location,
-                    type: ErrorType.Warning, // TODO: Get rid of error type?
                     message: `No response defined for status code ${statusCode}.`
                 }],
                 isDefault: false

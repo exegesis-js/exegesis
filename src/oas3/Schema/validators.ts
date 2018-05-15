@@ -10,7 +10,6 @@ import {
     CustomFormats,
     ValidatorFunction,
     IValidationError,
-    ErrorType,
     ParameterLocation,
     JsonPath
 } from '../../types';
@@ -133,7 +132,6 @@ function doValidate(
     if(json === null || json === undefined) {
         if(parameterRequired) {
             errors = [{
-                type: ErrorType.Error,
                 message: `Missing required ${getParameterDescription(parameterLocation)}`,
                 location: {
                     in: parameterLocation.in,
@@ -160,7 +158,6 @@ function doValidate(
                 }
 
                 return {
-                    type: ErrorType.Error,
                     message: err.message || 'Unspecified error',
                     location: {
                         in: parameterLocation.in,

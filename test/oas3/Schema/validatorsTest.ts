@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { makeOpenApiDoc, makeContext } from '../../fixtures';
 import * as validators from '../../../src/oas3/Schema/validators';
 
-import { ErrorType, ParameterLocation } from '../../../src/types';
+import { ParameterLocation } from '../../../src/types';
 
 const openApiDoc : oas3.OpenAPIObject = Object.assign(
     makeOpenApiDoc(),
@@ -72,7 +72,6 @@ describe('schema validators', function() {
         expect(validator(7)).to.eql({errors: null, value: 7});
 
         expect(validator("foo").errors).to.eql([{
-            type: ErrorType.Error,
             message: 'should be number',
             location: {
                 in: 'query',
@@ -91,7 +90,6 @@ describe('schema validators', function() {
         expect(validator({a: 'hello', b: 'hello'}).errors, 'should allow "a"').to.eql(null);
 
         expect(validator({}).errors, 'should still require "b"').to.eql([{
-            type: ErrorType.Error,
             message: "should have required property 'b'",
             location: {
                 in: 'request',
@@ -110,7 +108,6 @@ describe('schema validators', function() {
         expect(validator({a: 'hello', b: 'hello'}).errors, 'should allow "b"').to.eql(null);
 
         expect(validator({}).errors, 'should still require "a"').to.eql([{
-            type: ErrorType.Error,
             message: "should have required property 'a'",
             location: {
                 in: 'request',
@@ -127,7 +124,6 @@ describe('schema validators', function() {
         const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 
         expect(validator({a: 'hello'}).errors).to.eql([{
-            type: ErrorType.Error,
             message: 'should be number',
             location: {
                 in: 'request',
@@ -145,7 +141,6 @@ describe('schema validators', function() {
         expect(validator(7).errors).to.eql(null);
 
         expect(validator(Math.pow(2, 32)).errors).to.eql([{
-            type: ErrorType.Error,
             message: 'should match format "int32"',
             location: {
                 in: 'query',
@@ -163,7 +158,6 @@ describe('schema validators', function() {
 
         expect(validator(7).errors).to.eql(null);
         expect(validator(undefined).errors).to.eql([{
-            type: ErrorType.Error,
             message: 'Missing required query parameter "foo"',
             location: {
                 in: 'query',
