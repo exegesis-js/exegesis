@@ -4,12 +4,15 @@ import * as types from '../types';
 import { HttpHeaders } from '../types';
 
 export default class ExegesisResponseImpl implements types.ExegesisResponse {
+    private _body: any = undefined;
+    _afterController: boolean = false;
+
     statusCode: number = 200;
     statusMessage: string | undefined = undefined;
     headers: types.HttpHeaders = Object.create(null);
-    _body: any = undefined;
     ended: boolean = false;
     connection: net.Socket;
+    headersSent: boolean = false;
 
     constructor(res: http.ServerResponse /* | http2.Http2ServerResponse */) {
         this.connection = res.connection;
@@ -40,17 +43,17 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     setBody(body: any) : this {
-        if(this.ended) {
+        if(this.ended && !this._afterController) {
             throw new Error("Trying to set body after response has been ended.");
         }
         this._body = body;
-        this.ended = true;
+        this.end();
         return this;
     }
 
     set body(body: any) {
         this._body = body;
-        this.ended = true;
+        this.end();
     }
 
     get body() : any {
@@ -58,11 +61,12 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     end() {
+        this.headersSent = true;
         this.ended = true;
     }
 
     setHeader(name: string, value: number | string | string[]) {
-        if(this.ended) {
+        if(this.ended && !this._afterController) {
             throw new Error("Trying to set header after response has been ended.");
         }
         this.headers[name.toLowerCase()] = value;
@@ -85,7 +89,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     removeHeader(name: string) {
-        if(this.ended) {
+        if(this.ended && !this._afterController) {
             throw new Error("Trying to remove header after response has been ended.");
         }
         delete this.headers[name];
@@ -103,5 +107,6 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
                 this.setHeader(headerName, headers[headerName]);
             }
         }
+        this.headersSent = true;
     }
 }

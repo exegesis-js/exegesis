@@ -145,6 +145,9 @@ export default async function generateExegesisRunner<T>(
                 }
 
                 if(!context.origRes.headersSent) {
+                    // Set _afterController to allow postController() plugins to
+                    // modify the response.
+                    context.res._afterController = true;
                     await plugins.postController(context);
                 }
 
