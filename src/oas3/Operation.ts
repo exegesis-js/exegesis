@@ -1,5 +1,6 @@
 import pb from 'promise-breaker';
 import * as oas3 from 'openapi3-ts';
+import deepFreeze from 'deep-freeze';
 
 import { MimeTypeRegistry } from '../utils/mime';
 import { contentToRequestMediaTypeRegistry } from './oasUtils';
@@ -17,7 +18,8 @@ import {
     AuthenticationFailure,
     AuthenticationResult,
     ExegesisResponse,
-    ResponseValidationResult
+    ResponseValidationResult,
+    ParameterLocations
 } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import { HttpError } from './../errors';
@@ -87,6 +89,7 @@ export default class Operation {
     readonly exegesisController: string | undefined;
     readonly operationId: string | undefined;
     readonly securityRequirements: oas3.SecurityRequirementObject[];
+    readonly parameterLocations: ParameterLocations;
 
     /**
      * If this operation has a `requestBody`, this is a list of content-types
@@ -167,6 +170,14 @@ export default class Operation {
             },
             {query: [], header: [], path: [], server: [], cookie: []}
         );
+
+        this.parameterLocations = deepFreeze(allParameters.reduce(
+            (result: ParameterLocations, parameter: Parameter) => {
+                (result as any)[parameter.oaParameter.in] = parameter.location;
+                return result;
+            },
+            {query: {}, header: {}, path: {}, cookie: {}}
+        ));
     }
 
     /**

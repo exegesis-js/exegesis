@@ -4,9 +4,11 @@ import {
     ExegesisResponse,
     AuthenticationSuccess,
     ParametersByLocation,
-    ParametersMap
+    ParametersMap,
+    ParameterLocation,
+    ParameterLocations
 } from "../../src";
-import { HttpError } from '../../src/errors';
+import { HttpError, ValidationError } from '../../src/errors';
 import ExegesisResponseImpl from '../../src/core/ExegesisResponseImpl';
 
 export default class FakeExegesisContext implements ExegesisContext {
@@ -24,6 +26,12 @@ export default class FakeExegesisContext implements ExegesisContext {
         cookie: {}
     };
     body: any = {};
+    parameterLocations: ParameterLocations = {
+        query: {},
+        header: {},
+        path: {},
+        cookie: {}
+    };
 
     constructor() {
         this.req = {} as http.IncomingMessage;
@@ -33,6 +41,10 @@ export default class FakeExegesisContext implements ExegesisContext {
 
     makeError(statusCode: number, message: string) : Error {
         return new HttpError(statusCode, message);
+    }
+
+    makeValidationError(message: string, location: ParameterLocation) {
+        return new ValidationError([{message, location}]);
     }
 
     /**

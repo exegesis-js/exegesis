@@ -22,6 +22,18 @@ export interface ParameterLocation {
 }
 
 /**
+ * A dictionary of parameters, where keys are the source of the parameters.
+ */
+export interface ParameterLocations {
+    path: {[parameter: string]: ParameterLocation};
+    query: {[parameter: string]: ParameterLocation};
+    cookie: {[parameter: string]: ParameterLocation};
+    header: {[parameter: string]: ParameterLocation};
+    request?: {body: ParameterLocation};
+    response?: {body: ParameterLocation};
+}
+
+/**
  * A validation error.
  *
  * @property type - The type of validation error.  Either 'error' or 'warning'.

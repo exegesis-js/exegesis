@@ -4,6 +4,7 @@ import * as oas3 from 'openapi3-ts';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
 import { Readable } from 'stream';
+import { ParameterLocations, ParameterLocation } from '.';
 
 export interface HttpHeaders {
     [header: string]: number | string | string[];
@@ -46,8 +47,10 @@ export interface ExegesisContextBase {
     api: any;
     security?: {[scheme: string]: AuthenticationSuccess};
     user?: any;
+    parameterLocations?: ParameterLocations;
 
     makeError(statusCode: number, message: string) : Error;
+    makeValidationError(message: string, parameterLocation: ParameterLocation) : Error;
 
     /**
      * Returns true if the response has already been sent.
@@ -56,6 +59,7 @@ export interface ExegesisContextBase {
 }
 
 export interface ExegesisContext extends ExegesisContextBase {
+    parameterLocations: ParameterLocations;
     params: ParametersByLocation<ParametersMap<any>>;
     body: any;
 }

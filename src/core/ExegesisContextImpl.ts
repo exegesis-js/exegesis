@@ -1,6 +1,6 @@
 import * as http from 'http';
 import pb from 'promise-breaker';
-
+import deepFreeze from 'deep-freeze';
 import {
     ParametersByLocation,
     ParametersMap,
@@ -8,18 +8,27 @@ import {
     AuthenticationSuccess,
     HttpIncomingMessage,
     ExegesisPluginContext,
-    Callback
+    Callback,
+    ParameterLocations,
+    ParameterLocation
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
 import { HttpError, ValidationError } from '../errors';
 import { ResolvedOperation } from '../types/internal';
 
-const EMPTY_PARAMS = Object.freeze({
-    query: Object.freeze(Object.create(null)),
-    header: Object.freeze(Object.create(null)),
-    server: Object.freeze(Object.create(null)),
-    path: Object.freeze(Object.create(null)),
-    cookie: Object.freeze(Object.create(null))
+const EMPTY_PARAMS = deepFreeze({
+    query: Object.create(null),
+    header: Object.create(null),
+    server: Object.create(null),
+    path: Object.create(null),
+    cookie: Object.create(null)
+});
+
+const EMPTY_PARAM_LOCATIONS : ParameterLocations = deepFreeze<ParameterLocations>({
+    query:Object.create(null),
+    header:Object.create(null),
+    path:Object.create(null),
+    cookie:Object.create(null)
 });
 
 export default class ExegesisContextImpl<T> implements ExegesisContext, ExegesisPluginContext {
@@ -31,6 +40,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     security?: {[scheme: string]: AuthenticationSuccess};
     user: any | undefined;
     api: T;
+    parameterLocations: ParameterLocations = EMPTY_PARAM_LOCATIONS;
 
     private _operation: ResolvedOperation | undefined;
     private _paramsResolved: boolean = false;
@@ -54,10 +64,15 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
 
     _setOperation(operation: ResolvedOperation) {
         this._operation = operation;
+        this.parameterLocations = operation.parameterLocations;
     }
 
     makeError(statusCode: number, message: string) : HttpError {
         return new HttpError(statusCode, message);
+    }
+
+    makeValidationError(message: string, parameterLocation: ParameterLocation) {
+        return new ValidationError([{message, location: parameterLocation}]);
     }
 
     /**

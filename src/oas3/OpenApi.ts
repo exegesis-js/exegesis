@@ -137,6 +137,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                     resolvedOperation = {
                         parseParameters,
                         validateParameters,
+                        parameterLocations: operation.parameterLocations,
                         bodyParser,
                         validateBody,
                         validateResponse,

@@ -11,7 +11,8 @@ import {
     AuthenticationSuccess,
     ControllerModule,
     ExegesisResponse,
-    ResponseValidationResult
+    ResponseValidationResult,
+    ParameterLocations
 } from '.';
 
 export type ParsedParameterValidator =
@@ -20,6 +21,7 @@ export type ParsedParameterValidator =
 export interface ResolvedOperation {
     parseParameters: (() => ParametersByLocation<ParametersMap<any>>);
     validateParameters: ParsedParameterValidator;
+    parameterLocations: ParameterLocations;
     bodyParser: BodyParser | undefined;
     validateBody: ValidatorFunction | undefined;
     exegesisControllerName: string | undefined;

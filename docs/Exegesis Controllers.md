@@ -126,6 +126,9 @@ Exegesis will start from the Media Type Object specified by a given request, and
 - `context.params` - This is a `{query, header, path, server, cookie}` object.
   Each member is a hash where keys are parameter names, and values are the
   parsed parameters.
+- `context.parameterLocations` - This is a mirror of the `context.params` object,
+  but instead of parameter values, this has parameter locations.  (`server`
+  parameters are not preset in `parameterLocations` in the current release.)
 - `context.body` - The parsed message body, if one is present.
 - `context.security` - This is a dictionary where keys are security schemes,
   and values are `{user, roles, scope}` objects (as returned by the associated
@@ -149,3 +152,12 @@ Exegesis will start from the Media Type Object specified by a given request, and
   - `requestBodyMediaTypeObject` - The matched MediaType Object from the operation's
     `requestBody`, or null if none was matched or the Operation has no requestBody.
   - `requestBodyMediaTypePtr` - A JSON Pointer to the MediaType Object.
+
+- `context.makeError(statusCode, message)` is a convenience function which
+  will create a new Error object with a status.  Note that this does not
+  throw the error - your code has to do that.
+
+- `context.makeValidationError(message, location)` is a convenience function which
+  will creates a new validation error.  `location` should be a parameter location
+  from `context.parameterLocations`.  Note that this does not throw the error - your
+  code has to do that.

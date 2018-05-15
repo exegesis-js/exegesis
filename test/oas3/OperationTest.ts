@@ -257,6 +257,29 @@ describe('oas3 Operation', function() {
             expect(errors, 'error for bad myparam').to.exist;
             expect(errors!).to.not.be.empty;
         });
+
+        it('should generate a map of parameter locations', function() {
+            const operation = makeOperation('get', {
+                responses: {200: {description: "ok"}},
+                parameters: [{
+                    name: 'myparam',
+                    in: 'query',
+                    schema: {type: 'string'}
+                }]
+            });
+
+            expect(operation.parameterLocations).to.eql({
+                cookie: {},
+                header: {},
+                path: {},
+                query: {
+                    docPath: '/paths/~1path/get/parameters/0',
+                    in: 'query',
+                    name: 'myparam',
+                    path: ''
+                }
+            });
+        });
     });
 
 });
