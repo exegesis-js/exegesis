@@ -148,7 +148,7 @@ export default class Operation {
             // Request body has a "required" flag, which we are currently ignoring.
             this._requestBodyContentTypes = contentToRequestMediaTypeRegistry(
                 contentContext,
-                {in: 'request', name: 'body', docPath: contentContext.path},
+                {in: 'request', name: 'body', docPath: contentContext.jsonPointer},
                 requestBody.required || false,
                 requestBody.content
             );

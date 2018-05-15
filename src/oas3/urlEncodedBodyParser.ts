@@ -85,7 +85,7 @@ export function generateStringParser(
                 location: {
                     in: parameterLocation.in,
                     name: parameterName,
-                    docPath: context.childContext(['encoding', parameterName]).path
+                    docPath: context.childContext(['encoding', parameterName]).jsonPointer
                 },
                 parser: generateParser(parameterDescriptor)
             });

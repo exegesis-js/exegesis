@@ -1,4 +1,3 @@
-import { JsonPath } from "./basicTypes";
 import { ExegesisContext } from ".";
 
 export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
@@ -18,8 +17,8 @@ export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "hea
 export interface ParameterLocation {
     in: ParameterLocationIn;
     name: string;
-    docPath: JsonPath; // TODO: JSON pointer instead.
-    path?: JsonPath;
+    docPath: string;
+    path?: string;
 }
 
 /**

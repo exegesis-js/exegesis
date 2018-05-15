@@ -13,7 +13,7 @@ export default class Responses {
         this._location = {
             in: 'response',
             name: 'body',
-            docPath: this.context.path
+            docPath: this.context.jsonPointer
         };
 
         this._responses = {};

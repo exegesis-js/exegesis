@@ -120,7 +120,7 @@ export function _filterRequiredProperties(schema: any, propNameToFilter: string)
 }
 
 function doValidate(
-    schemaPath: JsonPath,
+    schemaPtr: string,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
     ajvValidate: Ajv.ValidateFunction,
@@ -139,7 +139,7 @@ function doValidate(
                     // docPath comes from parameter here, not schema, since the parameter
                     // is the one that defines it is required.
                     docPath: parameterLocation.docPath,
-                    path: []
+                    path: '/'
                 }
             }];
         }
@@ -162,8 +162,8 @@ function doValidate(
                     location: {
                         in: parameterLocation.in,
                         name: parameterLocation.name,
-                        docPath: schemaPath,
-                        path
+                        docPath: schemaPtr,
+                        path: jsonPaths.pathToJsonPointer(path)
                     }
                 };
             });
@@ -180,10 +180,10 @@ function generateValidator(
     propNameToFilter: string,
     allowTypeCoercion: boolean
 ) : ValidatorFunction {
-    const {openApiDoc, path: schemaPath} = schemaContext;
+    const {openApiDoc, jsonPointer: schemaPtr} = schemaContext;
     const customFormats = schemaContext.options.customFormats;
 
-    let schema: any = jsonSchema.extractSchema(openApiDoc, jsonPaths.pathToJsonPointer(schemaPath));
+    let schema: any = jsonSchema.extractSchema(openApiDoc, schemaPtr);
     _filterRequiredProperties(schema, propNameToFilter);
     removeExamples(schema);
     // TODO: Should we do this?  Or should we rely on the schema being correct in the first place?
@@ -212,7 +212,7 @@ function generateValidator(
     const validate = ajv.compile(schema);
 
     return function(json: any) {
-        return doValidate(schemaPath, parameterLocation, parameterRequired, validate, json);
+        return doValidate(schemaPtr, parameterLocation, parameterRequired, validate, json);
     };
 }
 

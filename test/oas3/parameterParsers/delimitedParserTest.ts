@@ -8,7 +8,7 @@ describe('oas3 parameter parsers - delimited parser', function() {
     const parameterLocation : ParameterLocation = {
         in: 'query',
         name: 'myParam',
-        docPath: ['paths', '/foo', 'parameters', '0']
+        docPath: '/paths/~1foo/parameters/0'
     };
 
     it('should correctly parse a pipe delimited string', function() {

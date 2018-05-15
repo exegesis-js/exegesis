@@ -93,10 +93,10 @@ describe('integration test', function() {
                     "errors": [{
                         "message": "Missing required query parameter \"name\"",
                         "location": {
-                            "docPath": ["paths", "/greet", "get", "parameters", "0"],
+                            "docPath": "/paths/~1greet/get/parameters/0",
                             "in": "query",
                             "name": "name",
-                            "path": []
+                            "path": "/"
                         },
                     }
                     ]

@@ -4,6 +4,7 @@ import { makeOpenApiDoc, makeContext } from '../../fixtures';
 import * as validators from '../../../src/oas3/Schema/validators';
 
 import { ParameterLocation } from '../../../src/types';
+import { pathToJsonPointer } from '../../../src/utils/jsonPaths';
 
 const openApiDoc : oas3.OpenAPIObject = Object.assign(
     makeOpenApiDoc(),
@@ -55,13 +56,13 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
 const REQUEST_BODY_LOCATION: ParameterLocation = {
     in: 'request',
     name: 'body',
-    docPath: ['paths', '/foo', 'post', 'requestBody', 'content', 'application/json']
+    docPath: pathToJsonPointer(['paths', '/foo', 'post', 'requestBody', 'content', 'application/json'])
 };
 
 const QUERY_PARAM_LOCATION: ParameterLocation = {
     in: 'query',
     name: 'foo',
-    docPath: ['components', 'parameters', 'foo']
+    docPath: pathToJsonPointer(['components', 'parameters', 'foo'])
 };
 
 describe('schema validators', function() {
@@ -76,8 +77,8 @@ describe('schema validators', function() {
             location: {
                 in: 'query',
                 name: 'foo',
-                docPath: ['components', 'schemas', 'number'],
-                path: []
+                docPath: '/components/schemas/number',
+                path: '/'
             }
         }]);
     });
@@ -94,8 +95,8 @@ describe('schema validators', function() {
             location: {
                 in: 'request',
                 name: 'body',
-                docPath: ['components', 'schemas', 'object'],
-                path: []
+                docPath: '/components/schemas/object',
+                path: '/'
             }
         }]);
     });
@@ -112,8 +113,8 @@ describe('schema validators', function() {
             location: {
                 in: 'request',
                 name: 'body',
-                docPath: ['components', 'schemas', 'object'],
-                path: []
+                docPath: '/components/schemas/object',
+                path: '/'
             }
         }]);
     });
@@ -128,8 +129,8 @@ describe('schema validators', function() {
             location: {
                 in: 'request',
                 name: 'body',
-                docPath: ['components', 'schemas', 'object2'],
-                path: ['a']
+                docPath: '/components/schemas/object2',
+                path: '/a'
             }
         }]);
     });
@@ -145,8 +146,8 @@ describe('schema validators', function() {
             location: {
                 in: 'query',
                 name: 'foo',
-                docPath: ['components', 'schemas', 'int32'],
-                path: []
+                docPath: '/components/schemas/int32',
+                path: '/'
             }
         }]);
     });
@@ -162,8 +163,8 @@ describe('schema validators', function() {
             location: {
                 in: 'query',
                 name: 'foo',
-                docPath: ['components', 'parameters', 'foo'],
-                path: []
+                docPath: '/components/parameters/foo',
+                path: '/'
             }
         }]);
     });

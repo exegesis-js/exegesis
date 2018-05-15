@@ -55,8 +55,8 @@ export default class Parameter {
         this.location = {
             in: resOaParameter.in,
             name: resOaParameter.name,
-            docPath: context.path,
-            path: []
+            docPath: context.jsonPointer,
+            path: '/'
         };
         this.name = resOaParameter.name;
 
