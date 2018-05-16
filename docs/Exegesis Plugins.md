@@ -22,7 +22,7 @@ divides the execution of an API up into the following phases:
   if no one asks for the parameters or the body, we won't bother to parse
   them.  However, to make writing controllers easier, if they have not be parsed
   by this point, Exegesis explicitly parses them and stores them in
-  `context.params` and `context.body`.
+  `context.params` and `context.requestBody`.
 * **Controller** - Exegesis calls into a controller to run business logic
   associated with the resource being accessed.
 * **Response Validation** - Exegesis optionally validates that the response
@@ -102,7 +102,7 @@ function makeExegesisPlugin({apiDoc}) {
         // If your API added a route to the API document, this function is a
         // good place to write a reply.
         //
-        // Note that calling `pluginContext.getParams()` or `pluginContext.getBody()`
+        // Note that calling `pluginContext.getParams()` or `pluginContext.getRequestBody()`
         // will throw here if routing was not successful.
         postRouting(pluginContext) {
         }

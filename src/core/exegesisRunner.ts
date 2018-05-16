@@ -156,9 +156,9 @@ export default async function generateExegesisRunner<T>(
                 }
 
                 if(!context.isResponseFinished()) {
-                    // Fill in context.params and context.body.
+                    // Fill in context.params and context.requestBody.
                     await context.getParams();
-                    await context.getBody();
+                    await context.getRequestBody();
                 }
 
                 if(!context.isResponseFinished()) {

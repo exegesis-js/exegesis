@@ -38,7 +38,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     readonly res: ExegesisResponseImpl;
     readonly options: ExegesisOptions;
     params: ParametersByLocation<ParametersMap<any>>;
-    body: any;
+    requestBody: any;
     security?: {[scheme: string]: AuthenticationSuccess};
     user: any | undefined;
     api: T;
@@ -106,9 +106,9 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
         });
     }
 
-    getBody() : Promise<any>;
-    getBody(done: Callback<any>) : void;
-    getBody(done?: Callback<any>) : Promise<any> | void {
+    getRequestBody() : Promise<any>;
+    getRequestBody(done: Callback<any>) : void;
+    getRequestBody(done?: Callback<any>) : Promise<any> | void {
         return pb.addCallback(done, async () => {
             if(!this._operation) {
                 throw new Error("Cannot get parameters - no resolved operation.");
@@ -138,10 +138,10 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
                 }
 
                 // Assign the body to the appropriate places
-                this.body = this.req.body = body;
+                this.requestBody = this.req.body = body;
                 this._bodyResolved = true;
             }
-            return this.body;
+            return this.requestBody;
         });
     }
 

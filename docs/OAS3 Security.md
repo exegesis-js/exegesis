@@ -47,7 +47,7 @@ return an authentication information.  Note that the `context` passed to an
 authenticator is a "plugin context" - this differs from a regular context
 in that `body` and `params` will be undefined as they have not been
 parsed yet (although access to the body and parameters are available via
-the async functions `getBody()` and `getParams()`).  Authenticators are also
+the async functions `getRequestBody()` and `getParams()`).  Authenticators are also
 passed an `info` object, which is either a `{in, name}` object describing
 what field the authentication information should be stored in, or else a
 `{scheme}` object describing the HTTP authentication scheme being used,
@@ -85,7 +85,7 @@ will create a `context.security` object with the details of the matched schemes.
 This will be available to the controller which handles the operation.
 
 Authenticators are run prior to body parsing, however the body is available via
-the async function `context.getBody()` if it is needed.
+the async function `context.getRequestBody()` if it is needed.
 
 ### Example: Basic Auth
 

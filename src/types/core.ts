@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as net from 'net';
 import * as oas3 from 'openapi3-ts';
 
-import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
+import { Callback, ParametersByLocation, ParametersMap, HttpIncomingMessage } from './basicTypes';
 import { Readable } from 'stream';
 import { ParameterLocations, ParameterLocation, ExegesisOptions } from '.';
 
@@ -41,7 +41,7 @@ export interface ExegesisResponse {
 }
 
 export interface ExegesisContextBase {
-    readonly req: http.IncomingMessage;
+    readonly req: HttpIncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
@@ -61,15 +61,15 @@ export interface ExegesisContextBase {
 export interface ExegesisContext extends ExegesisContextBase {
     parameterLocations: ParameterLocations;
     params: ParametersByLocation<ParametersMap<any>>;
-    body: any;
+    requestBody: any;
     options: ExegesisOptions;
 }
 
 export interface ExegesisPluginContext extends ExegesisContextBase {
     getParams() : Promise<ParametersByLocation<ParametersMap<any>>>;
     getParams(done: Callback<ParametersByLocation<ParametersMap<any>>>) : void;
-    getBody() : Promise<any>;
-    getBody(done: Callback<any>) : void;
+    getRequestBody() : Promise<any>;
+    getRequestBody(done: Callback<any>) : void;
 }
 
 export interface OAS3ApiInfo {

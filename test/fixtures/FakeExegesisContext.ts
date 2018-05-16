@@ -26,7 +26,7 @@ export default class FakeExegesisContext implements ExegesisContext {
         path: {},
         cookie: {}
     };
-    body: any = {};
+    requestBody: any = {};
     parameterLocations: ParameterLocations = {
         query: {},
         header: {},

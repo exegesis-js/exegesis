@@ -129,7 +129,7 @@ Exegesis will start from the Media Type Object specified by a given request, and
 - `context.parameterLocations` - This is a mirror of the `context.params` object,
   but instead of parameter values, this has parameter locations.  (`server`
   parameters are not preset in `parameterLocations` in the current release.)
-- `context.body` - The parsed message body, if one is present.
+- `context.requestBody` - The parsed message body, if one is present.
 - `context.security` - This is a dictionary where keys are security schemes,
   and values are `{user, roles, scope}` objects (as returned by the associated
   [authenticator](./OAS3%20Security.md)).  For OAS3, there will only be objects
