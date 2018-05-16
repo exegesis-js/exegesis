@@ -4,7 +4,7 @@ import * as oas3 from 'openapi3-ts';
 
 import { Callback, ParametersByLocation, ParametersMap } from './basicTypes';
 import { Readable } from 'stream';
-import { ParameterLocations, ParameterLocation } from '.';
+import { ParameterLocations, ParameterLocation, ExegesisOptions } from '.';
 
 export interface HttpHeaders {
     [header: string]: number | string | string[];
@@ -62,6 +62,7 @@ export interface ExegesisContext extends ExegesisContextBase {
     parameterLocations: ParameterLocations;
     params: ParametersByLocation<ParametersMap<any>>;
     body: any;
+    options: ExegesisOptions;
 }
 
 export interface ExegesisPluginContext extends ExegesisContextBase {
@@ -208,7 +209,7 @@ export interface ExegesisPluginInstance {
      *
      * This function can modify the contents of the response.
      *
-     * @param context - The exegsis plugin context.
+     * @param context - The exegesis plugin context.
      */
     postController?:
         ((pluginContext: ExegesisContext) => void | Promise<void>) |

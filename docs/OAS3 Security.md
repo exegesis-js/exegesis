@@ -57,7 +57,7 @@ If the user is successfully authenticated, an authenticator should return a
 `{type: "success", user, roles, scopes}` object.  `user` is an arbitrary object
 representing the authenticated user; it will be made available to the controller
 via the context. `roles` is a list of roles which the user has (used by
-[exegsis-plugin-roles](https://github.com/exegesis-js/exegesis-plugin-roles)),
+[exegesis-plugin-roles](https://github.com/exegesis-js/exegesis-plugin-roles)),
 and `scopes` is a list of OAuth scopes the user is authorized for.  Authenticators
 may also add additional data to this object (for example, when authenticating
 via OAuth, you might set the `user` to the user the OAuth token is for, and also

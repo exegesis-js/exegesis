@@ -10,7 +10,8 @@ import {
     ExegesisPluginContext,
     Callback,
     ParameterLocations,
-    ParameterLocation
+    ParameterLocation,
+    ExegesisOptions
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
 import { HttpError, ValidationError } from '../errors';
@@ -35,6 +36,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     readonly req: HttpIncomingMessage;
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponseImpl;
+    readonly options: ExegesisOptions;
     params: ParametersByLocation<ParametersMap<any>>;
     body: any;
     security?: {[scheme: string]: AuthenticationSuccess};
@@ -49,12 +51,14 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     constructor(
         req: http.IncomingMessage, // http2.Http2ServerRequest,
         res: http.ServerResponse, // http2.Http2ServerResponse,
-        api: T
+        api: T,
+        options: ExegesisOptions
     ) {
         this.req = req as HttpIncomingMessage;
         this.origRes = res;
         this.res = new ExegesisResponseImpl(res);
         this.api = api;
+        this.options = options;
 
         // Temporarily set params to EMPTY_PARAMS.  While we're being a
         // 'plugin context', this will be empty, but it will be filled in

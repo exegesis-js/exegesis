@@ -6,7 +6,8 @@ import {
     ParametersByLocation,
     ParametersMap,
     ParameterLocation,
-    ParameterLocations
+    ParameterLocations,
+    ExegesisOptions
 } from "../../src";
 import { HttpError, ValidationError } from '../../src/errors';
 import ExegesisResponseImpl from '../../src/core/ExegesisResponseImpl';
@@ -32,6 +33,7 @@ export default class FakeExegesisContext implements ExegesisContext {
         path: {},
         cookie: {}
     };
+    options: ExegesisOptions = {};
 
     constructor() {
         this.req = {} as http.IncomingMessage;

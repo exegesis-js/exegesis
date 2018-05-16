@@ -4,11 +4,18 @@ import { Readable } from 'stream';
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import { ExegesisRunner, HttpResult, ExegesisContext, ResponseValidationCallback, ExegesisResponse } from '../types';
 import { ApiInterface, ResolvedOperation } from '../types/internal';
-import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
 import { isReadable } from '../utils/typeUtils';
+import {
+    ExegesisRunner,
+    HttpResult,
+    ExegesisContext,
+    ResponseValidationCallback,
+    ExegesisOptions,
+    ExegesisResponse
+} from '../types';
+import ExegesisContextImpl from './ExegesisContextImpl';
 import PluginsManager from './PluginsManager';
 
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
@@ -105,7 +112,8 @@ export default async function generateExegesisRunner<T>(
         autoHandleHttpErrors: boolean,
         plugins: PluginsManager,
         onResponseValidationError: ResponseValidationCallback,
-        validateDefaultResponses: boolean
+        validateDefaultResponses: boolean,
+        originalOptions: ExegesisOptions
     }
 ) : Promise<ExegesisRunner> {
     const plugins = options.plugins;
@@ -126,7 +134,7 @@ export default async function generateExegesisRunner<T>(
                 return result;
             }
 
-            const context = new ExegesisContextImpl<T>(req, res, resolved.api);
+            const context = new ExegesisContextImpl<T>(req, res, resolved.api, options.originalOptions);
 
             if(!context.isResponseFinished()) {
                 await plugins.postRouting(context);

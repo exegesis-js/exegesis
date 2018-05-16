@@ -87,7 +87,7 @@ function makeExegesisPlugin({apiDoc}) {
     return {
         // Called exactly once, before Exegesis "compiles" the API document.
         // Plugins must not modify apiDoc here.
-        preCompile({apiDoc}) {
+        preCompile({apiDoc, options}) {
         }
 
         // Called immediately after the routing phase.  Note that this is

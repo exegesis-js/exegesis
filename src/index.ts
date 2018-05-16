@@ -79,12 +79,14 @@ export function compileRunner(
     done?: Callback<ExegesisRunner>
 ) {
     return pb.addCallback(done, async () => {
+        options = options || {};
+
         const compiledOptions = compileOptions(options);
         const bundledDoc = await bundle(openApiDoc);
 
         const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
 
-        await plugins.preCompile({apiDoc: bundledDoc});
+        await plugins.preCompile({apiDoc: bundledDoc, options});
 
         const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
 
@@ -92,7 +94,8 @@ export function compileRunner(
             autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
             plugins,
             onResponseValidationError: compiledOptions.onResponseValidationError,
-            validateDefaultResponses: compiledOptions.validateDefaultResponses
+            validateDefaultResponses: compiledOptions.validateDefaultResponses,
+            originalOptions: options
         });
 
     });
