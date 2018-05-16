@@ -46,8 +46,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         if(this.ended && !this._afterController) {
             throw new Error("Trying to set body after response has been ended.");
         }
-        this._body = body;
-        this.end();
+        this.body = body;
         return this;
     }
 

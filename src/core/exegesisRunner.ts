@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import { ExegesisRunner, HttpResult, ExegesisContext, ResponseValidationCallback } from '../types';
+import { ExegesisRunner, HttpResult, ExegesisContext, ResponseValidationCallback, ExegesisResponse } from '../types';
 import { ApiInterface, ResolvedOperation } from '../types/internal';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import bufferToStream from '../utils/bufferToStream';
@@ -19,6 +19,23 @@ async function handleSecurity(operation: ResolvedOperation, context: ExegesisCon
         if(matchedSchemes.length === 1) {
             context.user = authenticated[matchedSchemes[0]].user;
         }
+    }
+}
+
+function setDefaultContentType(res: ExegesisResponse) {
+    const body = res.body;
+    if(res.headers['content-type']) {
+        // Nothing to do!
+    } else if(body === undefined || body === null) {
+        // Do nothing
+    } else if(body instanceof Buffer) {
+        res.headers['content-type'] = 'text/plain';
+    } else if(typeof body === 'string') {
+        res.headers['content-type'] = 'text/plain';
+    } else if(isReadable(body)) {
+        res.headers['content-type'] = 'text/plain';
+    } else {
+        res.headers['content-type'] = 'application/json';
     }
 }
 
@@ -152,6 +169,10 @@ export default async function generateExegesisRunner<T>(
                 }
 
                 if(!context.origRes.headersSent) {
+                    // Before response validation, if there is a body and no
+                    // content-type has been set, set a reasonable default.
+                    setDefaultContentType(context.res);
+
                     if(options.onResponseValidationError) {
                         const responseValidationResult = resolved.operation.validateResponse(
                             context.res,

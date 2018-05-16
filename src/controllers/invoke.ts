@@ -1,5 +1,5 @@
 import pb from 'promise-breaker';
-import { Controller, ExegesisContext, ControllerModule } from "../types";
+import { Controller, ControllerModule, ExegesisContext } from "../types";
 import { isReadable } from '../utils/typeUtils';
 
 export function invokeController(
