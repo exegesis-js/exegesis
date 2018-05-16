@@ -1,6 +1,7 @@
+import deepFreeze from 'deep-freeze';
+import ld from 'lodash';
 import pb from 'promise-breaker';
 import * as oas3 from 'openapi3-ts';
-import deepFreeze from 'deep-freeze';
 
 import { MimeTypeRegistry } from '../utils/mime';
 import { contentToRequestMediaTypeRegistry } from './oasUtils';
@@ -22,13 +23,13 @@ import {
     ParameterLocations
 } from '../types';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
-import { HttpError } from './../errors';
 import Responses from './Responses';
+import SecuritySchemes from './SecuritySchemes';
 
 const METHODS_WITH_BODY = ['post', 'put'];
 
 function isAuthenticationFailure(result : any) : result is AuthenticationFailure {
-    return !!((result as any).type === 'fail');
+    return !!(result.type === 'invalid' || result.type === 'missing');
 }
 
 function getMissing(required: string[], have: string[] | undefined) {
@@ -101,6 +102,7 @@ export default class Operation {
     private readonly _requestBodyContentTypes: MimeTypeRegistry<RequestMediaType>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
     private readonly _responses: Responses;
+    private readonly _securitySchemes: SecuritySchemes;
 
     constructor(
         context: Oas3CompileContext,
@@ -117,6 +119,8 @@ export default class Operation {
         this.operationId = oaOperation[EXEGESIS_OPERATION_ID] || oaOperation.operationId;
 
         this.securityRequirements = (oaOperation.security || context.openApiDoc.security || []);
+
+        this._securitySchemes = new SecuritySchemes(context.openApiDoc);
 
         this._responses = new Responses(
             context.childContext('responses'),
@@ -147,8 +151,6 @@ export default class Operation {
             this.validRequestContentTypes = Object.keys(requestBody.content);
 
             const contentContext = context.childContext(['requestBody', 'content']);
-            // FIX: This should not be a map of MediaTypes, but a map of request bodies.
-            // Request body has a "required" flag, which we are currently ignoring.
             this._requestBodyContentTypes = contentToRequestMediaTypeRegistry(
                 contentContext,
                 {in: 'request', name: 'body', docPath: contentContext.jsonPointer},
@@ -257,26 +259,6 @@ export default class Operation {
         );
     }
 
-    private _getSecurityScheme(schemeName: string) : oas3.SecuritySchemeObject {
-        // TODO: Cache these ahead of time.
-        const schemes = this.context.openApiDoc.components &&
-            this.context.openApiDoc.components.securitySchemes || {};
-        const scheme = schemes[schemeName];
-        if(!scheme) {
-            throw new Error(`No security scheme ${schemeName} defined in document`);
-        }
-        return scheme;
-    }
-
-    private _getChallengeForScheme(schemeName: string) : string | undefined {
-        // TODO: Cache these ahead of time.
-        const scheme = this._getSecurityScheme(schemeName);
-        if(scheme.type === 'http') {
-            return scheme.scheme || 'Basic';
-        }
-        return undefined;
-    }
-
     private async _runAuthenticator(
         schemeName: string,
         triedSchemes : Dictionary<AuthenticationResult>,
@@ -285,12 +267,19 @@ export default class Operation {
     ) : Promise<AuthenticationResult> {
         if(!(schemeName in triedSchemes)) {
             const authenticator = this.context.options.authenticators[schemeName];
-            const result = (await pb.call(authenticator, null, exegesisContext)) || {type: 'fail', status: 401};
+            const info = this._securitySchemes.getInfo(schemeName);
+
+            const result: AuthenticationResult = (await pb.call(authenticator, null, exegesisContext, info)) ||
+                {type: 'missing', status: 401};
+
+            if(result.type !== 'success' && result.type !== 'invalid' && result.type !== 'missing') {
+                throw new Error(`Invalid result ${result.type} from authenticator for ${schemeName}`);
+            }
 
             if(isAuthenticationFailure(result)) {
                 result.status = result.status || 401;
                 if(result.status === 401 && !result.challenge) {
-                    result.challenge = this._getChallengeForScheme(schemeName);
+                    result.challenge = this._securitySchemes.getChallenge(schemeName);
                 }
             }
 
@@ -304,7 +293,7 @@ export default class Operation {
             const missingScopes = getMissing(requiredScopes, result.scopes);
             if(missingScopes.length > 0) {
                 result = {
-                    type: 'fail',
+                    type: 'invalid',
                     status: 403,
                     message: `Authenticated using '${schemeName}' but missing ` +
                         `required scopes: ${missingScopes.join(', ')}.`
@@ -329,8 +318,9 @@ export default class Operation {
      *   `{type: 'authenticated', result}` object, where result is an object
      *   where keys are security schemes and the values are the results from
      *   the authenticator.  If the requirements are not met, returns a
-     *   `{type: 'fail', failure}` object, where `failure` is the the
-     *   failure that caused this security requirement to not pass.
+     *   `{type: 'missing', failure}` object or a `{type: 'invalid', failure}`,
+     *   object where `failure` is the the failure that caused this security
+     *   requirement to not pass.
      */
     private async _checkSecurityRequirement(
         triedSchemes : Dictionary<AuthenticationResult>,
@@ -340,13 +330,12 @@ export default class Operation {
         const requiredSchemes = Object.keys(securityRequirement);
 
         const result : Dictionary<any> = Object.create(null);
-        let failed = false;
         let failure: AuthenticationFailure | undefined;
+        let failedSchemeName: string | undefined;
 
         for(const scheme of requiredSchemes) {
             if(exegesisContext.isResponseFinished()) {
                 // Some authenticator has written a response.  We're done.  :(
-                failed = true;
                 break;
             }
 
@@ -355,18 +344,20 @@ export default class Operation {
 
             if(isAuthenticationFailure(authResult)) {
                 // Couldn't authenticate.  Try the next one.
-                failed = true;
                 failure = authResult;
+                failedSchemeName = scheme;
                 break;
             }
 
             result[scheme] = authResult;
         }
 
-        if(failed) {
-            return {type: 'fail', failure};
-        } else {
+        if(failure) {
+            return {type: failure.type, failure, failedSchemeName};
+        } else if(result) {
             return {type: 'authenticated', result};
+        } else {
+            return undefined;
         }
     }
 
@@ -379,7 +370,7 @@ export default class Operation {
         }
 
         let firstFailure: AuthenticationFailure | undefined;
-        const challenges: string[] = [];
+        const challenges: {[schemeName: string]: string | undefined} = {};
         let result: Dictionary<AuthenticationSuccess> | undefined;
 
         const triedSchemes : Dictionary<AuthenticationSuccess> = Object.create(null);
@@ -391,16 +382,26 @@ export default class Operation {
                 exegesisContext
             );
 
-            if(securityRequirementResult.type === 'fail') {
+            if(!securityRequirementResult) {
+                break;
+            } else if(securityRequirementResult.type === 'authenticated') {
+                result = securityRequirementResult.result;
+            } else if(
+                securityRequirementResult.type === 'missing' ||
+                securityRequirementResult.type === 'invalid'
+            ) {
                 const failure = securityRequirementResult.failure!;
+
                 // No luck with this security requirement.
                 if(failure.status === 401 && failure.challenge) {
-                    challenges.push(failure.challenge);
+                    challenges[securityRequirementResult.failedSchemeName!] = failure.challenge;
                 } else if(failure.status !== 401 && !firstFailure) {
                     firstFailure = failure;
                 }
-            } else if(securityRequirementResult.type === 'authenticated') {
-                result = securityRequirementResult.result;
+                if(securityRequirementResult.type === 'invalid') {
+                    // Hard failure - don't try anything else.
+                    break;
+                }
             } else {
                 /* istanbul ignore this */
                 throw new Error("Invalid result from `_checkSecurityRequirement()`");
@@ -415,14 +416,11 @@ export default class Operation {
         if(result) {
             // Successs!
             return result;
+
         } else if(exegesisContext.isResponseFinished()) {
             // Someone already wrote a response.
             return undefined;
-        } else if(firstFailure) {
-            throw new HttpError(
-                firstFailure.status || 401,
-                firstFailure.message || 'Failed to authenticate'
-            );
+
         } else {
             const authSchemes = this.securityRequirements
                 .map(requirement => {
@@ -430,14 +428,23 @@ export default class Operation {
                     return schemes.length === 1 ? schemes[0] : `(${schemes.join(' + ')})`;
                 });
 
-            const authChallenges = challenges || (authSchemes
-                .map((schemeName) => this._getChallengeForScheme(schemeName))
-                .filter(challenge => challenge !== undefined) as string[]);
+            const authChallenges = ld(this.securityRequirements)
+                .map<any, string[]>((requirement: any) : string[] => Object.keys(requirement))
+                .flatten()
+                .map<string, string | undefined>((schemeName: string) =>
+                    challenges[schemeName] || this._securitySchemes.getChallenge(schemeName)
+                )
+                .filter<string | undefined>(challenge => challenge !== undefined)
+                .value() as string[];
+
+            const message = (firstFailure && firstFailure.message) ||
+                `Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`;
 
             exegesisContext.res
-                .setStatus(401)
+                .setStatus((firstFailure && firstFailure.status) || 401)
                 .set('WWW-Authenticate', authChallenges)
-                .setBody({message: `Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`});
+                .setBody({message});
+
             return undefined;
         }
     }

@@ -13,7 +13,7 @@ import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 chai.use(chaiAsPromised);
 const {expect} = chai;
 
-const DEFAULT_OAUTH_RESULT = {user: 'benbria', scopes: ['admin']};
+const DEFAULT_OAUTH_RESULT = {type: 'success', user: 'benbria', scopes: ['admin']};
 
 function makeOperation(
     method: string,
@@ -27,7 +27,7 @@ function makeOperation(
 
     openApiDoc.components = openApiDoc.components || {};
     openApiDoc.components.securitySchemes = {
-        basicAuth: {type: 'http', scheme: 'basic'},
+        basicAuth: {type: 'http', scheme: 'Basic'},
         oauth: {type: 'oauth2', flows: {}}
     };
 
@@ -129,7 +129,24 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.body).to.eql({
                 message: 'Must authenticate using one of the following schemes: basicAuth, oauth.'
             });
-            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
+            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Basic', 'Bearer']);
+        });
+
+        it('should fail to authenticate an incoming request if one authenticator hard-fails', async function() {
+            const options = {
+                authenticators: {
+                    basicAuth() {return {type: 'invalid'};},
+                    oauth() {return {type: 'success'};}
+                }
+            };
+
+            const operation: Operation = makeOperation('get', this.operation, {options});
+            await operation.authenticate(this.exegesisContext);
+            expect(this.exegesisContext.res.statusCode).to.equal(401);
+            expect(this.exegesisContext.res.body).to.eql({
+                message: 'Must authenticate using one of the following schemes: basicAuth, oauth.'
+            });
+            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Basic', 'Bearer']);
         });
 
         it('should fail to auth an incoming request if the user does not have the correct scopes', async function() {
@@ -137,9 +154,11 @@ describe('oas3 Operation', function() {
                 {oauth: ['scopeYouDontHave']}
             ];
             const operation: Operation = makeOperation('get', this.operation);
-            await expect(
-                operation.authenticate(this.exegesisContext)
-            ).to.be.rejectedWith("Authenticated using 'oauth' but missing required scopes: scopeYouDontHave.");
+            await operation.authenticate(this.exegesisContext);
+            expect(this.exegesisContext.res.statusCode).to.equal(403);
+            expect(this.exegesisContext.res.body).to.eql({
+                message: "Authenticated using 'oauth' but missing required scopes: scopeYouDontHave."
+            });
         });
 
         it('should fail to authenticate if user matches one security scheme but not the other', async function() {
@@ -154,7 +173,7 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.body).to.eql({
                 message: 'Must authenticate using one of the following schemes: (basicAuth + oauth).'
             });
-            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['basic']);
+            expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Basic', 'Bearer']);
         });
 
         it('should always authenticate a request with no security requirements', async function() {

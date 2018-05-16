@@ -97,7 +97,7 @@ export interface Controllers {
 }
 
 export interface AuthenticationFailure {
-    type: "fail";
+    type: "invalid" | "missing";
     status?: number;
     message?: string;
     challenge?: string;
@@ -113,11 +113,21 @@ export interface AuthenticationSuccess {
 
 export type AuthenticationResult = AuthenticationSuccess | AuthenticationFailure;
 
+export interface AuthenticatorInfo {
+    in?: "query" | "header" | "cookie";
+    name?: string;
+    scheme?: string;
+}
+
 export type PromiseAuthenticator = (
-    context: ExegesisPluginContext
+    context: ExegesisPluginContext,
+    info: AuthenticatorInfo
 ) => AuthenticationResult | undefined | Promise<AuthenticationResult | undefined>;
-export type CallbackAuthenticator =
-    (context: ExegesisPluginContext, done: Callback<AuthenticationResult | undefined>) => void;
+export type CallbackAuthenticator = (
+    context: ExegesisPluginContext,
+    info: AuthenticatorInfo,
+    done: Callback<AuthenticationResult | undefined>
+) => void;
 export type Authenticator = PromiseAuthenticator | CallbackAuthenticator;
 export interface Authenticators {
     [scheme: string]: Authenticator;
