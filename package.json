@@ -63,7 +63,7 @@
     "coveralls": "^3.0.1",
     "husky": "^1.0.0-rc.3",
     "lint-staged": "^7.1.0",
-    "markdownlint-cli": "^0.8.2",
+    "markdownlint-cli": "^0.9.0",
     "mocha": "^5.0.4",
     "nyc": "^11.7.2",
     "supertest-fetch": "^1.0.4",
