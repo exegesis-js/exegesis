@@ -16,17 +16,17 @@
 This library implements a framework-agnostic server side implementation of
 [OpenAPI 3.x](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#requestBodyObject).
 
-You probably don't want to be using this library directly.  Have a look at:
-
-* [exegesis-express](https://github.com/exegesis-js/exegesis-express) - Middleware
-  for serving OpenAPI 3.x APIs from [express](https://expressjs.com/) or
-  [connect](https://github.com/senchalabs/connect).
-
 ## Description
 
 Exegesis is a library for implementing server-side OpenAPI 3.x  The library has been
 written in such a way that hopefully it will also be used to implement future
 versions of OpenAPI, or possibly even other API description standards altogether.
+
+You probably don't want to be using this library directly.  Have a look at:
+
+* [exegesis-express](https://github.com/exegesis-js/exegesis-express) - Middleware
+  for serving OpenAPI 3.x APIs from [express](https://expressjs.com/) or
+  [connect](https://github.com/senchalabs/connect).
 
 ## Features
 
