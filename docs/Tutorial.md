@@ -4,6 +4,10 @@ This is a tutorial which will teach you how to create an OpenAPI 3.0.0 document,
 and host it with Exegesis on node.js.  You can find complete source for this
 tutorial [here](https://github.com/exegesis-js/exegesis/tree/master/samples/tutorial).
 
+OpenAPI 3.0.0 is the successor to Swagger - version 2.0 was known as the Swagger Specification.
+While there are a few choices for implementing OpenAPI 2.0/Swagger on node.js,
+Exegesis is the first complete server-framework for implementing version 3.0.0 of the spec.
+
 ## Project
 
 First, let's create the scaffold of our project:
@@ -20,7 +24,6 @@ This creates a project folder named "exegesis-tutorial", a sub-folder
 named "controllers" (where we'll put our controller implementations - the code
 that gets run when someone accesses our API), creates a package.json file, and
 installs the dependencies we'll need (express, and exegesis-express).
-
 
 ## OpenAPI
 
