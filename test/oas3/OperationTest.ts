@@ -301,4 +301,36 @@ describe('oas3 Operation', function() {
         });
     });
 
+    describe('validate response body', function() {
+        const DEFAULT_RESPONSE = {
+            description: "Unexpected error",
+            content: {
+                "application/json": {
+                    schema: {
+                        type: 'object',
+                        required: ['message'],
+                        properties: {message: {type: 'string'}}
+                    }
+                }
+            }
+        };
+
+        it('should correctly validate a response that does not expect a body', function() {
+            const operation = makeOperation('delete', {
+                responses: {
+                    200: {description: "ok"},
+                    default: DEFAULT_RESPONSE
+                },
+            });
+
+            const result = operation.validateResponse({
+                statusCode: 200,
+                headers: {},
+                body: undefined
+            } as any, false);
+
+            expect(result.errors).to.equal(null);
+        });
+
+    });
 });

@@ -156,7 +156,7 @@ describe('oas3 Responses', function() {
                   in: "response",
                   name: "body"
                 },
-                message: "Unexpected content-type for response: text/plain."
+                message: "Unexpected content-type for 200 response: text/plain."
               }
             ]
         });
@@ -363,7 +363,7 @@ describe('oas3 Responses', function() {
             undefined,
             true
         );
-        expect(result.errors![0].message).to.equal('Missing response body.');
+        expect(result.errors![0].message).to.equal('Missing response body for 200.');
     });
 
     it('should pass a message with a content-type and a zero-length body', async function() {
@@ -388,7 +388,8 @@ describe('oas3 Responses', function() {
             '',
             true
         );
-        expect(result.errors![0].message).to.equal('Invalid content type: application/json,text/plain');
+        expect(result.errors![0].message).to.equal(
+            'Invalid content type for 200 response: application/json,text/plain');
     });
 
     it('should fail for an undefined status code if there is no default', async function() {

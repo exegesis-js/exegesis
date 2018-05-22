@@ -43,7 +43,7 @@ export default class Responses {
             if(isDefault && !validateDefaultResponses) {
                 return {errors: null, isDefault};
             } else {
-                return {errors: responseObject.validateResponse(headers, body), isDefault};
+                return {errors: responseObject.validateResponse(statusCode, headers, body), isDefault};
             }
         }
     }

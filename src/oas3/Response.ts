@@ -42,19 +42,19 @@ export default class Responses {
         }
     }
 
-    validateResponse(headers: HttpHeaders, body: any) : IValidationError[] | null {
+    validateResponse(statusCode: number, headers: HttpHeaders, body: any) : IValidationError[] | null {
         const contentType = headers['content-type'];
 
         if(!contentType) {
             if(body) {
                 return [{
                     location: this._location,
-                    message: 'Response is missing content-type.'
+                    message: `Response for ${statusCode} is missing content-type.`
                 }];
             } else if(this._hasResponses) {
                 return [{
                     location: this._location,
-                    message: 'Response expects body.'
+                    message: `Response for ${statusCode} expects body.`
                 }];
             } else {
                 return null;
@@ -62,7 +62,7 @@ export default class Responses {
         } else if(typeof contentType !== 'string') {
             return [{
                 location: this._location,
-                message: `Invalid content type: ${contentType}`
+                message: `Invalid content type for ${statusCode} response: ${contentType}`
             }];
         } else {
             const validator = this._responseValidators.get(contentType);
@@ -70,12 +70,12 @@ export default class Responses {
             if(body === null || body === undefined) {
                 return [{
                     location: this._location,
-                    message: `Missing response body.`
+                    message: `Missing response body for ${statusCode}.`
                 }];
             } else if(!validator) {
                 return [{
                     location: this._location,
-                    message: `Unexpected content-type for response: ${contentType}.`
+                    message: `Unexpected content-type for ${statusCode} response: ${contentType}.`
                 }];
             } else if(typeof body === 'string' || body instanceof Buffer || isReadable(body)) {
                 // Can't validate this.
