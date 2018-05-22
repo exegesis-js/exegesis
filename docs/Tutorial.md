@@ -1,7 +1,8 @@
 # Exegesis Tutorial
 
 This is a tutorial which will teach you how to create an OpenAPI 3.0.0 document,
-and host it with Exegesis on node.js.
+and host it with Exegesis on node.js.  You can find complete source for this
+tutorial [here](https://github.com/exegesis-js/exegesis/tree/master/samples/tutorial).
 
 ## OpenAPI
 
