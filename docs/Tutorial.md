@@ -4,9 +4,30 @@ This is a tutorial which will teach you how to create an OpenAPI 3.0.0 document,
 and host it with Exegesis on node.js.  You can find complete source for this
 tutorial [here](https://github.com/exegesis-js/exegesis/tree/master/samples/tutorial).
 
+## Project
+
+First, let's create the scaffold of our project:
+
+```sh
+mkdir exegesis-tutorial
+cd exegesis-tutorial
+mkdir controllers
+npm init -y
+npm install express exegesis-express
+```
+
+This creates a project folder named "exegesis-tutorial", a sub-folder
+named "controllers" (where we'll put our controller implementations - the code
+that gets run when someone accesses our API), creates a package.json file, and
+installs the dependencies we'll need (express, and exegesis-express).
+
+
 ## OpenAPI
 
-To start with, this is the simplest OpenAPI 3.0.0 document you can write:
+The heart of any OpenAPI based API is the OpenAPI document, which describes
+all the paths and parameters your application accepts.  We'll store this
+in a file called "openapi.yaml".  This is the simplest OpenAPI 3.0.0 document
+you can write:
 
 ```yaml
 openapi: 3.0.1
@@ -18,11 +39,12 @@ paths:
 
 The `openapi: 3.0.1` part tells us this is an OpenAPI document, and conforms
 to [version 3.0.1](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md)
-of the spec.
+of the spec.  There's a "paths" section where we can list all the paths our API
+exposes.
 
 This has all the required fields to be an OpenAPI document, and will pass
 validation, but as API documents go, this one is pretty boring.  It doesn't
-acually do anything.  Let's fix that by adding a route:
+acually do anything.  Let's fix that by adding a path:
 
 ```yaml
 openapi: 3.0.1
@@ -67,26 +89,31 @@ paths:
                     type: string
 ```
 
-That's pretty verbose.  Let's break this down into parts.
+That's got big fast!  Let's break this down into parts.
 
-We've added a new "/greet" to our "paths" section, with a "get" operation.
+We've added a new "/greet" to our "paths" section, with a "get" operation:
+
+```yaml
+paths:
+  '/greet':
+    get:
+      summary: Greets the user
+      operationId: getGreeting
+      x-exegesis-controller: greetController
+```
+
 This means clients can send an HTTP GET to "/greet" to run this operation.  This
 operation also has an `operationId` of "getGreeting".  This is a string that
 uniquely identifies this operation, across the entire document.  No other
 operation is allowed to have this operationId.
 
-There's also one extra special part we've added here:
-
-```yaml
-x-exegesis-controller: greetController
-```
-
+There's also one extra special part we've added here, the "x-exegesis-controller".
 Anything that starts with an "x-" in an OpenAPI document is called a
 "specification extension".  In this case, we're using an
 [Exegesis specific extension](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md)
 to tell Exegesis what JS module contains the code for this controller.
 
-We've added one parameter, the "name" parameter:
+The get operation also has one parameter, the "name" parameter:
 
 ```yaml
 parameters:
@@ -102,7 +129,7 @@ This parameter must be present, and must be a string.  Exegesis will generate
 a validation error back to the client if this field isn't present, or is the
 wrong type.
 
-Finally, we added a responses section:
+Finally, there's a responses section:
 
 ```yaml
 200:
@@ -135,8 +162,8 @@ npm init -y
 npm install express exegesis-express
 ```
 
-Save the above OpenAPI document in "exegesis-tutorial" as "openapi.yaml",
-then create an index.js file:
+Save the above OpenAPI document in "exegesis-tutorial" as "openapi.yaml".
+then create an index.js file.  This file is mostly boilerplate:
 
 ```js
 const express = require('express');
@@ -190,11 +217,29 @@ createServer()
 });
 ```
 
+The interesting bit here is really the [options](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md)
+we pass to Exegesis:
+
+```js
+const options = {
+    controllers: path.resolve(__dirname, './controllers'),
+    allowMissingControllers: false
+};
+```
+
+`controllers` gives the path to the "controllers" folder, where we store our
+controller implementations.  `allowMissingControllers: false` tells Exegesis
+to throw an error at startup if any of our paths don't have a controller.
+There are lots of other handy [options](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md)
+you can pass here.  Note that if you want to enable response validation,
+you must pass the [`onResponseValidationError`](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md#onresponsevalidationerror) option.
+
 ## The Controller
 
-This is the boilerplate to get an Exegesis project running, but the exciting
-part is the "controller" - this is the code that actually implements our
-OpenAPI document.  You may recall in our OpenAPI document we specified:
+Now we have an OpenAPI document, and we have the boilerplate that starts
+the server, but the exciting part is the "controller" - this is the code
+that actually implements our OpenAPI document.  You may recall in our
+OpenAPI document we specified:
 
 ```yaml
 operationId: getGreeting
