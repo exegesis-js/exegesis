@@ -1,0 +1,1 @@
+extends: '@jwalton/semantic-release-config'
