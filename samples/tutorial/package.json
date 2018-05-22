@@ -1,0 +1,13 @@
+{
+  "name": "exegesis-tutorial",
+  "version": "1.0.0",
+  "description": "Exegesis tutorial sample",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "exegesis-express": "^1.0.0",
+    "express": "^4.16.3"
+  }
+}

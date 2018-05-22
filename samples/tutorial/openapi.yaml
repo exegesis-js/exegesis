@@ -1,0 +1,40 @@
+openapi: 3.0.1
+info:
+  title: My API
+  version: 1.0.0
+paths:
+  '/greet':
+    get:
+      summary: Greets the user
+      operationId: getGreeting
+      x-exegesis-controller: greetController
+      parameters:
+        - description: The name of the user to greet.
+          name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: A greeting for the user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string

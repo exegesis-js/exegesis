@@ -37,6 +37,10 @@ versions of OpenAPI, or possibly even other API description standards altogether
 * [Plugins](https://github.com/exegesis-js/exegesis/tree/master/docs) allow easy extensibility
 * Easy support for [validating custom formats](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md#customformats)
 
+## Tutorial
+
+Check out the tutorial [here](https://github.com/exegesis-js/exegesis/blob/master/docs/Tutorial.md).
+
 ## API
 
 ### compileApi(openApiDoc, options[, done])
