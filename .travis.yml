@@ -23,7 +23,6 @@ after_success:
 
 jobs:
   include:
-    - stage: test
     - stage: release
       node_js: lts/*
       before_install:
