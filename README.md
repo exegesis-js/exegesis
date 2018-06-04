@@ -27,6 +27,8 @@ You probably don't want to be using this library directly.  Have a look at:
 * [exegesis-express](https://github.com/exegesis-js/exegesis-express) - Middleware
   for serving OpenAPI 3.x APIs from [express](https://expressjs.com/) or
   [connect](https://github.com/senchalabs/connect).
+* [exegesis-koa](https://github.com/confuser/exegesis-koa) - Middleware
+  for serving OpenAPI 3.x APIs from [koa](https://koajs.com/).
 
 ## Features
 
