@@ -128,7 +128,7 @@ exegesis.compileApi(
 );
 ```
 
-## Interal Workings
+## Internal Workings
 
 Internally, when you "compile" an API, Exegesis produces an
 [ApiInterface](https://github.com/exegesis-js/exegesis/blob/f5266dfd27cdb40c5ebf8063303acbf483d78ed9/src/types/internal.ts#L50) object.
