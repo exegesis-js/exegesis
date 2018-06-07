@@ -1,0 +1,20 @@
+{
+  "name": "exegesis-typescript-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node ./server.ts",
+    "start": "nodemon ./dist/server.js",
+    "prod": "npm run build && npm run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.16.0",
+    "exegesis-express": "^1.0.0",
+    "express": "^4.16.3"
+  }
+}
