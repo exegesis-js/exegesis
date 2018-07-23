@@ -1,4 +1,4 @@
-import http from 'http';
+import * as http from 'http';
 import { Callback, HttpIncomingMessage } from './basicTypes';
 
 // Stolen from @types/connect#NextHandleFunction.
