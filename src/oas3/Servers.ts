@@ -4,7 +4,7 @@ import { compileTemplatePath, PathParserFunction } from './Paths/PathResolver';
 import { ParametersMap } from '../types';
 
 const FULL_URL_RE = /^(.*?):\/\/([^/]*?)\/(.*)$/; // e.g. https://foo.bar/v1
-const ABSOLUTE_URL_RE = /^\/(.*)$/; // e.g. /v1
+const ABSOLUTE_URL_RE = /^(\/.*)$/; // e.g. /v1
 
 export interface ResolvedServer {
     oaServer: oas3.ServerObject;
