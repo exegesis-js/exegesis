@@ -184,7 +184,7 @@ export function compileApi(
             res: http.ServerResponse,
             next: Callback<void>
         ) {
-            runner(req, res)
+            return runner(req, res)
             .then(result => {
                 let answer : Promise<void> | undefined;
 
@@ -193,9 +193,7 @@ export function compileApi(
                 } else if(res.headersSent) {
                     // Someone else has already written a response.  :(
                 } else if(result) {
-                    answer = writeHttpResult(result, res).then(() => {
-                      if (next) {next();}
-                    });
+                    answer = writeHttpResult(result, res);
                 } else {
                     if(next) {next();}
                 }
