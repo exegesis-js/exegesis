@@ -194,7 +194,7 @@ export function compileApi(
                     // Someone else has already written a response.  :(
                 } else if(result) {
                     answer = writeHttpResult(result, res).then(() => {
-                      next();
+                      if (next) {next();}
                     });
                 } else {
                     if(next) {next();}
