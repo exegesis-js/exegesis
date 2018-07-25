@@ -1,10 +1,10 @@
 import * as http from 'http';
+import {Context as KoaContext} from 'koa';
 
 export type Callback<T> = (err?: Error | null | undefined, value?: T) => void;
 
 export type MiddlewareFunction = (
-  req: HttpIncomingMessage,
-  res: http.ServerResponse,
+  ctx: KoaContext,
   next?: Callback<void>
 ) => Promise<void>;
 
