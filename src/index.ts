@@ -29,12 +29,15 @@ export * from './types';
  * @param openApiDocFile - The file containing the document, or a JSON object.
  * @returns - Returns the bundled document
  */
-function bundle(openApiDocFile: string | object): Promise<object> {
-  const refParser = new $RefParser();
+function bundle(
+    openApiDocFile: string | object,
+): Promise<object> {
+    const refParser = new $RefParser();
 
-  return refParser.bundle(openApiDocFile as any, {
-    dereference: { circular: false },
-  });
+    return refParser.dereference(
+        openApiDocFile as any,
+        {dereference: {circular: "ignore"}}
+    );
 }
 
 /**
