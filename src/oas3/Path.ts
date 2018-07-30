@@ -5,7 +5,8 @@ import * as oas3 from 'openapi3-ts';
 import Parameter from './Parameter';
 import { EXEGESIS_CONTROLLER } from './extensions';
 
-const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
+// CONNECT not included, as it is not valid for OpenAPI 3.0.1.
+const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'TRACE', 'PATCH'];
 
 interface OperationsMap {
     [key: string]: Operation;

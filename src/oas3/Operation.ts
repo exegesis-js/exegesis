@@ -26,7 +26,7 @@ import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import Responses from './Responses';
 import SecuritySchemes from './SecuritySchemes';
 
-const METHODS_WITH_BODY = ['post', 'put'];
+const METHODS_WITH_BODY = ['post', 'put', 'patch'];
 
 function isAuthenticationFailure(result : any) : result is AuthenticationFailure {
     return !!(result.type === 'invalid' || result.type === 'missing');
