@@ -1,24 +1,24 @@
-import * as http from 'http';
+// import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 import pb from 'promise-breaker';
-import pump from 'pump';
+// import pump from 'pump';
 import $RefParser from 'json-schema-ref-parser';
 
 import { compileOptions } from './options';
 import { compile as compileOpenApi } from './oas3';
 import generateExegesisRunner from './core/exegesisRunner';
 import {
-    ExegesisOptions,
-    Callback,
-    ExegesisRunner,
-    HttpResult,
-    MiddlewareFunction,
-    HttpIncomingMessage
+  ExegesisOptions,
+  Callback,
+  ExegesisRunner,
+  HttpResult,
+  MiddlewareFunction,
+  // HttpIncomingMessage
 } from './types';
 export { HttpError, ValidationError } from './errors';
 import { OpenAPIObject } from 'openapi3-ts';
+import { Context as KoaContext } from 'koa';
 import PluginsManager from './core/PluginsManager';
-
 // Export all our public types.
 export * from './types';
 
@@ -34,9 +34,9 @@ function bundle(
 ): Promise<object> {
     const refParser = new $RefParser();
 
-    return refParser.bundle(
+    return refParser.dereference(
         openApiDocFile as any,
-        {dereference: {circular: false}}
+        {dereference: {circular: "ignore"}}
     );
 }
 
@@ -52,9 +52,9 @@ function bundle(
  *   `HttpResult`, or `undefined` if the request could not be handled.
  */
 export function compileRunner(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options?: ExegesisOptions
-) : Promise<ExegesisRunner>;
+  openApiDoc: string | oas3.OpenAPIObject,
+  options?: ExegesisOptions,
+): Promise<ExegesisRunner>;
 
 /**
  * Returns a "runner" function - call `runner(req, res)` to get back a
@@ -68,37 +68,42 @@ export function compileRunner(
  *   `HttpResult`, or `undefined` if the request could not be handled.
  */
 export function compileRunner(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options: ExegesisOptions | undefined,
-    done: Callback<ExegesisRunner>
-) : void;
+  openApiDoc: string | oas3.OpenAPIObject,
+  options: ExegesisOptions | undefined,
+  done: Callback<ExegesisRunner>,
+): void;
 
 export function compileRunner(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options?: ExegesisOptions,
-    done?: Callback<ExegesisRunner>
+  openApiDoc: string | oas3.OpenAPIObject,
+  options?: ExegesisOptions,
+  done?: Callback<ExegesisRunner>,
 ) {
-    return pb.addCallback(done, async () => {
-        options = options || {};
+  return pb.addCallback(done, async () => {
+    options = options || {};
 
-        const compiledOptions = compileOptions(options);
-        const bundledDoc = await bundle(openApiDoc);
+    const compiledOptions = compileOptions(options);
+    const bundledDoc = await bundle(openApiDoc);
 
-        const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
+    const plugins = new PluginsManager(
+      bundledDoc,
+      (options || {}).plugins || [],
+    );
 
-        await plugins.preCompile({apiDoc: bundledDoc, options});
+    await plugins.preCompile({ apiDoc: bundledDoc, options });
 
-        const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
+    const apiInterface = await compileOpenApi(
+      bundledDoc as OpenAPIObject,
+      compiledOptions,
+    );
 
-        return generateExegesisRunner(apiInterface, {
-            autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
-            plugins,
-            onResponseValidationError: compiledOptions.onResponseValidationError,
-            validateDefaultResponses: compiledOptions.validateDefaultResponses,
-            originalOptions: options
-        });
-
+    return generateExegesisRunner(apiInterface, {
+      autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
+      plugins,
+      onResponseValidationError: compiledOptions.onResponseValidationError,
+      validateDefaultResponses: compiledOptions.validateDefaultResponses,
+      originalOptions: options,
     });
+  });
 }
 
 /**
@@ -109,7 +114,10 @@ export function compileRunner(
  * @param res - The response to write to.
  * @returns - a Promise which resolves on completion.
  */
-export function writeHttpResult(httpResult: HttpResult, res: http.ServerResponse) : Promise<void>;
+export function writeHttpResult(
+  httpResult: HttpResult,
+  ctx: KoaContext,
+): Promise<void>;
 
 /**
  * Convenience function which writes an `HttpResult` obtained from an
@@ -120,28 +128,26 @@ export function writeHttpResult(httpResult: HttpResult, res: http.ServerResponse
  * @param callback - Callback to call on completetion.
  */
 export function writeHttpResult(
-    httpResult: HttpResult,
-    res: http.ServerResponse,
-    done: Callback<void>
-) : void;
+  httpResult: HttpResult,
+  ctx: KoaContext,
+  done: Callback<void>,
+): void;
 
 export function writeHttpResult(
-    httpResult: HttpResult,
-    res: http.ServerResponse,
-    done?: Callback<void>
+  httpResult: HttpResult,
+  ctx: KoaContext,
+  done?: Callback<void>,
 ) {
-    return pb.addCallback(done, async () => {
-        Object.keys(httpResult.headers).forEach(
-            header => res.setHeader(header, httpResult.headers[header])
-        );
-        res.statusCode = httpResult.status;
+  return pb.addCallback(done, async () => {
+    Object.keys(httpResult.headers).forEach(header =>
+      ctx.set(header, String(httpResult.headers[header])),
+    );
+    ctx.status = httpResult.status;
 
-        if(httpResult.body) {
-            await pb.call((done2 : pump.Callback) => pump(httpResult.body!, res, done2));
-        } else {
-            res.end();
-        }
-    });
+    if (httpResult.body) {
+      ctx.body = httpResult.body;
+    }
+  });
 }
 
 /**
@@ -153,9 +159,9 @@ export function writeHttpResult(
  * @returns - a Promise<MiddlewareFunction>.
  */
 export function compileApi(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options?: ExegesisOptions
-) : Promise<MiddlewareFunction>;
+  openApiDoc: string | oas3.OpenAPIObject,
+  options?: ExegesisOptions | undefined,
+): Promise<MiddlewareFunction>;
 
 /**
  * Returns a connect/express middleware function which implements the API.
@@ -166,47 +172,39 @@ export function compileApi(
  * @param done - callback which returns the MiddlewareFunction.
  */
 export function compileApi(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options: ExegesisOptions | undefined,
-    done: Callback<MiddlewareFunction>
-) : void;
+  openApiDoc: string | oas3.OpenAPIObject,
+  options: ExegesisOptions | undefined,
+  done: Callback<MiddlewareFunction>,
+): void;
 
 export function compileApi(
-    openApiDoc: string | oas3.OpenAPIObject,
-    options?: ExegesisOptions | undefined,
-    done?: Callback<MiddlewareFunction> | undefined
+  openApiDoc: string | oas3.OpenAPIObject,
+  options?: ExegesisOptions | undefined,
+  done?: Callback<MiddlewareFunction> | undefined,
 ) {
-    return pb.addCallback(done, async () => {
-        const runner = await compileRunner(openApiDoc, options);
+  return pb.addCallback(done, async () => {
+    const runner = await compileRunner(openApiDoc, options);
 
-        return function exegesisMiddleware(
-            req: HttpIncomingMessage,
-            res: http.ServerResponse,
-            next: Callback<void>
-        ) {
-            runner(req, res)
-            .then(result => {
-                let answer : Promise<void> | undefined;
-
-                if(!result) {
-                    if(next) {next();}
-                } else if(res.headersSent) {
-                    // Someone else has already written a response.  :(
-                } else if(result) {
-                    answer = writeHttpResult(result, res);
-                } else {
-                    if(next) {next();}
-                }
-                return answer;
-            })
-            .catch(err => {
-                if(next) {
-                    next(err);
-                } else {
-                    res.statusCode = err.status || 500;
-                    res.end('error');
-                }
-            });
-        };
-    });
+    return async function exegesisMiddleware(ctx: KoaContext, next: Callback<void>) {
+      try {
+        const result = await runner(ctx.req, ctx.res);
+        if (!result) {
+          if (next) {
+            await next();
+          }
+        } else if (ctx.headerSent) {
+          // Someone else has already written a response.  :(
+        } else if (result) {
+          await writeHttpResult(result, ctx);
+        } else {
+          if (next) {
+            await next();
+          }
+        }
+      } catch (err) {
+        throw err;
+        // return ctx.throw(err.status || 500, err.message);
+      }
+    };
+  });
 }
