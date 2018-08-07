@@ -209,7 +209,7 @@ export function generateRequestValidator(
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', true);
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', false);
 }
 
 export function generateResponseValidator(

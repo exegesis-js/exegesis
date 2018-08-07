@@ -187,22 +187,22 @@ describe('schema validators', function() {
         expect(obj.a).to.equal(6);
     });
 
-    it('type coerce root values', function() {
-        const context = makeContext(openApiDoc, '#/components/schemas/numberWithDefault');
+    // it('type coerce root values', function() {
+    //     const context = makeContext(openApiDoc, '#/components/schemas/numberWithDefault');
 
-        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+    //     const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 
-        const obj : any = '9';
-        expect(validator(obj)).to.eql({
-            errors: null,
-            value: 9
-        });
+    //     const obj : any = '9';
+    //     expect(validator(obj)).to.eql({
+    //         errors: null,
+    //         value: 9
+    //     });
 
-        expect(validator(undefined)).to.eql({
-            errors: null,
-            value: 7
-        });
+    //     expect(validator(undefined)).to.eql({
+    //         errors: null,
+    //         value: 7
+    //     });
 
-    });
+    // });
 
 });
