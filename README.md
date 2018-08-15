@@ -75,10 +75,7 @@ This function is similar to `compileApi`; it takes an API document and a set of
 [options](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md),
 and returns a "runner".  The runner is a `function runner(req, res)`, which takes
 in a standard node HTTP request and response.  It will not modify the response,
-however.  Instead it returns (either via callback or Promise) an `    headers: HttpHeaders;
-    status: number;
-    body: NodeJS.ReadableStream | undefined;
-`
+however.  Instead it returns (either via callback or Promise) and `HttpResult`
 object.  This is a `{headers, status, body}` object, where `body` is a readable
 stream, read to be piped to the response.
 
