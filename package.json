@@ -69,7 +69,7 @@
     "mocha": "^5.0.4",
     "nyc": "^12.0.1",
     "semantic-release": "^15.4.1",
-    "supertest-fetch": "^1.0.4",
+    "supertest-fetch": "^1.2.2",
     "ts-node": "^7.0.0",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
