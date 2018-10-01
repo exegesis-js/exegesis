@@ -368,7 +368,6 @@ export default class Operation {
             // No auth required
             return {};
         }
-
         let firstFailure: AuthenticationFailure | undefined;
         const challenges: {[schemeName: string]: string | undefined} = {};
         let result: Dictionary<AuthenticationSuccess> | undefined;
@@ -395,12 +394,10 @@ export default class Operation {
                 // No luck with this security requirement.
                 if(failure.status === 401 && failure.challenge) {
                     challenges[securityRequirementResult.failedSchemeName!] = failure.challenge;
-                } else if(failure.status !== 401 && !firstFailure) {
-                    firstFailure = failure;
                 }
+
                 if(securityRequirementResult.type === 'invalid') {
-                    // Hard failure - don't try anything else.
-                    break;
+                    firstFailure = firstFailure || failure;
                 }
             } else {
                 /* istanbul ignore this */
