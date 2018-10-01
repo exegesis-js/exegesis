@@ -196,3 +196,40 @@ If a user authenticated using `basicAuth`, then the controller would have
 access to the object returned by the authenticator via `context.security.basicAuth`.
 Simliarly, if the request used oauth, then `context.security.oauth` would be
 populated with the result of the oauth authenticator.
+
+### Using Multiple Authentication Types
+
+Some REST APIs support several authentication types. The security section lets you combine the security requirements
+using logical OR and AND to achieve the desired result. security uses the following logic:
+
+```yaml
+security:    # A OR B
+  - A
+  - B
+```
+
+* The request will authenticate if **either** `A` or `B` return a success.
+* `A` will run first then `B`
+* The authentication process will return the result of the first successful authenticator.
+* If no authenticators succeed then the result of the first invalid authenticator will be returned.
+
+```yaml
+security:    # A AND B
+  - A
+    B
+```
+
+* The request will authenticate only if **both** `A` and `B` return a success.
+* `A` will run first then `B`
+* The authentication process will return the result of both the successful authenticators.
+* If no authenticators succeed then the result of the first invalid authenticator will be returned.
+
+```yaml
+security:    # (A AND B) OR (C AND D)
+  - A
+    B
+  - C
+    D
+```
+
+* The request will authenticate only if (`A` and `B`) OR (`C` AND `D`) return a success
