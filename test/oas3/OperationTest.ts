@@ -199,11 +199,11 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should authenticate an incoming request if one authenticator hard-fails', async function() {
+            it('should authenticate a request if a missing result encountered with a success', async function() {
                 const options = {
                     authenticators: {
                         basicAuth() {
-                            return {type: 'invalid'};
+                            return { type: 'missing'};
                         },
                         oauth() {
                             return DEFAULT_OAUTH_RESULT;
@@ -227,7 +227,67 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should set message from first authenticator if it all authenticators hard-fail', async function() {
+            it('should not authenticate a request if an invalid result encountered before a success', async function() {
+                const options = {
+                    authenticators: {
+                        basicAuth() {
+                            return {type: 'invalid'};
+                        },
+                        oauth() {
+                            return DEFAULT_OAUTH_RESULT;
+                        }
+                    }
+                };
+
+                const op: oas3.OperationObject = {
+                    responses: {200: {description: "ok"}},
+                    security: [
+                        {basicAuth: []},
+                        {oauth: ['admin']},
+                    ]
+                };
+
+                const operation: Operation = makeOperation('get', op, {options});
+                const authenticated = await operation.authenticate(this.exegesisContext);
+                expect(authenticated).to.not.exist;
+                expect(this.exegesisContext.res.statusCode).to.equal(401);
+                expect(this.exegesisContext.res.body).to.eql({
+                    message: 'Must authenticate using one of the following schemes: basicAuth, oauth.'
+                });
+                expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Basic', 'Bearer']);
+            });
+
+            it('should not authenticate a request if an invalid result encountered after a success', async function() {
+                const options = {
+                    authenticators: {
+                        basicAuth() {
+                            return BASIC_AUTH_SUCCESS_RESULT;
+                        },
+                        oauth() {
+                            return {type: 'invalid'};
+                        }
+                    }
+                };
+
+                const op: oas3.OperationObject = {
+                    responses: {200: {description: "ok"}},
+                    security: [
+                        {basicAuth: []},
+                        {oauth: ['admin']},
+                    ]
+                };
+
+                const operation: Operation = makeOperation('get', op, {options});
+                const authenticated = await operation.authenticate(this.exegesisContext);
+                expect(authenticated).to.not.exist;
+                expect(this.exegesisContext.res.statusCode).to.equal(401);
+                expect(this.exegesisContext.res.body).to.eql({
+                    message: 'Must authenticate using one of the following schemes: basicAuth, oauth.'
+                });
+                expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Basic', 'Bearer']);
+            });
+
+            it('should set message from first authenticator if it all results are invalid', async function() {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -283,7 +343,32 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should not authenticate an incoming request if one of the authenticators fail', async function() {
+            it('should not authenticate an incoming request if one of the results is missing', async function() {
+                const options = {
+                    authenticators: {
+                        basicAuth() {return { type: 'missing' };},
+                        oauth() {return DEFAULT_OAUTH_RESULT;}
+                    }
+                };
+
+                const op :oas3.OperationObject= {
+                    responses: {200: {description: "ok"}},
+                    security: [
+                        {oauth: [], basicAuth: [],},
+                    ]
+                };
+
+                const operation: Operation = makeOperation('get', op, {options});
+                const authenticated = await operation.authenticate(this.exegesisContext);
+                expect(authenticated).to.not.exist;
+                expect(this.exegesisContext.res.statusCode).to.equal(401);
+                expect(this.exegesisContext.res.body).to.eql({
+                    message: 'Must authenticate using one of the following schemes: (oauth + basicAuth).'
+                });
+                expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Bearer', 'Basic']);
+            });
+
+            it('should not authenticate an incoming request if one of the results is invalid', async function() {
                 const options = {
                     authenticators: {
                         basicAuth() {return BASIC_AUTH_SUCCESS_RESULT;},
@@ -308,7 +393,7 @@ describe('oas3 Operation', function() {
                 expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Bearer', 'Basic']);
             });
 
-            it('should set message from first authenticator if it hard-fails', async function() {
+            it('should set message from first authenticator if it all results are invalid', async function() {
                 const options = {
                     authenticators: {
                         basicAuth() {
