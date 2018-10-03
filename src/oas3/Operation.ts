@@ -368,9 +368,9 @@ export default class Operation {
             // No auth required
             return {};
         }
-        let firstFailure: AuthenticationFailure | undefined;
+        let firstFailureResult: AuthenticationFailure | undefined;
         const challenges: {[schemeName: string]: string | undefined} = {};
-        let result: Dictionary<AuthenticationSuccess> | undefined;
+        let firstAuthenticatedResult: Dictionary<AuthenticationSuccess> | undefined;
 
         const triedSchemes : Dictionary<AuthenticationSuccess> = Object.create(null);
 
@@ -384,7 +384,7 @@ export default class Operation {
             if(!securityRequirementResult) {
                 break;
             } else if(securityRequirementResult.type === 'authenticated') {
-                result = securityRequirementResult.result;
+                firstAuthenticatedResult = firstAuthenticatedResult || securityRequirementResult.result;
             } else if(
                 securityRequirementResult.type === 'missing' ||
                 securityRequirementResult.type === 'invalid'
@@ -397,22 +397,23 @@ export default class Operation {
                 }
 
                 if(securityRequirementResult.type === 'invalid') {
-                    firstFailure = firstFailure || failure;
+                    firstFailureResult = firstFailureResult || failure;
+                    break;
                 }
             } else {
                 /* istanbul ignore this */
                 throw new Error("Invalid result from `_checkSecurityRequirement()`");
             }
 
-            if(result || exegesisContext.isResponseFinished()) {
+            if(exegesisContext.isResponseFinished()) {
                 // We're done!
                 break;
             }
         }
 
-        if(result) {
+        if(firstAuthenticatedResult && !firstFailureResult) {
             // Successs!
-            return result;
+            return firstAuthenticatedResult;
 
         } else if(exegesisContext.isResponseFinished()) {
             // Someone already wrote a response.
@@ -434,11 +435,11 @@ export default class Operation {
                 .filter<string | undefined>(challenge => challenge !== undefined)
                 .value() as string[];
 
-            const message = (firstFailure && firstFailure.message) ||
+            const message = (firstFailureResult && firstFailureResult.message) ||
                 `Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`;
 
             exegesisContext.res
-                .setStatus((firstFailure && firstFailure.status) || 401)
+                .setStatus((firstFailureResult && firstFailureResult.status) || 401)
                 .set('WWW-Authenticate', authChallenges)
                 .setBody({message});
 
