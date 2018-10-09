@@ -82,7 +82,7 @@
     "events-listener": "^1.1.0",
     "glob": "^7.1.2",
     "json-ptr": "^1.1.0",
-    "json-schema-ref-parser": "^5.0.3",
+    "json-schema-ref-parser": "^6.0.0",
     "json-schema-traverse": "^0.4.0",
     "lodash": "^4.17.5",
     "openapi3-ts": "^1.0.0",
