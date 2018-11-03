@@ -17,6 +17,8 @@ import {
 } from '../types';
 import ExegesisContextImpl from './ExegesisContextImpl';
 import PluginsManager from './PluginsManager';
+import {IValidationError} from "../types/validation";
+import {handleErrorFunction} from "../types/options";
 
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
     const authenticated = await operation.authenticate(context);
@@ -81,7 +83,12 @@ function handleError(err: Error) {
         // just throw the error instead of turning it into a message?
         const jsonError = {
             message: "Validation errors",
-            errors: err.errors
+            errors: err.errors.map((error :IValidationError) => {
+                return {
+                    message: error.message,
+                    location: error.location,
+                };
+            })
         };
         return {
             status: err.status,
@@ -109,7 +116,7 @@ function handleError(err: Error) {
 export default async function generateExegesisRunner<T>(
     api: ApiInterface<T>,
     options: {
-        autoHandleHttpErrors: boolean,
+        autoHandleHttpErrors: boolean | handleErrorFunction,
         plugins: PluginsManager,
         onResponseValidationError: ResponseValidationCallback,
         validateDefaultResponses: boolean,
@@ -210,6 +217,9 @@ export default async function generateExegesisRunner<T>(
 
         } catch (err) {
             if(options.autoHandleHttpErrors) {
+                if (options.autoHandleHttpErrors instanceof Function) {
+                    return options.autoHandleHttpErrors(err);
+                }
                 return handleError(err);
             } else {
                 throw err;

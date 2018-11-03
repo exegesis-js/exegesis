@@ -7,6 +7,8 @@ import { ResponseValidationCallback } from './validation';
  */
 export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
 
+export type handleErrorFunction = (err: Error) => any;
+
 export interface StringCustomFormatChecker {
     type: 'string';
     validate: CustomFormatChecker;
@@ -104,9 +106,9 @@ export interface ExegesisOptions {
      * By default, ExegesisRunner will turn `exegesis.HttpError`s (such as errors
      * generated from `context.makeError()` and `exegesis.ValidationError`s into JSON
      * replies with appropriate error messages.  If you want to handle these errors
-     * yourself, set this value to false.  Defaults to true.
+     * yourself, set this value to false.  Defaults to true. TODO
      */
-    autoHandleHttpErrors?: boolean;
+    autoHandleHttpErrors?: boolean | handleErrorFunction;
 
     /**
      * If you provide this function, Exegesis will validate responses controllers

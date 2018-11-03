@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as path from 'path';
 import { makeFetch } from 'supertest-fetch';
 import * as exegesis from '../../src';
+import { handleError } from './customErrorHandler';
 
 async function sessionAuthenticator(
     context: exegesis.ExegesisPluginContext
@@ -33,7 +34,8 @@ async function createServer() {
         authenticators: {
             sessionKey: sessionAuthenticator
         },
-        controllersPattern: "**/*.@(ts|js)"
+        controllersPattern: "**/*.@(ts|js)",
+        autoHandleHttpErrors: handleError,
     };
 
     const middleware = await exegesis.compileApi(
@@ -41,17 +43,10 @@ async function createServer() {
         options
     );
 
-    const server = http.createServer(
+    return http.createServer(
         (req, res) =>
             middleware!(req, res, (err) => {
-                // if(err instanceof exegesis.ValidationError) {
-                //     res.writeHead(err.status);
-                //     res.end(JSON.stringify({message: err.message, errors: err.errors}));
-                // } else if(err instanceof exegesis.HttpError) {
-                //     res.writeHead(err.status);
-                //     res.end(JSON.stringify({message: err.message}));
-                // } else if(err) {
-                if(err) {
+                if (err) {
                     console.error(err.stack); // tslint:disable-line no-console
                     res.writeHead(500);
                     res.end(`Internal error: ${err.message}`);
@@ -61,8 +56,6 @@ async function createServer() {
                 }
             })
     );
-
-    return server;
 }
 
 describe('integration test', function() {
@@ -75,14 +68,6 @@ describe('integration test', function() {
     });
 
     describe('parameters', function() {
-        it('should succesfully call an API', async function() {
-            const fetch = makeFetch(this.server);
-            await fetch(`/greet?name=Jason`)
-                .expect(200)
-                .expect('content-type', 'application/json')
-                .expectBody({greeting: 'Hello, Jason!'});
-        });
-
         it('should return an error for missing parameters', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/greet`)
@@ -93,11 +78,11 @@ describe('integration test', function() {
                     "errors": [{
                         "message": "Missing required query parameter \"name\"",
                         "location": {
-                            "docPath": "/paths/~1greet/get/parameters/0",
                             "in": "query",
                             "name": "name",
                             "path": ""
                         },
+                        "keyword": "missing",
                     }
                     ]
                 });
@@ -113,12 +98,15 @@ describe('integration test', function() {
                     "errors": [
                         {
                             "location": {
-                                "docPath": "/paths/~1greet/get/parameters/0/schema",
                                 "in": "query",
                                 "name": "name",
                                 "path": ""
                             },
-                            "message": "should NOT be shorter than 2 characters"
+                            "message": "should NOT be shorter than 2 characters",
+                            "keyword": "minLength",
+                            "params": {
+                                "limit": 2
+                            }
                         }
                     ]
                 });
@@ -143,38 +131,9 @@ describe('integration test', function() {
                 .expect(403)
                 .expectBody({message: "Invalid session."});
         });
-
-        it('should authenticate successfully', async function() {
-            const fetch = makeFetch(this.server);
-            await fetch(`/secure`, {
-                headers: {session: 'secret'}
-            })
-                .expect(200)
-                .expectBody({
-                    security: {
-                        sessionKey: {
-                            type: 'success',
-                            user: {name: 'jwalton'},
-                            roles: ['readWrite', 'admin']
-                        }
-                    },
-                    user: {name: 'jwalton'}
-                });
-        });
     });
 
     describe('post', function() {
-        it('should post a body', async function() {
-            const fetch = makeFetch(this.server);
-            await fetch(`/postWithDefault`, {
-                method: 'post',
-                headers: {"content-type": 'application/json'},
-                body: JSON.stringify({name: 'Joe'})
-            })
-                .expect(200)
-                .expectBody({greeting: 'Hello, Joe!'});
-        });
-
         it('return an error for invalid content-type', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
@@ -192,19 +151,18 @@ describe('integration test', function() {
                 .expect(400)
                 .expectBody({message: 'Missing content-type. Expected one of: application/json'});
         });
-    });
 
-    it('should correctly parse application/x-www-form-urlencoded', async function() {
-        const fetch = makeFetch(this.server);
-        await fetch(`/wwwFormUrlencoded`, {
-            method: 'post',
-            headers: {"content-type": 'application/x-www-form-urlencoded'},
-            body: 'arr=a,b&other=foo'
-        })
-            .expectBody({
-                arr: ['a', 'b'],
-                other: 'foo'
-            });
+        it('return an error for bad json', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithDefault`, {
+                method: 'post',
+                headers: {"content-type": 'application/json'},
+                body: '{'
+            })
+                .expect(400)
+                .expectBody({
+                    "message": "Unexpected end of JSON input"
+                });
+        });
     });
-
 });

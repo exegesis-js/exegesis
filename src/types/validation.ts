@@ -1,4 +1,5 @@
 import { ExegesisContext } from ".";
+import * as ajv from "ajv";
 
 export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
 
@@ -36,14 +37,15 @@ export interface ParameterLocations {
 /**
  * A validation error.
  *
- * @property type - The type of validation error.  Either 'error' or 'warning'.
  * @property message - A short message about what was wrong.
  * @property location - The location of the parameter/property that caused the
  *   error.
+ * @property ajvError - The raw Ajv error returned for the validator. Can be used to customise error messages.
  */
 export interface IValidationError {
     message: string;
     location?: ParameterLocation;
+    ajvError?: ajv.ErrorObject;
 }
 
 /**

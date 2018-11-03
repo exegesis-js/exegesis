@@ -131,7 +131,16 @@ describe('oas3 Responses', function() {
                   name: "body",
                   path: ""
                 },
-                message: "should have required property 'foo'"
+                message: "should have required property 'foo'",
+                ajvError: {
+                    dataPath: '/value',
+                      keyword: 'required',
+                      message: 'should have required property \'foo\'',
+                      params: {
+                          missingProperty: 'foo',
+                      },
+                      schemaPath: '#/properties/value/required',
+                  }
               }
             ]
         });
@@ -222,9 +231,18 @@ describe('oas3 Responses', function() {
                   name: "body",
                   path: ''
                 },
-                message: "should have required property 'message'"
+                message: "should have required property 'message'",
+                ajvError: {
+                  dataPath: '/value',
+                  keyword: 'required',
+                  message: 'should have required property \'message\'',
+                  params: {
+                      missingProperty: 'message',
+                  },
+                  schemaPath: '#/properties/value/required',
+                },
               }
-            ]
+            ],
         });
     });
 

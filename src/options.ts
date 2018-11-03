@@ -16,6 +16,7 @@ import {
     MimeTypeParser,
     ResponseValidationCallback
 } from './types';
+import {handleErrorFunction} from "./types/options";
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
@@ -26,7 +27,7 @@ export interface ExgesisCompiledOptions {
     defaultMaxBodySize: number;
     ignoreServers: boolean;
     allowMissingControllers: boolean;
-    autoHandleHttpErrors: boolean;
+    autoHandleHttpErrors: boolean | handleErrorFunction;
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
 }
@@ -106,9 +107,14 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
 
     const authenticators : Authenticators = options.authenticators || {};
 
-    const autoHandleHttpErrors = options.autoHandleHttpErrors !== undefined
-        ? !!options.autoHandleHttpErrors
-        : true;
+    let autoHandleHttpErrors: boolean | handleErrorFunction = true;
+    if (options.autoHandleHttpErrors !== undefined) {
+        if (options.autoHandleHttpErrors instanceof Function) {
+            autoHandleHttpErrors = options.autoHandleHttpErrors;
+        } else {
+            autoHandleHttpErrors = !!options.autoHandleHttpErrors;
+        }
+    }
 
     const validateDefaultResponses = 'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
 

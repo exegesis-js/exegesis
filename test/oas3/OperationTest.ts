@@ -509,6 +509,30 @@ describe('oas3 Operation', function() {
             expect(errors!).to.not.be.empty;
         });
 
+        it('should include raw Ajv response in error', function() {
+            const operation = makeOperation('get', {
+                responses: {200: {description: "ok"}},
+                parameters: [{
+                    name: 'myparam',
+                    in: 'query',
+                    schema: {type: 'string'}
+                }]
+            });
+
+            const invalid = {
+                query: {myparam: {foo: 'bar'}},
+                header: {},
+                server: {},
+                path: {},
+                cookie: {}
+            };
+            const errors = operation.validateParameters(invalid);
+            expect(errors).to.not.be.null;
+            if(errors) {
+                expect(errors[0]).to.have.property('ajvError');
+            }
+        });
+
         it('should generate a map of parameter locations', function() {
             const operation = makeOperation('get', {
                 responses: {200: {description: "ok"}},

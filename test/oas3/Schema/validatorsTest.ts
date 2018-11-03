@@ -37,6 +37,18 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                         a: {type: 'number'}
                     }
                 },
+                object3: {
+                    type: 'object',
+                    required: ['a', 'b'],
+                    properties: {
+                        a: {
+                            type: 'string',
+                        },
+                        b: {
+                            type: 'string',
+                        }
+                    }
+                },
                 withDefault: {
                     type: 'object',
                     properties: {
@@ -78,6 +90,15 @@ describe('schema validators', function() {
                 name: 'foo',
                 docPath: '/components/schemas/number',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'type',
+                message: 'should be number',
+                params: {
+                    type: 'number',
+                },
+                schemaPath: '#/properties/value/type',
             }
         }]);
     });
@@ -96,6 +117,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'required',
+                message: 'should have required property \'b\'',
+                params: {
+                    missingProperty: 'b',
+                },
+                schemaPath: '#/properties/value/required',
             }
         }]);
     });
@@ -114,6 +144,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'required',
+                message: 'should have required property \'a\'',
+                params: {
+                    missingProperty: 'a',
+                },
+                schemaPath: '#/properties/value/required',
             }
         }]);
     });
@@ -130,6 +169,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object2',
                 path: '/a'
+            },
+            ajvError: {
+                dataPath: '/value/a',
+                keyword: 'type',
+                message: 'should be number',
+                params: {
+                    type: 'number',
+                },
+                schemaPath: '#/properties/value/properties/a/type',
             }
         }]);
     });
@@ -147,6 +195,15 @@ describe('schema validators', function() {
                 name: 'foo',
                 docPath: '/components/schemas/int32',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'format',
+                message: 'should match format "int32"',
+                params: {
+                    format: 'int32',
+                },
+                schemaPath: '#/properties/value/format',
             }
         }]);
     });
