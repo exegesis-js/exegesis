@@ -47,7 +47,7 @@ function generateServerParser(oaServer: oas3.ServerObject) : ServerParser {
             if(hostMatch && pathMatch) {
                 return {
                     oaServer,
-                    pathnameRest: pathname.slice(pathMatch.matched.length-1),
+                    pathnameRest: pathname.slice(pathMatch.matched.length),
                     serverParams: Object.assign({}, hostMatch.rawPathParams, pathMatch.rawPathParams),
                 };
             } else {
