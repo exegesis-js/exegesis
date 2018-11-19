@@ -38,7 +38,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
 
     json(json: any) {
         this.set('content-type', 'application/json')
-            .setBody(json);
+            .setBody(JSON.stringify(json));
         return this;
     }
 
