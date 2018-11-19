@@ -152,7 +152,8 @@ function doValidate(
                         name: parameterLocation.name,
                         docPath: schemaPtr,
                         path: pathPtr
-                    }
+                    },
+                    ajvError: err
                 };
             });
         }

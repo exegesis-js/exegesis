@@ -160,7 +160,9 @@ servers section, an route purely based on your paths.
 By default, ExegesisRunner will turn `exegesis.HttpError`s (such as errors
 generated from `context.makeError()`, `exegesis.ValidationError`s, or any error
 with a `.status` into JSON replies with appropriate error messages.  If you want
-to handle these errors yourself, set this value to false.
+to handle these errors yourself, set this value to false, alternatively set the value
+to a `function(err)` function that handles the error returning a `HttpResult` object.
+See [customErrorHandler](../test/integration/customErrorHandler.ts) for an example.
 
 Note that all `HttpError`s will have a `.status` property with a suggested
 numeric HTTP response code.

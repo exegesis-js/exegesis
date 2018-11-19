@@ -17,6 +17,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 2
       responses:
         '200':
           description: Greet message.
