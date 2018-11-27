@@ -33,7 +33,7 @@ function extractSchemaPriv(
         if(schema.$ref && typeof(schema.$ref) === 'string') {
             if(ctx.replaced[schema.$ref]) {
                 schema.$ref = ctx.replaced[schema.$ref];
-            } else if(jsonPaths.jsonPointerStartsWith(schema.$ref, ctx.rootSubtreeRef)) {
+            } else if(jsonPaths.jsonPointerStartsWith(schema.$ref, ctx.rootSubtreeRef + '/')) {
                 ctx.replaced[schema.$ref] = jsonPaths.jsonPointerStripPrefix(schema.$ref, ctx.rootSubtreeRef);
                 schema.$ref = ctx.replaced[schema.$ref];
             } else if(!refResolver(schema.$ref)) {
