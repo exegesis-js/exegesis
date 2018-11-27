@@ -13,6 +13,10 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                 number: {
                     type: 'number'
                 },
+                float: {
+                    type: 'number',
+                    format: 'float'
+                },
                 int32: {
                     type: 'integer',
                     format: 'int32'
@@ -206,6 +210,13 @@ describe('schema validators', function() {
                 schemaPath: '#/properties/value/format',
             }
         }]);
+    });
+
+    it('should validate a float', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/float');
+
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
+        expect(validator(7.5).errors).to.eql(null);
     });
 
     it('should error for a missing value if required', function() {

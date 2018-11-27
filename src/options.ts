@@ -52,6 +52,10 @@ const defaultValidators : CustomFormats = {
         type: 'number',
         validate: () => true
     },
+    float: {
+        type: 'number',
+        validate: () => true
+    },
     // Nothing to do for 'password'; this is just a hint for docs.
     password: () => true,
     // Impossible to validate "binary".
