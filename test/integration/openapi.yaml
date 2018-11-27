@@ -35,6 +35,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /malformedResponse:
+    get:
+      x-exegesis-controller: malformed
+      operationId: getBadResponse
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - greeting
+                properties:
+                  greeting: {type: string}
   /secure:
     get:
       summary: A secure operation

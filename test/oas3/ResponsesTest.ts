@@ -80,6 +80,15 @@ const RESPONSE_WITH_NO_SCHEMA = {
     }
 };
 
+const RESPONSE_WITH_TEXT_PLAIN = {
+    200: {
+        description: '',
+        content: {
+            'text/plain': {}
+        }
+    }
+};
+
 function makeResponses(
     responses: oas3.ResponsesObject
 ) {
@@ -287,11 +296,41 @@ describe('oas3 Responses', function() {
         });
     });
 
+    it('should validate JSON strings', async function() {
+        const responses = makeResponses(DEFAULT_RESPONSE);
+
+        const body = '{"what": "bar"}';
+        const result = responses.validateResponse(
+            200,
+            {'content-type': 'application/json'},
+            body,
+            true
+        );
+
+        expect(result.errors).to.have.length(1);
+    });
+
+    it('should not validate non-JSON strings', async function() {
+        const responses = makeResponses(RESPONSE_WITH_TEXT_PLAIN);
+
+        const body = '{"what": "bar"}';
+        const result = responses.validateResponse(
+            200,
+            {'content-type': 'text/plain'},
+            body,
+            true
+        );
+
+        expect(result).to.eql({
+            isDefault: false,
+            errors: null
+        });
+    });
+
     it('should skip validation for buffers, strings, and streams', async function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const cases = [
-            {type: 'string', body: '{"what": "bar"}'},
             {type: 'Buffer', body: Buffer.from('{"what": "bar"}')},
             {type: 'Readable', body: stringToStream('{"what": "bar"}')}
         ];

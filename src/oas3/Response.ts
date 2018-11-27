@@ -77,6 +77,18 @@ export default class Responses {
                     location: this._location,
                     message: `Unexpected content-type for ${statusCode} response: ${contentType}.`
                 }];
+            } else if(typeof body === 'string' && contentType.startsWith('application/json')) {
+                if(body.trim() === '') {
+                    return validator(undefined).errors;
+                }
+                try {
+                    return validator(JSON.parse(body)).errors;
+                } catch(err) {
+                    return [{
+                        location: this._location,
+                        message: `Could not parse content as JSON.`
+                    }];
+                }
             } else if(typeof body === 'string' || body instanceof Buffer || isReadable(body)) {
                 // Can't validate this.
                 return null;
