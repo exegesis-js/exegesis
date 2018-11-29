@@ -75,7 +75,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "ajv": "^6.5.0",
+    "ajv": "^6.6.1",
     "body-parser": "^1.18.2",
     "content-type": "^1.0.4",
     "deep-freeze": "0.0.1",

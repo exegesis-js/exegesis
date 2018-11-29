@@ -53,6 +53,16 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                         }
                     }
                 },
+                aNullableObject: {
+                    type: 'object',
+                    required: ['a'],
+                    nullable: true,
+                    properties: {
+                        a: {
+                            type: 'string',
+                        }
+                    }
+                },
                 withDefault: {
                     type: 'object',
                     properties: {
@@ -242,6 +252,15 @@ describe('schema validators', function() {
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
 
         expect(validator(7).errors).to.eql(null);
+        expect(validator(undefined).errors).to.eql(null);
+    });
+
+    it('should not error for a missing object if nullable', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/aNullableObject');
+
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
+
+        expect(validator(null).errors).to.eql(null);
         expect(validator(undefined).errors).to.eql(null);
     });
 
