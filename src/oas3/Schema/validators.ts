@@ -196,6 +196,7 @@ function generateValidator(
         removeAdditional: allowTypeCoercion ? 'failing' : false,
         jsonPointers: true,
         nullable: true,
+        allErrors: true,
     });
     addCustomFormats(ajv, customFormats);
     const validate = ajv.compile(schema);
