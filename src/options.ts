@@ -30,6 +30,7 @@ export interface ExgesisCompiledOptions {
     autoHandleHttpErrors: boolean | handleErrorFunction;
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
+    allErrors: boolean;
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -133,6 +134,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         allowMissingControllers,
         autoHandleHttpErrors,
         onResponseValidationError: options.onResponseValidationError || (() => void 0),
-        validateDefaultResponses
+        validateDefaultResponses,
+        allErrors: options.allErrors || false,
     };
 }

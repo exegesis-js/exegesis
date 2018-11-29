@@ -292,8 +292,41 @@ describe('schema validators', function() {
 
     });
 
-    it('return multiple errors', function() {
+    it('only return the first error if options.allErrors is false', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/object3');
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = {};
+        expect(validator(obj)).to.eql({
+            errors: [
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'a\'',
+                        params: {
+                            missingProperty: 'a',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'a\'',
+                }
+            ],
+            value: {}
+        });
+    });
+
+    it('return multiple errors if options.allErrors is true', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/object3', {
+            allErrors: true
+        });
 
         const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
 

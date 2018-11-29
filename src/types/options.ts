@@ -142,4 +142,12 @@ export interface ExegesisOptions {
      * Array of plugins to run.
      */
     plugins?: ExegesisPlugin[];
+
+    /**
+     * If this is true, validation will find all errors in a document instead
+     * of stopping at the first error.  Enabling this is obviously better,
+     * because you get better errors, but it also means you spend more time
+     * processing invalid requests.
+     */
+    allErrors?: boolean;
 }
