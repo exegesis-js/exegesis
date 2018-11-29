@@ -72,7 +72,7 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                 numberWithDefault: {
                     type: 'number',
                     default: 7
-                }
+                },
             }
         }
     }
@@ -290,6 +290,55 @@ describe('schema validators', function() {
             value: 7
         });
 
+    });
+
+    it('return multiple errors', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/object3');
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = {};
+        expect(validator(obj)).to.eql({
+            errors: [
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'a\'',
+                        params: {
+                            missingProperty: 'a',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'a\'',
+                },
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'b\'',
+                        params: {
+                            missingProperty: 'b',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'b\'',
+                }
+            ],
+            value: {}
+        });
     });
 
 });
