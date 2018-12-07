@@ -13,6 +13,7 @@
 - [autoHandleHttpErrors](#autohandlehttperrors)
 - [onResponseValidationError](#onresponsevalidationerror)
 - [validateDefaultResponses](#validatedefaultresponses)
+- [allErrors](#allErrors)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
