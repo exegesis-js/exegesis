@@ -194,3 +194,10 @@ status code).  If this is set to true, then all responses will be validated.
 
 This option is ignored if `onResponseValidationError` is not set.  If
 `onResponseValidationError` is set, the default is true.
+
+## allErrors
+
+If set, then when encountering a validation error Exegesis will return
+all errors found in the document, instead of just the first error.  This
+causes Exegesis to spend more time on requests with errors in them, so
+for performance reasons this is disabled by default.
