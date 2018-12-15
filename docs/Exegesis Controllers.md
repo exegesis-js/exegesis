@@ -23,7 +23,7 @@ export function myController(context) {
 }
 ```
 
-This will return the object provided as a JSON response.  You can return a
+This will return the object provided as a JSONdocs response.  You can return a
 JSON object, a string, a buffer, or a readble stream.  You can also more
 explicitly set the body by setting `res.body` or calling `res.setBody()`
 or `res.json()`:
@@ -33,7 +33,7 @@ export function myController(context) {
     const name = context.params.query.name;
     context.res
         .status(200)
-        .setHeader('content-type', 'application/json');
+        .set('content-type', 'application/json');
         .setBody({message: `Hello ${name}`});
 }
 ```
