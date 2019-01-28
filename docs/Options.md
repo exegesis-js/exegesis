@@ -119,7 +119,7 @@ still be used for parsing request bodies.
 ## defaultMaxBodySize
 
 If a `MimeTypeParser` provided in `mimeTypeParsers` does not support
-`parseReq()`, this defines the maximum size of a body that will be parsed.
+`parseReq()`, this defines the maximum size (in bytes) of a body that will be parsed.
 Bodies longer than this will result in a "413 - Payload Too Large" error.
 Built in body parsers will also respect this option.
 
