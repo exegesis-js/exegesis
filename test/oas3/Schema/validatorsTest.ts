@@ -210,7 +210,6 @@ describe('schema validators', function() {
         // Max valid value
         expect(validator(Math.pow(2, 31) - 1).errors).to.eql(null);
 
-
         // Float values are not allowed by the 'integer' type validator, putting this here as insurance to make
         // sure it correctly catches decimal values.
         expect(validator(7.5).errors).to.eql([{
