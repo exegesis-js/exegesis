@@ -97,12 +97,15 @@ export function _fixNullables(schema: any) {
 
 export function _filterRequiredProperties(schema: any, propNameToFilter: string) {
     traveseSchema(schema, (childSchema: any) => {
-        if(childSchema.properties && schema.required) {
+        if(childSchema.properties && childSchema.required) {
             for(const propName of Object.keys(childSchema.properties)) {
                 const prop = childSchema.properties[propName];
+
+                // Resolve the prop, in case it's a `{$ref: ....}`.
                 const resolvedProp = resolveRef(schema, prop);
-                if(resolvedProp[propNameToFilter]) {
-                    schema.required = schema.required.filter((r: string) => r !== propName);
+
+                if(resolvedProp && resolvedProp[propNameToFilter]) {
+                    childSchema.required = childSchema.required.filter((r: string) => r !== propName);
                 }
             }
         }
@@ -180,7 +183,7 @@ function generateValidator(
     // So that we can replace the "root" value of the schema using ajv's type coercion...
     traveseSchema(schema, node => {
         if(node.$ref) {
-            node.$ref = `#/properties/value/${node.$ref.slice(1)}`;
+            node.$ref = `#/properties/value/${node.$ref.slice(2)}`;
         }
     });
     schema = {
