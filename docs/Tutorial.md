@@ -181,7 +181,7 @@ async function createServer() {
         allowMissingControllers: false
     };
 
-    // This creates an exgesis middleware, which can be used with express,
+    // This creates an exegesis middleware, which can be used with express,
     // connect, or even just by itself.
     const exegesisMiddleware = await exegesisExpress.middleware(
         path.resolve(__dirname, './openapi.yaml'),

@@ -1,4 +1,4 @@
-//Import librarys used 
+//Import librarys used
 import * as express from 'express';
 import * as exegesisExpress from 'exegesis-express';
 import * as path from 'path';
@@ -18,7 +18,7 @@ async function createServer() {
         controllersPattern: "**/*.@(ts|js)"
     };
 
-    // This creates an exgesis middleware, which can be used with express,
+    // This creates an exegesis middleware, which can be used with express,
     // connect, or even just by itself.
     const exegesisMiddleware = await exegesisExpress.middleware(
         path.resolve(__dirname, './openapi.yaml'),
@@ -44,10 +44,10 @@ async function createServer() {
 
     /**
      * If you want to run a HTTPS server instead you must:
-     * + Get a SSL Cert and Key to use 
+     * + Get a SSL Cert and Key to use
      * + Change the server type from http to https as shown below
      *
-     
+
     const httpsOptions = {
         key: fs.readFileSync('./config/key.pem'),
         cert: fs.readFileSync('./config/cert.pem')
