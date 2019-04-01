@@ -4,7 +4,7 @@ import * as oas3 from 'openapi3-ts';
 import * as jsonPtr from 'json-ptr';
 import { resolveRef } from '../utils/json-schema-resolve-ref';
 
-import { ExgesisCompiledOptions } from '../options';
+import { ExegesisCompiledOptions } from '../options';
 
 /**
  * A path to an object within a JSON document.
@@ -20,7 +20,7 @@ export default class Oas3CompileContext {
     readonly path: JsonPath;
     readonly jsonPointer: string;
     readonly openApiDoc: oas3.OpenAPIObject;
-    readonly options: ExgesisCompiledOptions;
+    readonly options: ExegesisCompiledOptions;
 
     /**
      * Create a new Oas3CompileContext.
@@ -29,9 +29,9 @@ export default class Oas3CompileContext {
      * @param path - The path to the object represented by this context.
      * @param options - Options.
      */
-    constructor(openApiDoc: oas3.OpenAPIObject, path: JsonPath, options: ExgesisCompiledOptions)
+    constructor(openApiDoc: oas3.OpenAPIObject, path: JsonPath, options: ExegesisCompiledOptions)
     constructor(parent: Oas3CompileContext, relativePath: JsonPath)
-    constructor(a: any, path: JsonPath, options?: ExgesisCompiledOptions) {
+    constructor(a: any, path: JsonPath, options?: ExegesisCompiledOptions) {
         if(a instanceof Oas3CompileContext) {
             // TODO: Could make this WAY more efficient with Object.create().
             const parent = a;
