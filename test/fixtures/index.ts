@@ -3,7 +3,7 @@ import * as oas3 from 'openapi3-ts';
 import Oas3CompileContext from '../../src/oas3/Oas3CompileContext';
 import * as options from '../../src/options';
 
-export const defaultCompiledOptions: options.ExgesisCompiledOptions = options.compileOptions();
+export const defaultCompiledOptions: options.ExegesisCompiledOptions = options.compileOptions();
 
 export function makeOpenApiDoc(): oas3.OpenAPIObject {
     return {
@@ -19,7 +19,7 @@ export function makeOpenApiDoc(): oas3.OpenAPIObject {
 export function makeContext(
     openApiDoc: oas3.OpenAPIObject,
     jsonPointer: string,
-    options?: Partial<options.ExgesisCompiledOptions>
+    options?: Partial<options.ExegesisCompiledOptions>
 ) {
     return new Oas3CompileContext(
         openApiDoc,

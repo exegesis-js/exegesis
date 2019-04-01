@@ -18,7 +18,7 @@ import {
 } from './types';
 import {handleErrorFunction} from "./types/options";
 
-export interface ExgesisCompiledOptions {
+export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
     controllers: Controllers;
     authenticators: Authenticators;
@@ -71,7 +71,7 @@ const defaultValidators : CustomFormats = {
     base64: () => true
 };
 
-export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledOptions {
+export function compileOptions(options: ExegesisOptions = {}) : ExegesisCompiledOptions {
     const maxBodySize = options.defaultMaxBodySize || 100000;
 
     const mimeTypeParsers = Object.assign(
