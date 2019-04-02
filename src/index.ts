@@ -47,7 +47,7 @@ interface CompileApiInterfaceResult {
 }
 
 /**
- * Compiles and API interface for the given openApiDoc using the options.
+ * Compiles an API interface for the given openApiDoc using the options.
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
@@ -59,7 +59,7 @@ export function compileApiInterface(
 ): Promise<CompileApiInterfaceResult>;
 
 /**
- * Compiles and API interface for the given openApiDoc using the options.
+ * Compiles an API interface for the given openApiDoc using the options.
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
