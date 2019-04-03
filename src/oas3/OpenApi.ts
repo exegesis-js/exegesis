@@ -4,8 +4,17 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
 import { ExegesisCompiledOptions } from '../options';
-import { ApiInterface, ResolvedPath, ParsedParameterValidator, ResolvedOperation } from '../types/internal';
-import { ParametersMap, OAS3ApiInfo, ExegesisContext, AuthenticationSuccess, ExegesisResponse } from '../types';
+import {
+    ApiInterface,
+    ResolvedPath,
+    ParsedParameterValidator,
+    ResolvedOperation,
+    ParametersMap,
+    OAS3ApiInfo,
+    ExegesisContext,
+    AuthenticationSuccess,
+    ExegesisResponse
+} from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';

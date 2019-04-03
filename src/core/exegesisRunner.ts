@@ -4,14 +4,15 @@ import { Readable } from 'stream';
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
 import { ValidationError } from '../errors';
-import { ApiInterface, ResolvedOperation } from '../types/internal';
 import bufferToStream from '../utils/bufferToStream';
 import { isReadable } from '../utils/typeUtils';
 import {
+    ApiInterface,
     ExegesisRunner,
     HttpResult,
     ExegesisContext,
     ResponseValidationCallback,
+    ResolvedOperation,
     ExegesisOptions,
     ExegesisResponse
 } from '../types';

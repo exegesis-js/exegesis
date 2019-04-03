@@ -5,15 +5,17 @@ import pump from 'pump';
 import $RefParser from 'json-schema-ref-parser';
 
 import { compileOptions } from './options';
-import { compile as compileOpenApi, OpenApi } from './oas3';
+import { compile as compileOpenApi } from './oas3';
 import generateExegesisRunner from './core/exegesisRunner';
 import {
+    ApiInterface,
     ExegesisOptions,
     Callback,
     ExegesisRunner,
     HttpResult,
+    HttpIncomingMessage,
     MiddlewareFunction,
-    HttpIncomingMessage
+    OAS3ApiInfo
 } from './types';
 export { HttpError, ValidationError } from './errors';
 import { OpenAPIObject } from 'openapi3-ts';
@@ -66,7 +68,7 @@ async function compileDependencies(
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-): Promise<OpenApi>;
+): Promise<ApiInterface<OAS3ApiInfo>>;
 
 /**
  * Compiles an API interface for the given openApiDoc using the options.
@@ -78,13 +80,13 @@ export function compileApiInterface(
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-    done: Callback<OpenApi>
+    done: Callback<ApiInterface<OAS3ApiInfo>>
 ): void;
 
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-    done?: Callback<OpenApi>,
+    done?: Callback<ApiInterface<OAS3ApiInfo>>,
 ) {
     return pb.addCallback(done, async () => {
         return (await compileDependencies(openApiDoc, options)).apiInterface;
