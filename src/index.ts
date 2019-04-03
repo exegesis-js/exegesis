@@ -4,7 +4,7 @@ import pb from 'promise-breaker';
 import pump from 'pump';
 import $RefParser from 'json-schema-ref-parser';
 
-import { compileOptions, ExegesisCompiledOptions } from './options';
+import { compileOptions } from './options';
 import { compile as compileOpenApi, OpenApi } from './oas3';
 import generateExegesisRunner from './core/exegesisRunner';
 import {
@@ -40,10 +40,20 @@ function bundle(
     );
 }
 
-interface CompileApiInterfaceResult {
-    compiledOptions: ExegesisCompiledOptions;
-    apiInterface: OpenApi;
-    plugins: PluginsManager;
+async function compileDependencies(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions,
+) {
+    const compiledOptions = compileOptions(options);
+    const bundledDoc = await bundle(openApiDoc);
+
+    const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
+
+    await plugins.preCompile({ apiDoc: bundledDoc, options });
+
+    const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
+
+    return { compiledOptions, apiInterface, plugins };
 }
 
 /**
@@ -51,43 +61,33 @@ interface CompileApiInterfaceResult {
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
- * @returns - a Promise<{compiledOptions, apiInterface, plugins}>
+ * @returns - a Promise which returns the compiled API interface
  */
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-): Promise<CompileApiInterfaceResult>;
+): Promise<OpenApi>;
 
 /**
  * Compiles an API interface for the given openApiDoc using the options.
  * @param openApiDoc - A string, representing a path to the OpenAPI document,
  *   or a JSON object.
  * @param options - Options.  See docs/options.md
- * @param done Callback which returns compiled options, the compiled API interface
- *  and loaded plugins
+ * @param done Callback which returns the compiled API interface
  */
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-    done: Callback<CompileApiInterfaceResult>
+    done: Callback<OpenApi>
 ): void;
 
 export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
-    done?: Callback<CompileApiInterfaceResult>,
+    done?: Callback<OpenApi>,
 ) {
     return pb.addCallback(done, async () => {
-        const compiledOptions = compileOptions(options);
-        const bundledDoc = await bundle(openApiDoc);
-
-        const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
-
-        await plugins.preCompile({ apiDoc: bundledDoc, options });
-
-        const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
-
-        return { compiledOptions, apiInterface, plugins };
+        return (await compileDependencies(openApiDoc, options)).apiInterface;
     });
 }
 
@@ -131,7 +131,7 @@ export function compileRunner(
 ) {
     return pb.addCallback(done, async () => {
         options = options || {};
-        const { compiledOptions, apiInterface, plugins } = await compileApiInterface(openApiDoc, options);
+        const { compiledOptions, apiInterface, plugins } = await compileDependencies(openApiDoc, options);
         return generateExegesisRunner(apiInterface, {
             autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
             plugins,
