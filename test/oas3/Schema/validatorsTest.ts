@@ -53,6 +53,13 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                         }
                     }
                 },
+                noAdditional: {
+                    type: 'object',
+                    properties: {
+                        a: {type: 'number'}
+                    },
+                    additionalProperties: false,
+                },
                 aNullableObject: {
                     type: 'object',
                     required: ['a'],
@@ -169,6 +176,20 @@ describe('schema validators', function() {
                 schemaPath: '#/properties/value/required',
             }
         }]);
+    });
+
+    it('should strip additional properties', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/noAdditional', {
+        });
+
+        const validator = validators.generateRequestValidator(
+            context,
+            REQUEST_BODY_LOCATION,
+            false
+        );
+        const { errors, value } = validator({ a: 7, b: 'foo' });
+        expect(errors).to.equal(null);
+        expect(value).to.eql({ a: 7 });
     });
 
     it('should generate a path for the errored element', function() {
