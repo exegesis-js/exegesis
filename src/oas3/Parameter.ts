@@ -73,7 +73,12 @@ export default class Parameter {
                 {resolveRef: context.resolveRef.bind(context)}
             );
             this.parser = generateSchemaParser(this, schema);
-            this.validate = generateRequestValidator(schemaContext, this.location, resOaParameter.required || false);
+            this.validate = generateRequestValidator(
+                schemaContext,
+                this.location,
+                resOaParameter.required || false,
+                'application/x-www-form-urlencoded'
+            );
 
         } else if(resOaParameter.content) {
             // `parameter.content` must have exactly one key
@@ -107,7 +112,8 @@ export default class Parameter {
                 this.validate = generateRequestValidator(
                     mediaTypeContext.childContext('schema'),
                     this.location,
-                    resOaParameter.required || false
+                    resOaParameter.required || false,
+                    mediaTypeString
                 );
             }
         } else {

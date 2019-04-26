@@ -68,7 +68,7 @@ export default class RequestMediaType {
 
         if(schema) {
             const schemaContext = context.childContext('schema');
-            this.validator = generateRequestValidator(schemaContext, parameterLocation, parameterRequired);
+            this.validator = generateRequestValidator(schemaContext, parameterLocation, parameterRequired, mediaType);
         } else {
             this.validator = value => ({errors: null, value});
         }

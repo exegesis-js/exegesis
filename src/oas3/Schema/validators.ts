@@ -4,6 +4,16 @@ import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction }
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import * as jsonSchema from '../../utils/jsonSchema';
 import Oas3CompileContext from '../Oas3CompileContext';
+import { MimeTypeRegistry } from '../../utils/mime';
+
+// urlencoded and form-data requests do not contain any type information;
+// for example `?foo=9` doesn't tell us if `foo` is the number 9, or the string
+// "9", so we need to use type coercion to make sure the data passed in matches
+// our schema.
+const REQUEST_TYPE_COERCION_ALLOWED = new MimeTypeRegistry<boolean>({
+    "application/x-www-form-urlencoded": true,
+    "multipart/form-data": true,
+});
 
 // TODO tests
 // * readOnly
@@ -212,9 +222,11 @@ function generateValidator(
 export function generateRequestValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
-    parameterRequired: boolean
+    parameterRequired: boolean,
+    mediaType: string,
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', true);
+    const allowTypeCoercion = mediaType ? REQUEST_TYPE_COERCION_ALLOWED.get(mediaType) || false : false;
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', allowTypeCoercion);
 }
 
 export function generateResponseValidator(
