@@ -21,6 +21,7 @@ export interface ExegesisResponse {
     ended: boolean;
 
     setStatus(status: number) : this;
+    status(status: number) : this;
     setBody(body: any) : this;
 
     /**

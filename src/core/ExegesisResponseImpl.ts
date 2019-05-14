@@ -26,6 +26,10 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         return this;
     }
 
+    status(status: number) {
+        return this.setStatus(status);
+    }
+
     header(header: string, value: number | string | string[]) {
         this.setHeader(header, value);
         return this;
