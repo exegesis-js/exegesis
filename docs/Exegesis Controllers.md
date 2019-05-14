@@ -32,7 +32,7 @@ or `res.json()`:
 export function myController(context) {
     const name = context.params.query.name;
     context.res
-        .status(200)
+        .setStatus(200)
         .set('content-type', 'application/json');
         .setBody({message: `Hello ${name}`});
 }
@@ -56,7 +56,7 @@ Controllers can, of course, also return non-JSON data:
 export function myController(context) {
     const name = context.params.query.name;
     context.res
-        .status(200)
+        .setStatus(200)
         .setHeader('content-type', 'text/xml')
         .setBody(`<message>Hello ${name}</message>`);
 }
