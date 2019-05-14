@@ -7,5 +7,6 @@
     },
     "no-trailing-punctuation": {
         "punctuation": ".,;:!"
-    }
+    },
+    "single-trailing-newline": false
 }

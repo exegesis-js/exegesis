@@ -1,6 +1,6 @@
 import ld from 'lodash';
 
-import { MimeTypeRegistry } from "./utils/mime";
+import { MimeTypeRegistry } from './utils/mime';
 import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
 import BodyParserWrapper from './bodyParsers/BodyParserWrapper';
@@ -14,9 +14,9 @@ import {
     Controllers,
     Authenticators,
     MimeTypeParser,
-    ResponseValidationCallback
+    ResponseValidationCallback,
 } from './types';
-import {handleErrorFunction} from "./types/options";
+import { handleErrorFunction } from './types/options';
 
 export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
@@ -34,28 +34,28 @@ export interface ExegesisCompiledOptions {
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
- // Actually 18446744073709551616-1, but Javascript doesn't handle integers this large.
+// Actually 18446744073709551616-1, but Javascript doesn't handle integers this large.
 const INT_64_MAX = 18446744073709556000;
 
-const defaultValidators : CustomFormats = {
+const defaultValidators: CustomFormats = {
     // string:date is taken care of for us:
     // https://github.com/epoberezkin/ajv/blob/797dfc8c2b0f51aaa405342916cccb5962dd5f21/lib/compile/formats.js#L34
     // string:date-time is from https://tools.ietf.org/html/draft-wright-json-schema-validation-00#section-7.3.1.
     int32: {
         type: 'number',
-        validate: (value: number) => value >= 0 && value <= INT_32_MAX
+        validate: (value: number) => value >= 0 && value <= INT_32_MAX,
     },
     int64: {
         type: 'number',
-        validate: (value: number) => value >= 0 && value <= INT_64_MAX
+        validate: (value: number) => value >= 0 && value <= INT_64_MAX,
     },
     double: {
         type: 'number',
-        validate: () => true
+        validate: () => true,
     },
     float: {
         type: 'number',
-        validate: () => true
+        validate: () => true,
     },
     // Nothing to do for 'password'; this is just a hint for docs.
     password: () => true,
@@ -68,25 +68,26 @@ const defaultValidators : CustomFormats = {
     byte: () => true,
     // Not defined by OAS 3, but it's used throughout OAS 3.0.1, so we put it
     // here as an alias for 'byte' just in case.
-    base64: () => true
+    base64: () => true,
 };
 
-export function compileOptions(options: ExegesisOptions = {}) : ExegesisCompiledOptions {
+export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
     const maxBodySize = options.defaultMaxBodySize || 100000;
 
     const mimeTypeParsers = Object.assign(
         {
             'text/*': new TextBodyParser(maxBodySize),
-            'application/json': new JsonBodyParser(maxBodySize)
+            'application/json': new JsonBodyParser(maxBodySize),
         },
         options.mimeTypeParsers || {}
     );
 
-    const wrappedBodyParsers = ld.mapValues<MimeTypeParser, BodyParser | undefined>(
-        mimeTypeParsers, (p: MimeTypeParser) => {
-            if(p.parseReq) {
+    const wrappedBodyParsers = ld.mapValues(
+        mimeTypeParsers,
+        (p: StringParser | BodyParser | MimeTypeParser) => {
+            if ('parseReq' in p) {
                 return p;
-            } else if(p.parseString) {
+            } else if (p.parseString) {
                 return new BodyParserWrapper(p, maxBodySize);
             } else {
                 return undefined;
@@ -95,22 +96,23 @@ export function compileOptions(options: ExegesisOptions = {}) : ExegesisCompiled
     );
     const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
-    const parameterParsers = new MimeTypeRegistry<StringParser>(
-        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {[mimeType: string]: StringParser}
-    );
+    const parameterParsers = new MimeTypeRegistry<StringParser>(ld.pickBy(
+        mimeTypeParsers,
+        (p: any) => !!p.parseString
+    ) as { [mimeType: string]: StringParser });
 
     const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
 
     const contollersPattern = options.controllersPattern || '**/*.js';
-    const controllers = typeof(options.controllers) === 'string'
-        ? loadControllersSync(options.controllers, contollersPattern)
-        : options.controllers || {};
+    const controllers =
+        typeof options.controllers === 'string'
+            ? loadControllersSync(options.controllers, contollersPattern)
+            : options.controllers || {};
 
-    const allowMissingControllers = 'allowMissingControllers' in options
-        ? !!options.allowMissingControllers
-        : true;
+    const allowMissingControllers =
+        'allowMissingControllers' in options ? !!options.allowMissingControllers : true;
 
-    const authenticators : Authenticators = options.authenticators || {};
+    const authenticators: Authenticators = options.authenticators || {};
 
     let autoHandleHttpErrors: boolean | handleErrorFunction = true;
     if (options.autoHandleHttpErrors !== undefined) {
@@ -121,7 +123,8 @@ export function compileOptions(options: ExegesisOptions = {}) : ExegesisCompiled
         }
     }
 
-    const validateDefaultResponses = 'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
+    const validateDefaultResponses =
+        'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
 
     return {
         bodyParsers,
