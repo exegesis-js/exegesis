@@ -1,13 +1,14 @@
 import { StringParser, BodyParser } from './bodyParser';
 import { Controllers, Authenticators, ExegesisPlugin } from './core';
 import { ResponseValidationCallback } from './validation';
+import * as http from "http";
 
 /**
  * A function which validates custom formats.
  */
 export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
 
-export type handleErrorFunction = (err: Error) => any;
+export type handleErrorFunction = (err: Error, req: http.IncomingMessage) => any;
 
 export interface StringCustomFormatChecker {
     type: 'string';

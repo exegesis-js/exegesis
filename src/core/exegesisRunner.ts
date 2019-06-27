@@ -219,7 +219,7 @@ export default async function generateExegesisRunner<T>(
         } catch (err) {
             if(options.autoHandleHttpErrors) {
                 if (options.autoHandleHttpErrors instanceof Function) {
-                    return options.autoHandleHttpErrors(err);
+                    return options.autoHandleHttpErrors(err, req);
                 }
                 return handleError(err);
             } else {
