@@ -54,7 +54,7 @@
     "@types/deep-freeze": "^0.1.1",
     "@types/glob": "^7.1.1",
     "@types/json-schema": "^7.0.3",
-    "@types/lodash": "^4.14.132",
+    "@types/lodash": "^4.14.137",
     "@types/mocha": "^5.2.6",
     "@types/node": "^12.0.1",
     "@types/pump": "^1.0.1",
