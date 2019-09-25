@@ -33,21 +33,29 @@ export interface ExegesisCompiledOptions {
     allErrors: boolean;
 }
 
-const INT_32_MAX = Math.pow(2, 32) - 1;
-// Actually 18446744073709551616-1, but Javascript doesn't handle integers this large.
-const INT_64_MAX = 18446744073709556000;
+const INT_32_MIN = -1 * Math.pow(2, 31);
+const INT_32_MAX = Math.pow(2, 31) - 1;
+// Javascript can only safely support a range of -(2^53 - 1) to (2^53 - 1)
+//      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+const INT_64_MIN = Number.MIN_SAFE_INTEGER;
+const INT_64_MAX = Number.MAX_SAFE_INTEGER;
 
-const defaultValidators: CustomFormats = {
+// See the OAS 3.0 specification for full details about supported formats:
+//      https://github.com/OAI/OpenAPI-Specification/blob/3.0.2/versions/3.0.2.md#data-types
+const defaultValidators : CustomFormats = {
     // string:date is taken care of for us:
-    // https://github.com/epoberezkin/ajv/blob/797dfc8c2b0f51aaa405342916cccb5962dd5f21/lib/compile/formats.js#L34
-    // string:date-time is from https://tools.ietf.org/html/draft-wright-json-schema-validation-00#section-7.3.1.
+    //      https://github.com/epoberezkin/ajv/blob/797dfc8c2b0f51aaa405342916cccb5962dd5f21/lib/compile/formats.js#L34
+    // string:date-time is from:
+    //      https://tools.ietf.org/html/draft-wright-json-schema-validation-00#section-7.3.1.
+    // number:int32 and number:int64 are defined as non-fractional integers
+    //      https://tools.ietf.org/html/draft-wright-json-schema-00#section-5.3
     int32: {
         type: 'number',
-        validate: (value: number) => value >= 0 && value <= INT_32_MAX,
+        validate: (value: number) => value >= INT_32_MIN && value <= INT_32_MAX
     },
     int64: {
         type: 'number',
-        validate: (value: number) => value >= 0 && value <= INT_64_MAX,
+        validate: (value: number) => value >= INT_64_MIN && value <= INT_64_MAX
     },
     double: {
         type: 'number',
