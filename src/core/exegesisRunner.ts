@@ -19,7 +19,7 @@ import {
 import ExegesisContextImpl from './ExegesisContextImpl';
 import PluginsManager from './PluginsManager';
 import {IValidationError} from "../types/validation";
-import {handleErrorFunction} from "../types/options";
+import {HandleErrorFunction} from "../types/options";
 
 async function handleSecurity(operation: ResolvedOperation, context: ExegesisContext) {
     const authenticated = await operation.authenticate(context);
@@ -117,7 +117,7 @@ function handleError(err: Error) {
 export default async function generateExegesisRunner<T>(
     api: ApiInterface<T>,
     options: {
-        autoHandleHttpErrors: boolean | handleErrorFunction,
+        autoHandleHttpErrors: boolean | HandleErrorFunction,
         plugins: PluginsManager,
         onResponseValidationError: ResponseValidationCallback,
         validateDefaultResponses: boolean,
@@ -219,7 +219,7 @@ export default async function generateExegesisRunner<T>(
         } catch (err) {
             if(options.autoHandleHttpErrors) {
                 if (options.autoHandleHttpErrors instanceof Function) {
-                    return options.autoHandleHttpErrors(err, req);
+                    return options.autoHandleHttpErrors(err, { req });
                 }
                 return handleError(err);
             } else {
