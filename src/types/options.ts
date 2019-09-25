@@ -1,13 +1,14 @@
 import { StringParser, BodyParser } from './bodyParser';
 import { Controllers, Authenticators, ExegesisPlugin } from './core';
 import { ResponseValidationCallback } from './validation';
+import * as http from "http";
 
 /**
  * A function which validates custom formats.
  */
 export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
 
-export type handleErrorFunction = (err: Error) => any;
+export type HandleErrorFunction = (err: Error, context: { req: http.IncomingMessage }) => any;
 
 export interface StringCustomFormatChecker {
     type: 'string';
@@ -108,7 +109,7 @@ export interface ExegesisOptions {
      * replies with appropriate error messages.  If you want to handle these errors
      * yourself, set this value to false.  Defaults to true. TODO
      */
-    autoHandleHttpErrors?: boolean | handleErrorFunction;
+    autoHandleHttpErrors?: boolean | HandleErrorFunction;
 
     /**
      * If you provide this function, Exegesis will validate responses controllers
