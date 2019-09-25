@@ -11,11 +11,11 @@ import {
     Callback,
     ParameterLocations,
     ParameterLocation,
-    ExegesisOptions
+    ExegesisOptions,
+    ResolvedOperation
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
 import { HttpError, ValidationError } from '../errors';
-import { ResolvedOperation } from '../types/internal';
 
 const EMPTY_PARAMS = deepFreeze({
     query: Object.create(null),

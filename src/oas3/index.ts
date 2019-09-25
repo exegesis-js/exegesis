@@ -1,7 +1,9 @@
 import oas3 from 'openapi3-ts';
 
 import OpenApi from './OpenApi';
-import { ExgesisCompiledOptions } from '../options';
+import { ExegesisCompiledOptions } from '../options';
+
+export { OpenApi };
 
 /**
  * Reads an OpenAPI document from a YAML or JSON file.
@@ -11,7 +13,7 @@ import { ExgesisCompiledOptions } from '../options';
  */
 export async function compile(
     openApiDoc: oas3.OpenAPIObject,
-    options: ExgesisCompiledOptions
+    options: ExegesisCompiledOptions
 ): Promise<OpenApi> {
     return new OpenApi(openApiDoc, options);
 }

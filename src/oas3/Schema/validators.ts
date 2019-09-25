@@ -4,6 +4,16 @@ import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction }
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import * as jsonSchema from '../../utils/jsonSchema';
 import Oas3CompileContext from '../Oas3CompileContext';
+import { MimeTypeRegistry } from '../../utils/mime';
+
+// urlencoded and form-data requests do not contain any type information;
+// for example `?foo=9` doesn't tell us if `foo` is the number 9, or the string
+// "9", so we need to use type coercion to make sure the data passed in matches
+// our schema.
+const REQUEST_TYPE_COERCION_ALLOWED = new MimeTypeRegistry<boolean>({
+    "application/x-www-form-urlencoded": true,
+    "multipart/form-data": true,
+});
 
 // TODO tests
 // * readOnly
@@ -97,12 +107,15 @@ export function _fixNullables(schema: any) {
 
 export function _filterRequiredProperties(schema: any, propNameToFilter: string) {
     traveseSchema(schema, (childSchema: any) => {
-        if(childSchema.properties && schema.required) {
+        if(childSchema.properties && childSchema.required) {
             for(const propName of Object.keys(childSchema.properties)) {
                 const prop = childSchema.properties[propName];
+
+                // Resolve the prop, in case it's a `{$ref: ....}`.
                 const resolvedProp = resolveRef(schema, prop);
-                if(resolvedProp[propNameToFilter]) {
-                    schema.required = schema.required.filter((r: string) => r !== propName);
+
+                if(resolvedProp && resolvedProp[propNameToFilter]) {
+                    childSchema.required = childSchema.required.filter((r: string) => r !== propName);
                 }
             }
         }
@@ -180,7 +193,7 @@ function generateValidator(
     // So that we can replace the "root" value of the schema using ajv's type coercion...
     traveseSchema(schema, node => {
         if(node.$ref) {
-            node.$ref = `#/properties/value/${node.$ref.slice(1)}`;
+            node.$ref = `#/properties/value/${node.$ref.slice(2)}`;
         }
     });
     schema = {
@@ -209,9 +222,11 @@ function generateValidator(
 export function generateRequestValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
-    parameterRequired: boolean
+    parameterRequired: boolean,
+    mediaType: string,
 ) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', true);
+    const allowTypeCoercion = mediaType ? REQUEST_TYPE_COERCION_ALLOWED.get(mediaType) || false : false;
+    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', allowTypeCoercion);
 }
 
 export function generateResponseValidator(

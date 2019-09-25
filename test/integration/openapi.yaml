@@ -63,6 +63,28 @@ paths:
           content:
             application/json:
               schema: {type: 'object'}
+  /status/setStatus:
+    get:
+      summary: Test `res.setStatus`
+      x-exegesis-controller: statusController
+      operationId: setStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {type: 'object'}
+  /status/status:
+    get:
+      summary: Test `res.status`
+      x-exegesis-controller: statusController
+      operationId: status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {type: 'object'}
   /postWithDefault:
     post:
       summary: An operation with a default body

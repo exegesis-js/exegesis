@@ -3,9 +3,18 @@ import * as semver from 'semver';
 import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 
-import { ExgesisCompiledOptions } from '../options';
-import { ApiInterface, ResolvedPath, ParsedParameterValidator, ResolvedOperation } from '../types/internal';
-import { ParametersMap, OAS3ApiInfo, ExegesisContext, AuthenticationSuccess, ExegesisResponse } from '../types';
+import { ExegesisCompiledOptions } from '../options';
+import {
+    ApiInterface,
+    ResolvedPath,
+    ParsedParameterValidator,
+    ResolvedOperation,
+    ParametersMap,
+    OAS3ApiInfo,
+    ExegesisContext,
+    AuthenticationSuccess,
+    ExegesisResponse
+} from '../types';
 import Paths from './Paths';
 import Servers from './Servers';
 import Oas3CompileContext from './Oas3CompileContext';
@@ -15,7 +24,7 @@ import { HttpBadRequestError } from '../errors';
 
 export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
     readonly openApiDoc: oas3.OpenAPIObject;
-    private readonly _options: ExgesisCompiledOptions;
+    private readonly _options: ExegesisCompiledOptions;
     private _servers?: Servers;
     private _paths : Paths;
 
@@ -27,7 +36,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
      */
     constructor(
         openApiDoc: oas3.OpenAPIObject,
-        options: ExgesisCompiledOptions
+        options: ExegesisCompiledOptions
     ) {
         if(!openApiDoc.openapi) {
             throw new Error("OpenAPI definition is missing 'openapi' field");

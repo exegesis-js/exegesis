@@ -164,6 +164,20 @@ describe('integration test', function() {
         });
     });
 
+    describe('set return status', function() {
+        it('should set status with `setStatus`', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/status/setStatus`)
+                .expect(400);
+        });
+
+        it('should set status with `status`', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/status/status`)
+                .expect(400);
+        });
+    });
+
     describe('post', function() {
         it('should post a body', async function() {
             const fetch = makeFetch(this.server);

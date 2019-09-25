@@ -1,6 +1,6 @@
 import ld from 'lodash';
 
-import { MimeTypeRegistry } from "./utils/mime";
+import { MimeTypeRegistry } from './utils/mime';
 import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
 import BodyParserWrapper from './bodyParsers/BodyParserWrapper';
@@ -14,11 +14,11 @@ import {
     Controllers,
     Authenticators,
     MimeTypeParser,
-    ResponseValidationCallback
+    ResponseValidationCallback,
 } from './types';
-import {handleErrorFunction} from "./types/options";
+import { handleErrorFunction } from './types/options';
 
-export interface ExgesisCompiledOptions {
+export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
     controllers: Controllers;
     authenticators: Authenticators;
@@ -59,11 +59,11 @@ const defaultValidators : CustomFormats = {
     },
     double: {
         type: 'number',
-        validate: () => true
+        validate: () => true,
     },
     float: {
         type: 'number',
-        validate: () => true
+        validate: () => true,
     },
     // Nothing to do for 'password'; this is just a hint for docs.
     password: () => true,
@@ -76,25 +76,26 @@ const defaultValidators : CustomFormats = {
     byte: () => true,
     // Not defined by OAS 3, but it's used throughout OAS 3.0.1, so we put it
     // here as an alias for 'byte' just in case.
-    base64: () => true
+    base64: () => true,
 };
 
-export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledOptions {
+export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
     const maxBodySize = options.defaultMaxBodySize || 100000;
 
     const mimeTypeParsers = Object.assign(
         {
             'text/*': new TextBodyParser(maxBodySize),
-            'application/json': new JsonBodyParser(maxBodySize)
+            'application/json': new JsonBodyParser(maxBodySize),
         },
         options.mimeTypeParsers || {}
     );
 
-    const wrappedBodyParsers = ld.mapValues<MimeTypeParser, BodyParser | undefined>(
-        mimeTypeParsers, (p: MimeTypeParser) => {
-            if(p.parseReq) {
+    const wrappedBodyParsers = ld.mapValues(
+        mimeTypeParsers,
+        (p: StringParser | BodyParser | MimeTypeParser) => {
+            if ('parseReq' in p) {
                 return p;
-            } else if(p.parseString) {
+            } else if (p.parseString) {
                 return new BodyParserWrapper(p, maxBodySize);
             } else {
                 return undefined;
@@ -103,22 +104,23 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
     );
     const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
-    const parameterParsers = new MimeTypeRegistry<StringParser>(
-        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {[mimeType: string]: StringParser}
-    );
+    const parameterParsers = new MimeTypeRegistry<StringParser>(ld.pickBy(
+        mimeTypeParsers,
+        (p: any) => !!p.parseString
+    ) as { [mimeType: string]: StringParser });
 
     const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
 
     const contollersPattern = options.controllersPattern || '**/*.js';
-    const controllers = typeof(options.controllers) === 'string'
-        ? loadControllersSync(options.controllers, contollersPattern)
-        : options.controllers || {};
+    const controllers =
+        typeof options.controllers === 'string'
+            ? loadControllersSync(options.controllers, contollersPattern)
+            : options.controllers || {};
 
-    const allowMissingControllers = 'allowMissingControllers' in options
-        ? !!options.allowMissingControllers
-        : true;
+    const allowMissingControllers =
+        'allowMissingControllers' in options ? !!options.allowMissingControllers : true;
 
-    const authenticators : Authenticators = options.authenticators || {};
+    const authenticators: Authenticators = options.authenticators || {};
 
     let autoHandleHttpErrors: boolean | handleErrorFunction = true;
     if (options.autoHandleHttpErrors !== undefined) {
@@ -129,7 +131,8 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         }
     }
 
-    const validateDefaultResponses = 'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
+    const validateDefaultResponses =
+        'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
 
     return {
         bodyParsers,
