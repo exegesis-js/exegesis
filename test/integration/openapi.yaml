@@ -107,6 +107,26 @@ paths:
           content:
             application/json:
               schema: {type: 'object'}
+  /postWithOptionalBody:
+    post:
+      summary: An operation with an optional body
+      x-exegesis-controller: postWithOptionalBody
+      operationId: postWithOptionalBody
+      requestBody:
+        required: false
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: {type: 'object'}
   /wwwFormUrlencoded:
     post:
       summary: Post with application/x-www-form-urlencoded

@@ -167,14 +167,12 @@ describe('integration test', function() {
     describe('set return status', function() {
         it('should set status with `setStatus`', async function() {
             const fetch = makeFetch(this.server);
-            await fetch(`/status/setStatus`)
-                .expect(400);
+            await fetch(`/status/setStatus`).expect(400);
         });
 
         it('should set status with `status`', async function() {
             const fetch = makeFetch(this.server);
-            await fetch(`/status/status`)
-                .expect(400);
+            await fetch(`/status/status`).expect(400);
         });
     });
 
@@ -206,6 +204,26 @@ describe('integration test', function() {
             await fetch(`/postWithDefault`, { method: 'post' })
                 .expect(400)
                 .expectBody({ message: 'Missing content-type. Expected one of: application/json' });
+        });
+
+        it('should handle a missing optional body correctly', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithOptionalBody`, {
+                method: 'post',
+            })
+                .expect(200)
+                .expectBody({ hasBody: false });
+        });
+
+        it('should handle an optional body correctly', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/postWithOptionalBody`, {
+                method: 'post',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name: 'joe' }),
+            })
+                .expect(200)
+                .expectBody({ hasBody: true });
         });
     });
 

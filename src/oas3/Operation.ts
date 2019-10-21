@@ -99,6 +99,8 @@ export default class Operation {
      */
     readonly validRequestContentTypes: string[] | undefined;
 
+    readonly bodyRequired: boolean;
+
     private readonly _requestBodyContentTypes: MimeTypeRegistry<RequestMediaType>;
     private readonly _parameters: ParametersByLocation<Parameter[]>;
     private readonly _responses: Responses;
@@ -149,6 +151,7 @@ export default class Operation {
 
         if(requestBody) {
             this.validRequestContentTypes = Object.keys(requestBody.content);
+            this.bodyRequired = requestBody.required || false;
 
             const contentContext = context.childContext(['requestBody', 'content']);
             this._requestBodyContentTypes = contentToRequestMediaTypeRegistry(
@@ -159,6 +162,7 @@ export default class Operation {
             );
         } else {
             this._requestBodyContentTypes = new MimeTypeRegistry<RequestMediaType>();
+            this.bodyRequired = false;
         }
 
         const localParameters = (this.oaOperation.parameters || [])

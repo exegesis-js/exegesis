@@ -96,7 +96,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                     if(!mediaType) {
                         throw new HttpBadRequestError(`Invalid content-type: ${contentType}`);
                     }
-                } else if(operation && operation.validRequestContentTypes) {
+                } else if(operation && operation.bodyRequired && operation.validRequestContentTypes) {
                     throw new HttpBadRequestError(`Missing content-type. ` +
                         `Expected one of: ${operation.validRequestContentTypes}`);
                 }
