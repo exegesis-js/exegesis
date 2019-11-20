@@ -151,7 +151,7 @@ export default async function generateExegesisRunner<T>(
             if(resolved.operation) {
                 const {operation} = resolved;
 
-                context._setOperation(operation);
+                context._setOperation(resolved.baseUrl, resolved.path, operation);
 
                 if(!operation.controllerModule || !operation.controller) {
                     throw new Error(`No controller found for ${method} ${url}`);

@@ -72,6 +72,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
         let pathToResolve : string | undefined;
         let oaServer : oas3.ServerObject | undefined;
         let serverParams : ParametersMap<string | string[]> | undefined;
+        let baseUrl = '';
 
         if(!this._servers) {
             pathToResolve = pathname;
@@ -81,6 +82,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                 oaServer = serverData.oaServer;
                 pathToResolve = serverData.pathnameRest;
                 serverParams = serverData.serverParams;
+                baseUrl = serverData.baseUrl;
             }
         }
 
@@ -170,7 +172,9 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         operationObject: operation && operation.oaOperation,
                         requestBodyMediaTypePtr: mediaType && mediaType.context.jsonPointer,
                         requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType,
-                    }
+                    },
+                    path: resolvedPath.pathKey,
+                    baseUrl,
                 };
             }
         }

@@ -7,8 +7,9 @@ import {
     ParametersMap,
     ParameterLocation,
     ParameterLocations,
-    ExegesisOptions
-} from "../../src";
+    ExegesisOptions,
+    ExegesisRoute,
+} from '../../src';
 import { HttpError, ValidationError } from '../../src/errors';
 import ExegesisResponseImpl from '../../src/core/ExegesisResponseImpl';
 
@@ -17,23 +18,27 @@ export default class FakeExegesisContext implements ExegesisContext {
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponse;
     api: any;
-    security?: {[scheme: string]: AuthenticationSuccess};
+    security?: { [scheme: string]: AuthenticationSuccess };
     user?: any;
     params: ParametersByLocation<ParametersMap<any>> = {
         query: {},
         header: {},
         server: {},
         path: {},
-        cookie: {}
+        cookie: {},
     };
     requestBody: any = {};
     parameterLocations: ParameterLocations = {
         query: {},
         header: {},
         path: {},
-        cookie: {}
+        cookie: {},
     };
     options: ExegesisOptions = {};
+    route: ExegesisRoute = {
+        path: '',
+    };
+    baseUrl: string = '';
 
     constructor() {
         this.req = {} as http.IncomingMessage;
@@ -41,12 +46,12 @@ export default class FakeExegesisContext implements ExegesisContext {
         this.res = new ExegesisResponseImpl(this.origRes);
     }
 
-    makeError(statusCode: number, message: string) : Error {
+    makeError(statusCode: number, message: string): Error {
         return new HttpError(statusCode, message);
     }
 
     makeValidationError(message: string, location: ParameterLocation) {
-        return new ValidationError([{message, location}]);
+        return new ValidationError([{ message, location }]);
     }
 
     /**

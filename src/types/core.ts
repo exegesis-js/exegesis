@@ -12,6 +12,10 @@ export interface HttpHeaders {
     [header: string]: number | string | string[];
 }
 
+export interface ExegesisRoute {
+    path: string;
+}
+
 export interface ExegesisResponse {
     statusCode: number;
     statusMessage: string | undefined;
@@ -66,6 +70,8 @@ export interface ExegesisContext extends ExegesisContextBase {
     params: ParametersByLocation<ParametersMap<any>>;
     requestBody: any;
     options: ExegesisOptions;
+    route: ExegesisRoute;
+    baseUrl: string;
 }
 
 export interface ExegesisPluginContext extends ExegesisContextBase {
@@ -184,6 +190,8 @@ export interface ResolvedOperation {
 export interface ResolvedPath<T> {
     operation: ResolvedOperation | undefined;
     api: T;
+    path: string;
+    baseUrl: string;
 }
 
 // ApiInterface provides an interface into the `oas3` subdirectory.  The idea here is,

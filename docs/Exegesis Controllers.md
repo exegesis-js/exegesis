@@ -161,3 +161,9 @@ Exegesis will start from the Media Type Object specified by a given request, and
   will creates a new validation error.  `location` should be a parameter location
   from `context.parameterLocations`.  Note that this does not throw the error - your
   code has to do that.
+
+- `context.route.path` is a string with the path that was matched from the API document.
+  This is similar to `req.route.path` in Express.
+
+- `context.baseUrl` is a string with the baseUrl that was stripped off to match
+  `context.route.path`.  This is similar to `req.baseUrl` in Express.

@@ -88,7 +88,11 @@ export default class PathResolver<T> {
 
     // Paths with templates are stored in an array, with parser functions that
     // recognize the path.
-    private readonly _dynamicPaths: {parser: PathParserFunction, value: T}[];
+    private readonly _dynamicPaths: {
+        parser: PathParserFunction;
+        value: T;
+        path: string;
+    }[];
 
     // TODO: Pass in variable styles.  Some variable styles start with a special
     // character, and we can check to see if the character is there or not.
@@ -105,7 +109,7 @@ export default class PathResolver<T> {
 
         if(hasTemplates(path)) {
             const {parser} = compileTemplatePath(path);
-            this._dynamicPaths.push({value, parser});
+            this._dynamicPaths.push({value, parser, path});
         } else {
             this._staticPaths[path] = value;
         }
@@ -123,6 +127,7 @@ export default class PathResolver<T> {
     resolvePath(urlPathname: string) {
         let value : T | undefined = this._staticPaths[urlPathname];
         let rawPathParams : ParametersMap<string | string[]> | undefined;
+        let path = urlPathname;
 
         if(!value) {
             for(const dynamicPath of this._dynamicPaths) {
@@ -130,6 +135,7 @@ export default class PathResolver<T> {
                 if(matched) {
                     value = dynamicPath.value;
                     rawPathParams = matched.rawPathParams;
+                    path = dynamicPath.path;
                 }
             }
         }
@@ -137,7 +143,8 @@ export default class PathResolver<T> {
         if(value) {
             return {
                 value,
-                rawPathParams
+                rawPathParams,
+                path
             };
         } else {
             return undefined;
