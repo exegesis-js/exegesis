@@ -82,7 +82,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
         // Set `req.baseUrl` and `req.path` to make this behave like Express.
         const req = this.req as any;
         if(req.baseUrl) {
-            req.baseUrl = `${req.baseUrl}/${baseUrl}`;
+            req.baseUrl = `${req.baseUrl}${baseUrl}`;
         } else {
             req.baseUrl = baseUrl;
         }
