@@ -65,7 +65,7 @@
     "coveralls": "^3.0.2",
     "husky": "^3.0.0",
     "lint-staged": "^9.4.0",
-    "markdownlint-cli": "^0.18.0",
+    "markdownlint-cli": "^0.21.0",
     "mocha": "^6.1.4",
     "nyc": "^15.0.0",
     "semantic-release": "^15.13.12",
