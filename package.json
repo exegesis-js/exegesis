@@ -68,7 +68,7 @@
     "markdownlint-cli": "^0.18.0",
     "mocha": "^6.1.4",
     "nyc": "^15.0.0",
-    "semantic-release": "^15.13.12",
+    "semantic-release": "^16.0.0",
     "supertest-fetch": "^1.2.2",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
