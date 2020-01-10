@@ -13,9 +13,14 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     ended: boolean = false;
     connection: net.Socket;
     headersSent: boolean = false;
+    private _responseValidationEnabled: boolean;
 
-    constructor(res: http.ServerResponse /* | http2.Http2ServerResponse */) {
+    constructor(
+        res: http.ServerResponse /* | http2.Http2ServerResponse */,
+        responseValidationEnabled: boolean
+    ) {
         this.connection = res.connection;
+        this._responseValidationEnabled = responseValidationEnabled;
     }
 
     setStatus(status: number) {
@@ -41,10 +46,20 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     json(json: any) {
-        // TODO: Provide an option to disable this so that we don't have to
-        // stringify the content, then parse it again when we do response
-        // validation.
-        this.set('content-type', 'application/json').setBody(JSON.stringify(json));
+        this.set('content-type', 'application/json');
+        if (this._responseValidationEnabled) {
+            // Must stringify here, since the object or any of it's
+            // nested values could have a toJSON().  Note this means
+            // we'll have to parse it again when we do validation.
+            this.setBody(JSON.stringify(json));
+        } else {
+            this.setBody(json);
+        }
+        return this;
+    }
+
+    pureJson(json: any) {
+        this.set('content-type', 'application/json').setBody(json);
         return this;
     }
 

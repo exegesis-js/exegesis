@@ -186,6 +186,21 @@ If provided, this should be a `function(result)` function, where:
 - (for OAS3) `result.isDefault` is true if we validated against a 'default' status code.
 - `result.context` is the context passed to the controller.
 
+A note about response validation and performance; if you call `context.res.json()`
+or return an object from your controller, then the object or any nested objects
+could have a `toJSON()` method on them. This would happen when, for example,
+you return a Mongoose object, or use a Mongoose object as a child of your object.
+In order to correctly validate the response for such an object, exegesis must
+first serialized the object to JSON, and then deserialize it again to get the
+actual transmitted object. This is murderous for performance. Checking to see
+if an object has any toJSON() functions is also not great for performance. In
+order to get around this, you can call `context.res.pureJson()` to set the JSON
+reply.
+
+Note that in a future major release of Exegesis, returning a JSON object will
+have the same behavior as calling `context.res.pureJson()` instead of having the
+same behavior as calling `context.res.json()`.
+
 ## validateDefaultResponses
 
 Controls how Exegesis validates responses. If this is set to false, then in

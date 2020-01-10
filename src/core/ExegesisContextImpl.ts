@@ -61,9 +61,10 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
         api: T,
         options: ExegesisOptions
     ) {
+        const responseValidationEnabled = !!options.onResponseValidationError;
         this.req = req as HttpIncomingMessage;
         this.origRes = res;
-        this.res = new ExegesisResponseImpl(res);
+        this.res = new ExegesisResponseImpl(res, responseValidationEnabled);
         this.api = api;
         this.options = options;
 

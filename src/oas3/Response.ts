@@ -75,6 +75,7 @@ export default class Responses {
             ];
         } else {
             const validator = this._responseValidators.get(contentType);
+            const isJson = contentType.startsWith('application/json');
 
             if (body === null || body === undefined) {
                 return [
@@ -90,12 +91,26 @@ export default class Responses {
                         message: `Unexpected content-type for ${statusCode} response: ${contentType}.`,
                     },
                 ];
-            } else if (typeof body === 'string' && contentType.startsWith('application/json')) {
-                if (body.trim() === '') {
-                    return validator(undefined).errors;
+            } else if (isJson) {
+                if (body instanceof Buffer || isReadable(body)) {
+                    // Can't validate this.
+                    // TODO: Could probably parse the buffer.
+                    return null;
                 }
+
                 try {
-                    return validator(JSON.parse(body)).errors;
+                    let jsonData: any;
+                    if (typeof body === 'string') {
+                        if (body.trim() === '') {
+                            jsonData = undefined;
+                        } else {
+                            jsonData = JSON.parse(body);
+                        }
+                    } else {
+                        jsonData = body;
+                    }
+
+                    return validator(jsonData).errors;
                 } catch (err) {
                     return [
                         {

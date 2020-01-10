@@ -1,9 +1,8 @@
-import * as oas3 from 'openapi3-ts';
 import { expect } from 'chai';
-import { makeOpenApiDoc, makeContext } from '../../fixtures';
+import * as oas3 from 'openapi3-ts';
 import * as validators from '../../../src/oas3/Schema/validators';
-
 import { ParameterLocation } from '../../../src/types';
+import { makeContext, makeOpenApiDoc } from '../../fixtures';
 
 const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
     components: {
@@ -570,7 +569,7 @@ describe('schema validators', function() {
         });
     });
 
-    it('should validate minItems (#125)', async function() {
+    it('should validate minItems (#125)', function() {
         const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
             components: {
                 schemas: {

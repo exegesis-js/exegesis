@@ -34,7 +34,21 @@ export interface ExegesisResponse {
      */
     header(header: string, value: number | string | string[] | undefined): this;
     set(header: string, value: number | string | string[] | undefined): this;
+    /**
+     * Set the JSON content of the response.  Note that this will call `JSON.stringify()`
+     * immediately if response validation is enabled, because there may be `toJSON()`
+     * functions on the object or any nested values (e.g. if some values are Mongoose objects).
+     * This means we'll need to parse that string to do validation though.  If you
+     * know your object is a pure POJO, call `res.pureJson()` instead.
+     */
     json(json: any): this;
+    /**
+     * Sets the JSON content of the response to the object provided.  Note that
+     * while `toJSON()` on the object or any child objects will be
+     * respsected when the object is serialized, it will be ignored for purposes
+     * of response validation.
+     */
+    pureJson(json: any): this;
     end(): void;
     setHeader(name: string, value: number | string | string[] | undefined): void;
     getHeader(name: string): number | string | string[] | undefined;
