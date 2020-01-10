@@ -151,4 +151,11 @@ export interface ExegesisOptions {
      * processing invalid requests.
      */
     allErrors?: boolean;
+
+    /**
+     * If true, then when a controller returns a JSON object, exegesis will call
+     * `context.res.pureJson(val)` to set the body of the response.  If false, exegesis
+     * will call `context.res.json(val)`.
+     */
+    treatReturnedJsonAsPure?: boolean;
 }

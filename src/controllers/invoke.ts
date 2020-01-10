@@ -17,6 +17,8 @@ export function invokeController(
                 isReadable(result)
             ) {
                 context.res.setBody(result);
+            } else if (context.options.treatReturnedJsonAsPure) {
+                context.res.pureJson(result);
             } else {
                 context.res.json(result);
             }

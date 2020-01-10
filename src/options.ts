@@ -31,6 +31,7 @@ export interface ExegesisCompiledOptions {
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
     allErrors: boolean;
+    treatReturnedJsonAsPure: boolean;
 }
 
 const INT_32_MIN = -1 * Math.pow(2, 31);
@@ -148,5 +149,6 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
         onResponseValidationError: options.onResponseValidationError || (() => void 0),
         validateDefaultResponses,
         allErrors: options.allErrors || false,
+        treatReturnedJsonAsPure: options.treatReturnedJsonAsPure || false,
     };
 }

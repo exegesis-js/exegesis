@@ -211,6 +211,15 @@ status code). If this is set to true, then all responses will be validated.
 This option is ignored if `onResponseValidationError` is not set. If
 `onResponseValidationError` is set, the default is true.
 
+## treatReturnedJsonAsPure
+
+If true, then when a controller returns a JSON object, exegesis will call
+`context.res.pureJson(val)` to set the body of the response. If false, exegesis
+will call `context.res.json(val)`. See `onResponseValidationError()` for
+a discussion about the difference between these.
+
+This defaults to false, but in a future release it will default to true.
+
 ## allErrors
 
 If set, then when encountering a validation error Exegesis will return
