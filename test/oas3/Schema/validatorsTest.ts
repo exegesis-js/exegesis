@@ -569,4 +569,67 @@ describe('schema validators', function() {
             });
         });
     });
+
+    it('should validate minItems (#125)', async function() {
+        const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
+            components: {
+                schemas: {
+                    body: {
+                        type: 'object',
+                        required: ['articleIds', 'kind'],
+                        properties: {
+                            articleIds: {
+                                type: 'array',
+                                uniqueItems: true,
+                                minItems: 1,
+                                items: {
+                                    type: 'string',
+                                },
+                            },
+                            details: {
+                                type: 'object',
+                                nullable: true,
+                            },
+                            kind: {
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const context = makeContext(openApiDoc, '#/components/schemas/body', {});
+
+        const validator = validators.generateRequestValidator(
+            context,
+            REQUEST_BODY_LOCATION,
+            false,
+            'application/x-www-form-urlencoded'
+        );
+
+        expect(
+            validator({
+                articleIds: [],
+                kind: 'test',
+            }).errors?.[0].message,
+            'should be invalid with 0 items'
+        ).to.equal('should NOT have fewer than 1 items');
+
+        expect(
+            validator({
+                articleIds: ['id-0'],
+                kind: 'test',
+            }).errors,
+            'should pass with one item'
+        ).to.equal(null);
+
+        expect(
+            validator({
+                articleIds: ['id-0', 'id-1'],
+                kind: 'test',
+            }).errors,
+            'should pass with two items'
+        ).to.equal(null);
+    });
 });
