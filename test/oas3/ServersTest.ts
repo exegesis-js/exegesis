@@ -3,9 +3,7 @@ import { expect } from 'chai';
 import Servers from '../../src/oas3/Servers';
 
 describe('oas3 Servers', () => {
-
     describe('generateServerParser', () => {
-
         it('removes server absolute url from path', () => {
             const oas3Server = {
                 url: '/api',
@@ -71,7 +69,5 @@ describe('oas3 Servers', () => {
             expect(result.pathnameRest).to.eql('/v1/foo');
             expect(result.baseUrl).to.eql('');
         });
-
     });
-
 });

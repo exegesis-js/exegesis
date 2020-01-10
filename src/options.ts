@@ -42,7 +42,7 @@ const INT_64_MAX = Number.MAX_SAFE_INTEGER;
 
 // See the OAS 3.0 specification for full details about supported formats:
 //      https://github.com/OAI/OpenAPI-Specification/blob/3.0.2/versions/3.0.2.md#data-types
-const defaultValidators : CustomFormats = {
+const defaultValidators: CustomFormats = {
     // string:date is taken care of for us:
     //      https://github.com/epoberezkin/ajv/blob/797dfc8c2b0f51aaa405342916cccb5962dd5f21/lib/compile/formats.js#L34
     // string:date-time is from:
@@ -51,11 +51,11 @@ const defaultValidators : CustomFormats = {
     //      https://tools.ietf.org/html/draft-wright-json-schema-00#section-5.3
     int32: {
         type: 'number',
-        validate: (value: number) => value >= INT_32_MIN && value <= INT_32_MAX
+        validate: (value: number) => value >= INT_32_MIN && value <= INT_32_MAX,
     },
     int64: {
         type: 'number',
-        validate: (value: number) => value >= INT_64_MIN && value <= INT_64_MAX
+        validate: (value: number) => value >= INT_64_MIN && value <= INT_64_MAX,
     },
     double: {
         type: 'number',
@@ -104,10 +104,11 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
     );
     const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
-    const parameterParsers = new MimeTypeRegistry<StringParser>(ld.pickBy(
-        mimeTypeParsers,
-        (p: any) => !!p.parseString
-    ) as { [mimeType: string]: StringParser });
+    const parameterParsers = new MimeTypeRegistry<StringParser>(
+        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {
+            [mimeType: string]: StringParser;
+        }
+    );
 
     const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
 

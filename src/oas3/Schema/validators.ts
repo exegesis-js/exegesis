@@ -11,8 +11,8 @@ import { MimeTypeRegistry } from '../../utils/mime';
 // "9", so we need to use type coercion to make sure the data passed in matches
 // our schema.
 const REQUEST_TYPE_COERCION_ALLOWED = new MimeTypeRegistry<boolean>({
-    "application/x-www-form-urlencoded": true,
-    "multipart/form-data": true,
+    'application/x-www-form-urlencoded': true,
+    'multipart/form-data': true,
 });
 
 // TODO tests
@@ -23,14 +23,12 @@ const REQUEST_TYPE_COERCION_ALLOWED = new MimeTypeRegistry<boolean>({
 // * Make sure validation errors are correct format.
 
 function assertNever(x: never): never {
-    throw new Error("Unexpected object: " + x);
+    throw new Error('Unexpected object: ' + x);
 }
 
-function getParameterDescription(
-    parameterLocation: ParameterLocation
-) {
+function getParameterDescription(parameterLocation: ParameterLocation) {
     let description = '';
-    switch(parameterLocation.in) {
+    switch (parameterLocation.in) {
         case 'path':
         case 'server':
         case 'query':
@@ -49,31 +47,33 @@ function getParameterDescription(
     return description;
 }
 
-function addCustomFormats(ajv: Ajv.Ajv, customFormats: CustomFormats) : {[k: string]: Ajv.FormatDefinition} {
-    return Object.keys(customFormats)
-        .reduce<{[k: string]: Ajv.FormatDefinition}>((
-            result: {[k: string]: Ajv.FormatDefinition},
-            key: string
-        ) => {
+function addCustomFormats(
+    ajv: Ajv.Ajv,
+    customFormats: CustomFormats
+): { [k: string]: Ajv.FormatDefinition } {
+    return Object.keys(customFormats).reduce<{ [k: string]: Ajv.FormatDefinition }>(
+        (result: { [k: string]: Ajv.FormatDefinition }, key: string) => {
             const customFormat = customFormats[key];
-            if(typeof customFormat === 'function' || customFormat instanceof RegExp) {
-                result[key] = {type: 'string', validate: customFormat};
-            } else if(customFormat.type === 'string') {
-                result[key] = {type: 'string', validate: customFormat.validate};
-            } else if(customFormat.type === 'number') {
-                result[key] = {type: 'number', validate: customFormat.validate};
+            if (typeof customFormat === 'function' || customFormat instanceof RegExp) {
+                result[key] = { type: 'string', validate: customFormat };
+            } else if (customFormat.type === 'string') {
+                result[key] = { type: 'string', validate: customFormat.validate };
+            } else if (customFormat.type === 'number') {
+                result[key] = { type: 'number', validate: customFormat.validate };
             }
 
             ajv.addFormat(key, result[key]);
             return result;
-        }, {});
+        },
+        {}
+    );
 }
 
 function removeExamples(schema: any) {
     // ajv will print "schema id ignored" to stdout if an example contains a filed
     // named "id", so just axe all the examples.
     traveseSchema(schema, (childSchema: any) => {
-        if(childSchema.example) {
+        if (childSchema.example) {
             delete childSchema.example;
         }
     });
@@ -81,25 +81,27 @@ function removeExamples(schema: any) {
 
 export function _fixNullables(schema: any) {
     traveseSchema(schema, (childSchema: any) => {
-        if(schema.properties) {
-            for(const propName of Object.keys(childSchema.properties)) {
+        if (schema.properties) {
+            for (const propName of Object.keys(childSchema.properties)) {
                 const prop = childSchema.properties[propName];
                 const resolvedProp = resolveRef(schema, prop);
-                if(resolvedProp.nullable) {
-                    childSchema.properties[propName] = {anyOf: [{type: 'null'}, prop]};
+                if (resolvedProp.nullable) {
+                    childSchema.properties[propName] = { anyOf: [{ type: 'null' }, prop] };
                 }
             }
         }
-        if(childSchema.additionalProperties) {
+        if (childSchema.additionalProperties) {
             const resolvedProp = resolveRef(schema, childSchema.additionalProperties);
-            if(resolvedProp.nullable) {
-                childSchema.additionalProperties = {anyOf: [{type: 'null'}, childSchema.additionalProperties]};
+            if (resolvedProp.nullable) {
+                childSchema.additionalProperties = {
+                    anyOf: [{ type: 'null' }, childSchema.additionalProperties],
+                };
             }
         }
-        if(childSchema.items) {
+        if (childSchema.items) {
             const resolvedItems = resolveRef(schema, childSchema.items);
-            if(resolvedItems.nullable) {
-                childSchema.items = {anyOf: [{type: 'null'}, childSchema.items]};
+            if (resolvedItems.nullable) {
+                childSchema.items = { anyOf: [{ type: 'null' }, childSchema.items] };
             }
         }
     });
@@ -107,15 +109,17 @@ export function _fixNullables(schema: any) {
 
 export function _filterRequiredProperties(schema: any, propNameToFilter: string) {
     traveseSchema(schema, (childSchema: any) => {
-        if(childSchema.properties && childSchema.required) {
-            for(const propName of Object.keys(childSchema.properties)) {
+        if (childSchema.properties && childSchema.required) {
+            for (const propName of Object.keys(childSchema.properties)) {
                 const prop = childSchema.properties[propName];
 
                 // Resolve the prop, in case it's a `{$ref: ....}`.
                 const resolvedProp = resolveRef(schema, prop);
 
-                if(resolvedProp && resolvedProp[propNameToFilter]) {
-                    childSchema.required = childSchema.required.filter((r: string) => r !== propName);
+                if (resolvedProp && resolvedProp[propNameToFilter]) {
+                    childSchema.required = childSchema.required.filter(
+                        (r: string) => r !== propName
+                    );
                 }
             }
         }
@@ -129,31 +133,33 @@ function doValidate(
     ajvValidate: Ajv.ValidateFunction,
     json: any
 ) {
-    const value = {value: json};
-    let errors : IValidationError[] | null = null;
+    const value = { value: json };
+    let errors: IValidationError[] | null = null;
 
-    if(json === null || json === undefined) {
-        if(parameterRequired) {
-            errors = [{
-                message: `Missing required ${getParameterDescription(parameterLocation)}`,
-                location: {
-                    in: parameterLocation.in,
-                    name: parameterLocation.name,
-                    // docPath comes from parameter here, not schema, since the parameter
-                    // is the one that defines it is required.
-                    docPath: parameterLocation.docPath,
-                    path: ''
-                }
-            }];
+    if (json === null || json === undefined) {
+        if (parameterRequired) {
+            errors = [
+                {
+                    message: `Missing required ${getParameterDescription(parameterLocation)}`,
+                    location: {
+                        in: parameterLocation.in,
+                        name: parameterLocation.name,
+                        // docPath comes from parameter here, not schema, since the parameter
+                        // is the one that defines it is required.
+                        docPath: parameterLocation.docPath,
+                        path: '',
+                    },
+                },
+            ];
         }
     }
 
-    if(!errors) {
+    if (!errors) {
         ajvValidate(value);
-        if(ajvValidate.errors) {
+        if (ajvValidate.errors) {
             errors = ajvValidate.errors.map(err => {
                 let pathPtr = err.dataPath || '';
-                if(pathPtr.startsWith("/value")) {
+                if (pathPtr.startsWith('/value')) {
                     pathPtr = pathPtr.slice(6);
                 }
 
@@ -163,15 +169,15 @@ function doValidate(
                         in: parameterLocation.in,
                         name: parameterLocation.name,
                         docPath: schemaPtr,
-                        path: pathPtr
+                        path: pathPtr,
                     },
-                    ajvError: err
+                    ajvError: err,
                 };
             });
         }
     }
 
-    return {errors, value: value.value};
+    return { errors, value: value.value };
 }
 
 function generateValidator(
@@ -180,8 +186,8 @@ function generateValidator(
     parameterRequired: boolean,
     propNameToFilter: string,
     allowTypeCoercion: boolean
-) : ValidatorFunction {
-    const {openApiDoc, jsonPointer: schemaPtr} = schemaContext;
+): ValidatorFunction {
+    const { openApiDoc, jsonPointer: schemaPtr } = schemaContext;
     const customFormats = schemaContext.options.customFormats;
 
     let schema: any = jsonSchema.extractSchema(openApiDoc, schemaPtr);
@@ -192,15 +198,15 @@ function generateValidator(
 
     // So that we can replace the "root" value of the schema using ajv's type coercion...
     traveseSchema(schema, node => {
-        if(node.$ref) {
+        if (node.$ref) {
             node.$ref = `#/properties/value/${node.$ref.slice(2)}`;
         }
     });
     schema = {
         type: 'object',
         properties: {
-            value: schema
-        }
+            value: schema,
+        },
     };
 
     const ajv = new Ajv({
@@ -223,16 +229,30 @@ export function generateRequestValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
-    mediaType: string,
-) : ValidatorFunction {
-    const allowTypeCoercion = mediaType ? REQUEST_TYPE_COERCION_ALLOWED.get(mediaType) || false : false;
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'readOnly', allowTypeCoercion);
+    mediaType: string
+): ValidatorFunction {
+    const allowTypeCoercion = mediaType
+        ? REQUEST_TYPE_COERCION_ALLOWED.get(mediaType) || false
+        : false;
+    return generateValidator(
+        schemaContext,
+        parameterLocation,
+        parameterRequired,
+        'readOnly',
+        allowTypeCoercion
+    );
 }
 
 export function generateResponseValidator(
     schemaContext: Oas3CompileContext,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean
-) : ValidatorFunction {
-    return generateValidator(schemaContext, parameterLocation, parameterRequired, 'writeOnly', false);
+): ValidatorFunction {
+    return generateValidator(
+        schemaContext,
+        parameterLocation,
+        parameterRequired,
+        'writeOnly',
+        false
+    );
 }

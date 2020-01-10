@@ -6,35 +6,35 @@ import { handleError } from './customErrorHandler';
 
 async function sessionAuthenticator(
     context: exegesis.ExegesisPluginContext
-) : Promise<exegesis.AuthenticationResult | undefined> {
+): Promise<exegesis.AuthenticationResult | undefined> {
     const session = context.req.headers.session;
-    if(!session || typeof(session) !== 'string') {
+    if (!session || typeof session !== 'string') {
         return undefined;
     }
-    if(session === 'lame') {
+    if (session === 'lame') {
         return {
             type: 'success',
-            user: {name: 'Mr. Lame'},
-            roles: []
+            user: { name: 'Mr. Lame' },
+            roles: [],
         };
-    } else if(session === 'secret') {
+    } else if (session === 'secret') {
         return {
             type: 'success',
-            user: {name: 'jwalton'},
-            roles: ['readWrite', 'admin']
+            user: { name: 'jwalton' },
+            roles: ['readWrite', 'admin'],
         };
     } else {
-        throw context.makeError(403, "Invalid session.");
+        throw context.makeError(403, 'Invalid session.');
     }
 }
 
 async function createServer() {
-    const options : exegesis.ExegesisOptions = {
+    const options: exegesis.ExegesisOptions = {
         controllers: path.resolve(__dirname, './controllers'),
         authenticators: {
-            sessionKey: sessionAuthenticator
+            sessionKey: sessionAuthenticator,
         },
-        controllersPattern: "**/*.@(ts|js)",
+        controllersPattern: '**/*.@(ts|js)',
         autoHandleHttpErrors: handleError,
     };
 
@@ -43,18 +43,17 @@ async function createServer() {
         options
     );
 
-    return http.createServer(
-        (req, res) =>
-            middleware!(req, res, (err) => {
-                if (err) {
-                    console.error(err.stack); // tslint:disable-line no-console
-                    res.writeHead(500);
-                    res.end(`Internal error: ${err.message}`);
-                } else {
-                    res.writeHead(404);
-                    res.end();
-                }
-            })
+    return http.createServer((req, res) =>
+        middleware!(req, res, err => {
+            if (err) {
+                console.error(err.stack); // tslint:disable-line no-console
+                res.writeHead(500);
+                res.end(`Internal error: ${err.message}`);
+            } else {
+                res.writeHead(404);
+                res.end();
+            }
+        })
     );
 }
 
@@ -64,7 +63,9 @@ describe('integration test', function() {
     });
 
     afterEach(function() {
-        if(this.server) {this.server.close();}
+        if (this.server) {
+            this.server.close();
+        }
     });
 
     describe('parameters', function() {
@@ -74,17 +75,18 @@ describe('integration test', function() {
                 .expect(400)
                 .expect('content-type', 'application/json')
                 .expectBody({
-                    "message": "Validation errors",
-                    "errors": [{
-                        "message": "Missing required query parameter \"name\"",
-                        "location": {
-                            "in": "query",
-                            "name": "name",
-                            "path": ""
+                    message: 'Validation errors',
+                    errors: [
+                        {
+                            message: 'Missing required query parameter "name"',
+                            location: {
+                                in: 'query',
+                                name: 'name',
+                                path: '',
+                            },
+                            keyword: 'missing',
                         },
-                        "keyword": "missing",
-                    }
-                    ]
+                    ],
                 });
         });
 
@@ -94,21 +96,21 @@ describe('integration test', function() {
                 .expect(400)
                 .expect('content-type', 'application/json')
                 .expectBody({
-                    "message": "Validation errors",
-                    "errors": [
+                    message: 'Validation errors',
+                    errors: [
                         {
-                            "location": {
-                                "in": "query",
-                                "name": "name",
-                                "path": ""
+                            location: {
+                                in: 'query',
+                                name: 'name',
+                                path: '',
                             },
-                            "message": "should NOT be shorter than 2 characters",
-                            "keyword": "minLength",
-                            "params": {
-                                "limit": 2
-                            }
-                        }
-                    ]
+                            message: 'should NOT be shorter than 2 characters',
+                            keyword: 'minLength',
+                            params: {
+                                limit: 2,
+                            },
+                        },
+                    ],
                 });
         });
     });
@@ -119,17 +121,17 @@ describe('integration test', function() {
             await fetch(`/secure`)
                 .expect(401)
                 .expectBody({
-                    message: "Must authenticate using one of the following schemes: sessionKey."
+                    message: 'Must authenticate using one of the following schemes: sessionKey.',
                 });
         });
 
         it('should return an error from an authenticator', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {
-                headers: {session: 'wrong'}
+                headers: { session: 'wrong' },
             })
                 .expect(403)
-                .expectBody({message: "Invalid session."});
+                .expectBody({ message: 'Invalid session.' });
         });
     });
 
@@ -138,30 +140,30 @@ describe('integration test', function() {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',
-                headers: {"content-type": 'application/xml'},
-                body: '<name>Joe</name>'
+                headers: { 'content-type': 'application/xml' },
+                body: '<name>Joe</name>',
             })
                 .expect(400)
-                .expectBody({message: 'Invalid content-type: application/xml'});
+                .expectBody({ message: 'Invalid content-type: application/xml' });
         });
 
         it('return an error for no body if body is required', async function() {
             const fetch = makeFetch(this.server);
-            await fetch(`/postWithDefault`, {method: 'post'})
+            await fetch(`/postWithDefault`, { method: 'post' })
                 .expect(400)
-                .expectBody({message: 'Missing content-type. Expected one of: application/json'});
+                .expectBody({ message: 'Missing content-type. Expected one of: application/json' });
         });
 
         it('return an error for bad json', async function() {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',
-                headers: {"content-type": 'application/json'},
-                body: '{'
+                headers: { 'content-type': 'application/json' },
+                body: '{',
             })
                 .expect(400)
                 .expectBody({
-                    "message": "Unexpected end of JSON input"
+                    message: 'Unexpected end of JSON input',
                 });
         });
     });

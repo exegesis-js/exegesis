@@ -13,58 +13,58 @@ export interface ParsedMimeType {
  * Parses a mimeType into a `{type, subtype}` object.
  * Parameters provided with the mimeType are ignored.
  */
-export function parseMimeType(mimeType: string) : ParsedMimeType {
+export function parseMimeType(mimeType: string): ParsedMimeType {
     const match = MIME_TYPE_REGEX.exec(mimeType);
-    if(!match) {
+    if (!match) {
         throw new Error(`Invalid MIME type: "${mimeType}"`);
     }
-    if(match[3] && match[3][0] !== ';') {
+    if (match[3] && match[3][0] !== ';') {
         throw new Error(`Invalid MIME type: "${mimeType}"`);
     }
-    return {type: match[1].toLowerCase(), subtype: match[2].toLowerCase()};
+    return { type: match[1].toLowerCase(), subtype: match[2].toLowerCase() };
 }
 
-function isParsedMimeType(val : string | ParsedMimeType) : val is ParsedMimeType {
+function isParsedMimeType(val: string | ParsedMimeType): val is ParsedMimeType {
     return !!((val as ParsedMimeType).type && (val as ParsedMimeType).subtype);
 }
 
 export class MimeTypeRegistry<T> {
     // This is a registry of mime types with no wildcards.
-    private _staticMimeTypes: {[mimeType: string]: T} = Object.create(null);
+    private _staticMimeTypes: { [mimeType: string]: T } = Object.create(null);
     // This is a registry of "types" for mime types where the subtype was wildcarded.
-    private _wildcardSubtypes: {[mimeType: string]: T} = Object.create(null);
+    private _wildcardSubtypes: { [mimeType: string]: T } = Object.create(null);
     // If someone registers "*/*", it goes here.
     private _defaultMimeType: T | undefined;
 
-    constructor(map?: {[mimeType: string]: T | undefined} | undefined) {
-        if(map) {
-            for(const mimeType of Object.keys(map)) {
+    constructor(map?: { [mimeType: string]: T | undefined } | undefined) {
+        if (map) {
+            for (const mimeType of Object.keys(map)) {
                 const t = map[mimeType];
-                if(t) {this.set(mimeType, t);}
+                if (t) {
+                    this.set(mimeType, t);
+                }
             }
         }
     }
 
     set(mimeType: string | ParsedMimeType, value: T) {
-        const {type, subtype} = isParsedMimeType(mimeType)
-            ? mimeType
-            : parseMimeType(mimeType);
+        const { type, subtype } = isParsedMimeType(mimeType) ? mimeType : parseMimeType(mimeType);
 
-        if(type === '*' && subtype === '*') {
+        if (type === '*' && subtype === '*') {
             this._defaultMimeType = value;
-        } else if(subtype === '*') {
+        } else if (subtype === '*') {
             this._wildcardSubtypes[type] = value;
-        } else if(type === '*') {
-            throw new Error(`Do not allow wildcarding mime "type" unless also wildcarding "subtype": ${mimeType}`);
+        } else if (type === '*') {
+            throw new Error(
+                `Do not allow wildcarding mime "type" unless also wildcarding "subtype": ${mimeType}`
+            );
         } else {
             this._staticMimeTypes[`${type}/${subtype}`] = value;
         }
     }
 
-    get(mimeType: string | ParsedMimeType) : T | undefined {
-        const {type, subtype} = isParsedMimeType(mimeType)
-            ? mimeType
-            : parseMimeType(mimeType);
+    get(mimeType: string | ParsedMimeType): T | undefined {
+        const { type, subtype } = isParsedMimeType(mimeType) ? mimeType : parseMimeType(mimeType);
 
         return (
             this._staticMimeTypes[`${type}/${subtype}`] ||
@@ -74,10 +74,11 @@ export class MimeTypeRegistry<T> {
     }
 
     getRegisteredTypes() {
-        const answer = Object.keys(this._staticMimeTypes)
-            .concat(Object.keys(this._wildcardSubtypes).map(type => `${type}/*`));
+        const answer = Object.keys(this._staticMimeTypes).concat(
+            Object.keys(this._wildcardSubtypes).map(type => `${type}/*`)
+        );
 
-        if(this._defaultMimeType) {
+        if (this._defaultMimeType) {
             answer.push('*/*');
         }
 

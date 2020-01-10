@@ -11,9 +11,6 @@ describe('samples', function() {
     });
 
     it('should compile the API interface for petstore', async function() {
-        await compileApiInterface(
-            path.resolve(__dirname, '../samples/petstore.yaml'),
-            {}
-        );
+        await compileApiInterface(path.resolve(__dirname, '../samples/petstore.yaml'), {});
     });
 });

@@ -1,4 +1,4 @@
-import {MimeTypeRegistry} from '../../utils/mime';
+import { MimeTypeRegistry } from '../../utils/mime';
 import RequestMediaType from '../RequestMediaType';
 
 import * as oas3 from 'openapi3-ts';
@@ -9,7 +9,7 @@ export function isSpecificationExtension(key: string) {
     return key.startsWith('x-');
 }
 
-export function isReferenceObject(obj: any) : obj is oas3.ReferenceObject {
+export function isReferenceObject(obj: any): obj is oas3.ReferenceObject {
     return !!obj.$ref;
 }
 
@@ -27,16 +27,19 @@ export function contentToRequestMediaTypeRegistry(
 ) {
     const answer = new MimeTypeRegistry<RequestMediaType>();
 
-    if(content) {
-        for(const mediaType of Object.keys(content)) {
+    if (content) {
+        for (const mediaType of Object.keys(content)) {
             const oaMediaType = content[mediaType];
-            answer.set(mediaType, new RequestMediaType(
-                context.childContext(mediaType),
-                oaMediaType,
+            answer.set(
                 mediaType,
-                parameterLocation,
-                parameterRequired
-            ));
+                new RequestMediaType(
+                    context.childContext(mediaType),
+                    oaMediaType,
+                    mediaType,
+                    parameterLocation,
+                    parameterRequired
+                )
+            );
         }
     }
 

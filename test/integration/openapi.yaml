@@ -1,4 +1,4 @@
-openapi: "3.0.1"
+openapi: '3.0.1'
 info:
   version: 1.0.0
   title: Exegesis Integration Test
@@ -28,13 +28,13 @@ paths:
                 required:
                   - greeting
                 properties:
-                  greeting: {type: string}
+                  greeting: { type: string }
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /malformedResponse:
     get:
       x-exegesis-controller: malformed
@@ -49,7 +49,7 @@ paths:
                 required:
                   - greeting
                 properties:
-                  greeting: {type: string}
+                  greeting: { type: string }
   /secure:
     get:
       summary: A secure operation
@@ -62,7 +62,7 @@ paths:
           description: Greet message.
           content:
             application/json:
-              schema: {type: 'object'}
+              schema: { type: 'object' }
   /status/setStatus:
     get:
       summary: Test `res.setStatus`
@@ -73,7 +73,7 @@ paths:
           description: OK
           content:
             application/json:
-              schema: {type: 'object'}
+              schema: { type: 'object' }
   /status/status:
     get:
       summary: Test `res.status`
@@ -84,7 +84,7 @@ paths:
           description: OK
           content:
             application/json:
-              schema: {type: 'object'}
+              schema: { type: 'object' }
   /postWithDefault:
     post:
       summary: An operation with a default body
@@ -93,7 +93,7 @@ paths:
       requestBody:
         required: true
         content:
-          "application/json":
+          'application/json':
             schema:
               type: object
               properties:
@@ -106,7 +106,7 @@ paths:
           description: Greet message.
           content:
             application/json:
-              schema: {type: 'object'}
+              schema: { type: 'object' }
   /postWithOptionalBody:
     post:
       summary: An operation with an optional body
@@ -115,7 +115,7 @@ paths:
       requestBody:
         required: false
         content:
-          "application/json":
+          'application/json':
             schema:
               type: object
               properties:
@@ -126,7 +126,7 @@ paths:
           description: Result
           content:
             application/json:
-              schema: {type: 'object'}
+              schema: { type: 'object' }
   /wwwFormUrlencoded:
     post:
       summary: Post with application/x-www-form-urlencoded
@@ -135,7 +135,7 @@ paths:
       requestBody:
         required: true
         content:
-          "application/x-www-form-urlencoded":
+          'application/x-www-form-urlencoded':
             schema:
               type: object
               properties:
@@ -154,7 +154,7 @@ paths:
           description: Respond
           content:
             'application/json':
-              schema: {type: 'object'}
+              schema: { type: 'object' }
 
 components:
   securitySchemes:
@@ -167,4 +167,4 @@ components:
       required:
         - message
       properties:
-        message: {type: string}
+        message: { type: string }

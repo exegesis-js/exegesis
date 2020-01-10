@@ -9,7 +9,7 @@ import { makeOpenApiDoc } from '../fixtures';
 import stringToStream from '../../src/utils/stringToStream';
 
 chai.use(chaiAsPromised);
-const {expect} = chai;
+const { expect } = chai;
 
 const DEFAULT_RESPONSE = {
     200: {
@@ -20,14 +20,14 @@ const DEFAULT_RESPONSE = {
                     type: 'object',
                     required: ['foo'],
                     properties: {
-                        foo: {type: 'string'}
-                    }
-                }
-            }
-        }
+                        foo: { type: 'string' },
+                    },
+                },
+            },
+        },
     },
     203: {
-        description: 'No content.'
+        description: 'No content.',
     },
     default: {
         description: 'Error',
@@ -37,12 +37,12 @@ const DEFAULT_RESPONSE = {
                     type: 'object',
                     required: ['message'],
                     properties: {
-                        message: {type: 'string'}
-                    }
-                }
-            }
-        }
-    }
+                        message: { type: 'string' },
+                    },
+                },
+            },
+        },
+    },
 };
 
 const RESPONSE_WITH_MULTIPLE_CONTENT_TYPES = {
@@ -54,69 +54,68 @@ const RESPONSE_WITH_MULTIPLE_CONTENT_TYPES = {
                     type: 'object',
                     required: ['foo'],
                     properties: {
-                        foo: {type: 'string'}
-                    }
-                }
+                        foo: { type: 'string' },
+                    },
+                },
             },
             'application/xml': {
                 schema: {
                     type: 'object',
                     required: ['baz'],
                     properties: {
-                        baz: {type: 'string'}
-                    }
-                }
-            }
-        }
-    }
+                        baz: { type: 'string' },
+                    },
+                },
+            },
+        },
+    },
 };
 
 const RESPONSE_WITH_NO_SCHEMA = {
     200: {
         description: '',
         content: {
-            'application/json': {}
-        }
-    }
+            'application/json': {},
+        },
+    },
 };
 
 const RESPONSE_WITH_TEXT_PLAIN = {
     200: {
         description: '',
         content: {
-            'text/plain': {}
-        }
-    }
+            'text/plain': {},
+        },
+    },
 };
 
-function makeResponses(
-    responses: oas3.ResponsesObject
-) {
+function makeResponses(responses: oas3.ResponsesObject) {
     const openApiDoc = makeOpenApiDoc();
 
     openApiDoc.paths['/path'] = {
-        get: {responses}
+        get: { responses },
     };
 
     const context = new Oas3CompileContext(
-        openApiDoc, ['paths', '/path', 'get', 'responses'], compileOptions()
+        openApiDoc,
+        ['paths', '/path', 'get', 'responses'],
+        compileOptions()
     );
     return new Responses(context, responses);
 }
 
 describe('oas3 Responses', function() {
-
     it('should validate a JSON response', async function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {foo: 'bar'},
+            { 'content-type': 'application/json' },
+            { foo: 'bar' },
             true
         );
         expect(result).to.eql({
             errors: null,
-            isDefault: false
+            isDefault: false,
         });
     });
 
@@ -125,33 +124,33 @@ describe('oas3 Responses', function() {
 
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {what: 'bar'},
+            { 'content-type': 'application/json' },
+            { what: 'bar' },
             true
         );
 
         expect(result).to.eql({
             isDefault: false,
             errors: [
-              {
-                location: {
-                  docPath: "/paths/~1path/get/responses/200/content/application~1json/schema",
-                  in: "response",
-                  name: "body",
-                  path: ""
+                {
+                    location: {
+                        docPath: '/paths/~1path/get/responses/200/content/application~1json/schema',
+                        in: 'response',
+                        name: 'body',
+                        path: '',
+                    },
+                    message: "should have required property 'foo'",
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: "should have required property 'foo'",
+                        params: {
+                            missingProperty: 'foo',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
                 },
-                message: "should have required property 'foo'",
-                ajvError: {
-                    dataPath: '/value',
-                      keyword: 'required',
-                      message: 'should have required property \'foo\'',
-                      params: {
-                          missingProperty: 'foo',
-                      },
-                      schemaPath: '#/properties/value/required',
-                  }
-              }
-            ]
+            ],
         });
     });
 
@@ -160,23 +159,23 @@ describe('oas3 Responses', function() {
 
         const result = responses.validateResponse(
             200,
-            {'content-type': 'text/plain'},
-            "hello",
+            { 'content-type': 'text/plain' },
+            'hello',
             true
         );
 
         expect(result).to.eql({
             isDefault: false,
             errors: [
-              {
-                location: {
-                  docPath: "/paths/~1path/get/responses/200",
-                  in: "response",
-                  name: "body"
+                {
+                    location: {
+                        docPath: '/paths/~1path/get/responses/200',
+                        in: 'response',
+                        name: 'body',
+                    },
+                    message: 'Unexpected content-type for 200 response: text/plain.',
                 },
-                message: "Unexpected content-type for 200 response: text/plain."
-              }
-            ]
+            ],
         });
     });
 
@@ -185,8 +184,8 @@ describe('oas3 Responses', function() {
 
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {foo: 7}, // This should fail - no type coercion for responses.
+            { 'content-type': 'application/json' },
+            { foo: 7 }, // This should fail - no type coercion for responses.
             true
         );
 
@@ -198,8 +197,8 @@ describe('oas3 Responses', function() {
 
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {what: 'bar'},
+            { 'content-type': 'application/json' },
+            { what: 'bar' },
             false
         );
 
@@ -211,13 +210,13 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
-            {'content-type': 'application/json'},
-            {message: 'Oh noes!'},
+            { 'content-type': 'application/json' },
+            { message: 'Oh noes!' },
             true
         );
         expect(result).to.eql({
             isDefault: true,
-            errors: null
+            errors: null,
         });
     });
 
@@ -225,7 +224,7 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
-            {'content-type': 'application/json'},
+            { 'content-type': 'application/json' },
             {},
             true
         );
@@ -233,50 +232,41 @@ describe('oas3 Responses', function() {
         expect(result).to.eql({
             isDefault: true,
             errors: [
-              {
-                location: {
-                  docPath: "/paths/~1path/get/responses/default/content/application~1json/schema",
-                  in: "response",
-                  name: "body",
-                  path: ''
+                {
+                    location: {
+                        docPath:
+                            '/paths/~1path/get/responses/default/content/application~1json/schema',
+                        in: 'response',
+                        name: 'body',
+                        path: '',
+                    },
+                    message: "should have required property 'message'",
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: "should have required property 'message'",
+                        params: {
+                            missingProperty: 'message',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
                 },
-                message: "should have required property 'message'",
-                ajvError: {
-                  dataPath: '/value',
-                  keyword: 'required',
-                  message: 'should have required property \'message\'',
-                  params: {
-                      missingProperty: 'message',
-                  },
-                  schemaPath: '#/properties/value/required',
-                },
-              }
             ],
         });
     });
 
     it('should pass a result with no message body', async function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
-        const result = responses.validateResponse(
-            203,
-            {},
-            undefined,
-            true
-        );
+        const result = responses.validateResponse(203, {}, undefined, true);
         expect(result).to.eql({
             isDefault: false,
-            errors: null
+            errors: null,
         });
     });
 
     it('should fail a result with a message body which was not expecting a message body', async function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
-        const result = responses.validateResponse(
-            203,
-            {},
-            "hello",
-            true
-        );
+        const result = responses.validateResponse(203, {}, 'hello', true);
         expect(result.errors).to.exist;
         expect(result.errors!.length).to.be.greaterThan(0);
     });
@@ -285,14 +275,14 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
-            {'content-type': 'application/json'},
+            { 'content-type': 'application/json' },
             {},
             false
         );
 
         expect(result).to.eql({
             isDefault: true,
-            errors: null
+            errors: null,
         });
     });
 
@@ -302,7 +292,7 @@ describe('oas3 Responses', function() {
         const body = '{"what": "bar"}';
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
+            { 'content-type': 'application/json' },
             body,
             true
         );
@@ -316,14 +306,14 @@ describe('oas3 Responses', function() {
         const body = '{"what": "bar"}';
         const result = responses.validateResponse(
             200,
-            {'content-type': 'text/plain'},
+            { 'content-type': 'text/plain' },
             body,
             true
         );
 
         expect(result).to.eql({
             isDefault: false,
-            errors: null
+            errors: null,
         });
     });
 
@@ -331,21 +321,21 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const cases = [
-            {type: 'Buffer', body: Buffer.from('{"what": "bar"}')},
-            {type: 'Readable', body: stringToStream('{"what": "bar"}')}
+            { type: 'Buffer', body: Buffer.from('{"what": "bar"}') },
+            { type: 'Readable', body: stringToStream('{"what": "bar"}') },
         ];
 
-        for(const {type, body} of cases) {
+        for (const { type, body } of cases) {
             const result = responses.validateResponse(
                 200,
-                {'content-type': 'application/json'},
+                { 'content-type': 'application/json' },
                 body,
                 true
             );
 
             expect(result, `result for ${type}`).to.eql({
                 isDefault: false,
-                errors: null
+                errors: null,
             });
         }
     });
@@ -354,19 +344,19 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(RESPONSE_WITH_MULTIPLE_CONTENT_TYPES);
         const jsonResult = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {foo: 'bar'},
+            { 'content-type': 'application/json' },
+            { foo: 'bar' },
             true
         );
         expect(jsonResult, 'jsonResult').to.eql({
             errors: null,
-            isDefault: false
+            isDefault: false,
         });
 
         const erroredJsonResult = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {foo: 7},
+            { 'content-type': 'application/json' },
+            { foo: 7 },
             true
         );
         expect(erroredJsonResult.errors, 'erroredJsonResult').to.exist;
@@ -374,13 +364,13 @@ describe('oas3 Responses', function() {
 
         const xmlResult = responses.validateResponse(
             200,
-            {'content-type': 'application/xml'},
-            {baz: 'qux'},
+            { 'content-type': 'application/xml' },
+            { baz: 'qux' },
             true
         );
         expect(xmlResult, 'xmlResult').to.eql({
             errors: null,
-            isDefault: false
+            isDefault: false,
         });
 
         // This is highly unlikely - no one is going to ever do this, since
@@ -389,26 +379,25 @@ describe('oas3 Responses', function() {
         // JSON objects to XML?
         const erroredXmlResult = responses.validateResponse(
             200,
-            {'content-type': 'application/xml'},
-            {baz: 7},
+            { 'content-type': 'application/xml' },
+            { baz: 7 },
             true
         );
         expect(erroredXmlResult.errors, 'erroredXmlResult').to.exist;
         expect(erroredXmlResult.errors!.length, 'erroredXmlResult').to.be.greaterThan(0);
-
     });
 
     it('should validate a response with no schema', async function() {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
-            {foo: 'bar'},
+            { 'content-type': 'application/json' },
+            { foo: 'bar' },
             true
         );
         expect(result).to.eql({
             errors: null,
-            isDefault: false
+            isDefault: false,
         });
     });
 
@@ -416,7 +405,7 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
+            { 'content-type': 'application/json' },
             undefined,
             true
         );
@@ -427,13 +416,13 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
-            {'content-type': 'application/json'},
+            { 'content-type': 'application/json' },
             '',
             true
         );
         expect(result).to.eql({
             errors: null,
-            isDefault: false
+            isDefault: false,
         });
     });
 
@@ -441,23 +430,23 @@ describe('oas3 Responses', function() {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
-            {'content-type': ['application/json', 'text/plain']},
+            { 'content-type': ['application/json', 'text/plain'] },
             '',
             true
         );
         expect(result.errors![0].message).to.equal(
-            'Invalid content type for 200 response: application/json,text/plain');
+            'Invalid content type for 200 response: application/json,text/plain'
+        );
     });
 
     it('should fail for an undefined status code if there is no default', async function() {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             404,
-            {'content-type': 'text/plain'},
+            { 'content-type': 'text/plain' },
             'Not found',
             true
         );
         expect(result.errors![0].message).to.equal('No response defined for status code 404.');
     });
-
 });

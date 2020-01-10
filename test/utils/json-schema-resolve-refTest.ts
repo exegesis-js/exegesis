@@ -1,21 +1,18 @@
 import 'mocha';
-import {expect} from 'chai';
+import { expect } from 'chai';
 
-import {resolveRef} from '../../src/utils/json-schema-resolve-ref';
+import { resolveRef } from '../../src/utils/json-schema-resolve-ref';
 
-describe("resolveRef", function() {
+describe('resolveRef', function() {
     const doc = {
         a: 7,
-        b: {$ref: '#/a'},
-        c: {$ref: '#/b'},
-        file: {$ref: 'file://a'},
-        array: [
-            6,
-            {$ref: '#/a'}
-        ],
-        struct: {x: 7},
-        struct2: {$ref: '#/struct'},
-        struct3: {$ref: '#/struct2/x'}
+        b: { $ref: '#/a' },
+        c: { $ref: '#/b' },
+        file: { $ref: 'file://a' },
+        array: [6, { $ref: '#/a' }],
+        struct: { x: 7 },
+        struct2: { $ref: '#/struct' },
+        struct3: { $ref: '#/struct2/x' },
     };
 
     it('should resolve a JSON Reference', function() {
@@ -40,16 +37,14 @@ describe("resolveRef", function() {
     });
 
     it('should not resolve external references', function() {
-        expect(() =>
-            resolveRef(doc, '#/file')
-        ).to.throw('Cannot resolve non-local ref');
+        expect(() => resolveRef(doc, '#/file')).to.throw('Cannot resolve non-local ref');
     });
 
     it('should resolve a ref with /s', function() {
-        expect(resolveRef({'a/b': 7}, '#/a~1b')).to.eql(7);
+        expect(resolveRef({ 'a/b': 7 }, '#/a~1b')).to.eql(7);
     });
 
     it('should resolve a ref with URI encoded components', function() {
-        expect(resolveRef({'a b': 7}, '#/a%20b')).to.eql(7);
+        expect(resolveRef({ 'a b': 7 }, '#/a%20b')).to.eql(7);
     });
 });

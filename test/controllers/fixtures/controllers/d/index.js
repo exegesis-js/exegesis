@@ -1,1 +1,1 @@
-exports.d = () => "d";
+exports.d = () => 'd';

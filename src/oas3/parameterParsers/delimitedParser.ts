@@ -7,11 +7,11 @@ export function generateDelimitedParser(delimiter: string) {
     return function delimitedParser(
         location: exegesisTypes.ParameterLocation,
         rawParamValues: RawValues
-    ) : string[] | undefined {
+    ): string[] | undefined {
         const value = rawParamValues[location.name];
-        if(value === null || value === undefined) {
+        if (value === null || value === undefined) {
             return value;
-        } else if(Array.isArray(value)) {
+        } else if (Array.isArray(value)) {
             // Client is supposed to send us a delimited string, but it looks
             // like they sent us multiple copies of the var instead.  Just
             // decode the array.

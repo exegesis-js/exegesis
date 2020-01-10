@@ -1,7 +1,7 @@
 # Exegesis Tutorial
 
 This is a tutorial which will teach you how to create an OpenAPI 3.0.0 document,
-and host it with Exegesis on node.js.  You can find complete source for this
+and host it with Exegesis on node.js. You can find complete source for this
 tutorial [here](https://github.com/exegesis-js/exegesis/tree/master/samples/tutorial).
 
 OpenAPI 3.0.0 is the successor to Swagger - version 2.0 was known as the Swagger Specification.
@@ -28,8 +28,8 @@ installs the dependencies we'll need (express, and exegesis-express).
 ## OpenAPI
 
 The heart of any OpenAPI based API is the OpenAPI document, which describes
-all the paths and parameters your application accepts.  We'll store this
-in a file called "openapi.yaml".  This is the simplest OpenAPI 3.0.0 document
+all the paths and parameters your application accepts. We'll store this
+in a file called "openapi.yaml". This is the simplest OpenAPI 3.0.0 document
 you can write:
 
 ```yaml
@@ -42,12 +42,12 @@ paths:
 
 The `openapi: 3.0.1` part tells us this is an OpenAPI document, and conforms
 to [version 3.0.1](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md)
-of the spec.  There's a "paths" section where we can list all the paths our API
+of the spec. There's a "paths" section where we can list all the paths our API
 exposes.
 
 This has all the required fields to be an OpenAPI document, and will pass
-validation, but as API documents go, this one is pretty boring.  It doesn't
-acually do anything.  Let's fix that by adding a path:
+validation, but as API documents go, this one is pretty boring. It doesn't
+acually do anything. Let's fix that by adding a path:
 
 ```yaml
 openapi: 3.0.1
@@ -92,7 +92,7 @@ paths:
                     type: string
 ```
 
-That's got big fast!  Let's break this down into parts.
+That's got big fast! Let's break this down into parts.
 
 We've added a new "/greet" to our "paths" section, with a "get" operation:
 
@@ -105,14 +105,14 @@ paths:
       x-exegesis-controller: greetController
 ```
 
-This means clients can send an HTTP GET to "/greet" to run this operation.  This
-operation also has an `operationId` of "getGreeting".  This is a string that
-uniquely identifies this operation, across the entire document.  No other
+This means clients can send an HTTP GET to "/greet" to run this operation. This
+operation also has an `operationId` of "getGreeting". This is a string that
+uniquely identifies this operation, across the entire document. No other
 operation is allowed to have this operationId.
 
 There's also one extra special part we've added here, the "x-exegesis-controller".
 Anything that starts with an "x-" in an OpenAPI document is called a
-"specification extension".  In this case, we're using an
+"specification extension". In this case, we're using an
 [Exegesis specific extension](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md)
 to tell Exegesis what JS module contains the code for this controller.
 
@@ -128,7 +128,7 @@ parameters:
       type: string
 ```
 
-This parameter must be present, and must be a string.  Exegesis will generate
+This parameter must be present, and must be a string. Exegesis will generate
 a validation error back to the client if this field isn't present, or is the
 wrong type.
 
@@ -149,14 +149,14 @@ Finally, there's a responses section:
 ```
 
 This says we can reply with a 200 response, and if we do, the response is going
-to be a JSON object with a single property, "message".  There's also a "default"
+to be a JSON object with a single property, "message". There's also a "default"
 response, which is what the client can expect if our response is not a 200
-response.  You can list as many different response codes here as you wish.
+response. You can list as many different response codes here as you wish.
 
 ## An Exegesis Server
 
 Now that we have a simple OpenAPI document, we need to have a server which
-implements it.  Let's start a new node.js project:
+implements it. Let's start a new node.js project:
 
 ```sh
 mkdir exegesis-tutorial
@@ -166,7 +166,7 @@ npm install express exegesis-express
 ```
 
 Save the above OpenAPI document in "exegesis-tutorial" as "openapi.yaml".
-then create an index.js file.  This file is mostly boilerplate:
+then create an index.js file. This file is mostly boilerplate:
 
 ```js
 const express = require('express');
@@ -175,49 +175,49 @@ const http = require('http');
 const path = require('path');
 
 async function createServer() {
-    // See https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md
-    const options = {
-        controllers: path.resolve(__dirname, './controllers'),
-        allowMissingControllers: false
-    };
+  // See https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md
+  const options = {
+    controllers: path.resolve(__dirname, './controllers'),
+    allowMissingControllers: false,
+  };
 
-    // This creates an exegesis middleware, which can be used with express,
-    // connect, or even just by itself.
-    const exegesisMiddleware = await exegesisExpress.middleware(
-        path.resolve(__dirname, './openapi.yaml'),
-        options
-    );
+  // This creates an exegesis middleware, which can be used with express,
+  // connect, or even just by itself.
+  const exegesisMiddleware = await exegesisExpress.middleware(
+    path.resolve(__dirname, './openapi.yaml'),
+    options
+  );
 
-    const app = express();
+  const app = express();
 
-    // If you have any body parsers, this should go before them.
-    app.use(exegesisMiddleware);
+  // If you have any body parsers, this should go before them.
+  app.use(exegesisMiddleware);
 
-    // Return a 404
-    app.use((req, res) => {
-        res.status(404).json({message: `Not found`});
-    });
+  // Return a 404
+  app.use((req, res) => {
+    res.status(404).json({ message: `Not found` });
+  });
 
-    // Handle any unexpected errors
-    app.use((err, req, res, next) => {
-        res.status(500).json({message: `Internal error: ${err.message}`});
-    });
+  // Handle any unexpected errors
+  app.use((err, req, res, next) => {
+    res.status(500).json({ message: `Internal error: ${err.message}` });
+  });
 
-    const server = http.createServer(app);
+  const server = http.createServer(app);
 
-    return server;
+  return server;
 }
 
 createServer()
-.then(server => {
+  .then(server => {
     server.listen(3000);
-    console.log("Listening on port 3000");
-    console.log("Try visiting http://localhost:3000/greet?name=Jason");
-})
-.catch(err => {
+    console.log('Listening on port 3000');
+    console.log('Try visiting http://localhost:3000/greet?name=Jason');
+  })
+  .catch(err => {
     console.error(err.stack);
     process.exit(1);
-});
+  });
 ```
 
 The interesting bit here is really the [options](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md)
@@ -225,23 +225,23 @@ we pass to Exegesis:
 
 ```js
 const options = {
-    controllers: path.resolve(__dirname, './controllers'),
-    allowMissingControllers: false
+  controllers: path.resolve(__dirname, './controllers'),
+  allowMissingControllers: false,
 };
 ```
 
 `controllers` gives the path to the "controllers" folder, where we store our
-controller implementations.  `allowMissingControllers: false` tells Exegesis
+controller implementations. `allowMissingControllers: false` tells Exegesis
 to throw an error at startup if any of our paths don't have a controller.
 There are lots of other handy [options](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md)
-you can pass here.  Note that if you want to enable response validation,
+you can pass here. Note that if you want to enable response validation,
 you must pass the [`onResponseValidationError`](https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md#onresponsevalidationerror) option.
 
 ## The Controller
 
 Now we have an OpenAPI document, and we have the boilerplate that starts
 the server, but the exciting part is the "controller" - this is the code
-that actually implements our OpenAPI document.  You may recall in our
+that actually implements our OpenAPI document. You may recall in our
 OpenAPI document we specified:
 
 ```yaml
@@ -255,13 +255,13 @@ we're going to create a file called "greetController.js":
 ```js
 // This function has the same name as an operationId in the OpenAPI document.
 exports.getGreeting = function getGreeting(context) {
-    const name = context.params.query.name;
-    return {message: `Hello ${name}`};
-}
+  const name = context.params.query.name;
+  return { message: `Hello ${name}` };
+};
 ```
 
 This controller is pretty simple - is just reads in the name parameter, and
-returns a JSON object.  Controllers can optionally return a Promise, take a
+returns a JSON object. Controllers can optionally return a Promise, take a
 callback as a second parameter, or even just write a response directly
 to `context.res`.
 

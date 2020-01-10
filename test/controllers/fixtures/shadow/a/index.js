@@ -1,1 +1,1 @@
-exports.a = () => "index";
+exports.a = () => 'index';

@@ -1,12 +1,12 @@
 import { StringParser, BodyParser } from './bodyParser';
 import { Controllers, Authenticators, ExegesisPlugin } from './core';
 import { ResponseValidationCallback } from './validation';
-import * as http from "http";
+import * as http from 'http';
 
 /**
  * A function which validates custom formats.
  */
-export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
+export type CustomFormatChecker = RegExp | ((value: string) => boolean);
 
 export type HandleErrorFunction = (err: Error, context: { req: http.IncomingMessage }) => any;
 
@@ -43,7 +43,7 @@ export interface ExegesisOptions {
      * MimeTypeParsers.  In order to be used for parsing parameters, a
      * parser must implement `parseString()`.
      */
-    mimeTypeParsers?: {[mimeType: string]: StringParser | BodyParser};
+    mimeTypeParsers?: { [mimeType: string]: StringParser | BodyParser };
 
     /**
      * A hash of authenticators.  See

@@ -19,8 +19,8 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     setStatus(status: number) {
-        if(this.ended) {
-            throw new Error("Trying to set status after response has been ended.");
+        if (this.ended) {
+            throw new Error('Trying to set status after response has been ended.');
         }
         this.statusCode = status;
         return this;
@@ -44,14 +44,13 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         // TODO: Provide an option to disable this so that we don't have to
         // stringify the content, then parse it again when we do response
         // validation.
-        this.set('content-type', 'application/json')
-            .setBody(JSON.stringify(json));
+        this.set('content-type', 'application/json').setBody(JSON.stringify(json));
         return this;
     }
 
-    setBody(body: any) : this {
-        if(this.ended && !this._afterController) {
-            throw new Error("Trying to set body after response has been ended.");
+    setBody(body: any): this {
+        if (this.ended && !this._afterController) {
+            throw new Error('Trying to set body after response has been ended.');
         }
         this.body = body;
         return this;
@@ -62,7 +61,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         this.end();
     }
 
-    get body() : any {
+    get body(): any {
         return this._body;
     }
 
@@ -72,8 +71,8 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     setHeader(name: string, value: number | string | string[]) {
-        if(this.ended && !this._afterController) {
-            throw new Error("Trying to set header after response has been ended.");
+        if (this.ended && !this._afterController) {
+            throw new Error('Trying to set header after response has been ended.');
         }
         this.headers[name.toLowerCase()] = value;
     }
@@ -95,21 +94,21 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     removeHeader(name: string) {
-        if(this.ended && !this._afterController) {
-            throw new Error("Trying to remove header after response has been ended.");
+        if (this.ended && !this._afterController) {
+            throw new Error('Trying to remove header after response has been ended.');
         }
         delete this.headers[name];
     }
 
     writeHead(statusCode: number, statusMessage?: string | HttpHeaders, headers?: HttpHeaders) {
-        if(statusMessage && typeof(statusMessage) !== 'string') {
+        if (statusMessage && typeof statusMessage !== 'string') {
             headers = statusMessage;
             statusMessage = undefined;
         }
         this.statusCode = statusCode;
 
-        if(headers) {
-            for(const headerName of Object.keys(headers)) {
+        if (headers) {
+            for (const headerName of Object.keys(headers)) {
                 this.setHeader(headerName, headers[headerName]);
             }
         }

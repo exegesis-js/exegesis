@@ -6,11 +6,11 @@ import { generateRequestValidator } from './Schema/validators';
 import Oas3CompileContext from './Oas3CompileContext';
 import * as urlEncodedBodyParser from './urlEncodedBodyParser';
 
-function generateAddDefaultParser(parser: BodyParser, def: any) : BodyParser {
+function generateAddDefaultParser(parser: BodyParser, def: any): BodyParser {
     return {
         parseReq(req, res, next) {
             parser.parseReq(req, res, (err, result) => {
-                if(err) {
+                if (err) {
                     return next(err);
                 }
                 // TODO: How to test this?  How do you even get here?  If there's
@@ -19,14 +19,14 @@ function generateAddDefaultParser(parser: BodyParser, def: any) : BodyParser {
                 // body will be invalid.  If the type is `text/plain`, a 0-length
                 // body is the empty string, which is not undefined.  I don't
                 // think this is ever going to be called.
-                if(result === undefined && req.body === undefined) {
+                if (result === undefined && req.body === undefined) {
                     req.body = ld.cloneDeep(def);
                     next(null, req.body);
                 } else {
                     next(err, result);
                 }
             });
-        }
+        },
     };
 }
 
@@ -37,7 +37,7 @@ export default class RequestMediaType {
     readonly validator: ValidatorFunction;
 
     constructor(
-        context : Oas3CompileContext,
+        context: Oas3CompileContext,
         oaMediaType: oas3.MediaTypeObject,
         mediaType: string,
         parameterLocation: ParameterLocation,
@@ -49,28 +49,39 @@ export default class RequestMediaType {
         let parser = this.context.options.bodyParsers.get(mediaType);
 
         // OAS3 has special handling for 'application/x-www-form-urlencoded'.
-        if(!parser && mediaType === 'application/x-www-form-urlencoded') {
-            parser = urlEncodedBodyParser.generateBodyParser(context, oaMediaType, parameterLocation);
+        if (!parser && mediaType === 'application/x-www-form-urlencoded') {
+            parser = urlEncodedBodyParser.generateBodyParser(
+                context,
+                oaMediaType,
+                parameterLocation
+            );
         }
 
-        if(!parser) {
-            throw new Error('Unable to find suitable mime type parser for ' +
-                `type ${mediaType} in ${context.jsonPointer}`);
+        if (!parser) {
+            throw new Error(
+                'Unable to find suitable mime type parser for ' +
+                    `type ${mediaType} in ${context.jsonPointer}`
+            );
         }
 
         const schema = oaMediaType.schema && context.resolveRef(oaMediaType.schema);
 
-        if(schema && ('default' in schema)) {
+        if (schema && 'default' in schema) {
             this.parser = generateAddDefaultParser(parser, schema.default);
         } else {
             this.parser = parser;
         }
 
-        if(schema) {
+        if (schema) {
             const schemaContext = context.childContext('schema');
-            this.validator = generateRequestValidator(schemaContext, parameterLocation, parameterRequired, mediaType);
+            this.validator = generateRequestValidator(
+                schemaContext,
+                parameterLocation,
+                parameterRequired,
+                mediaType
+            );
         } else {
-            this.validator = value => ({errors: null, value});
+            this.validator = value => ({ errors: null, value });
         }
     }
 }

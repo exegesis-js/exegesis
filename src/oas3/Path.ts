@@ -17,37 +17,38 @@ export default class Path {
     readonly oaPath: oas3.PathItemObject;
     private readonly _operations: OperationsMap;
 
-    constructor(context: Oas3CompileContext, oaPath: oas3.PathItemObject, exegesisController: string | undefined) {
+    constructor(
+        context: Oas3CompileContext,
+        oaPath: oas3.PathItemObject,
+        exegesisController: string | undefined
+    ) {
         this.context = context;
-        if(oaPath.$ref) {
+        if (oaPath.$ref) {
             this.oaPath = context.resolveRef(oaPath.$ref) as oas3.PathItemObject;
         } else {
             this.oaPath = oaPath;
         }
-        const parameters = (oaPath.parameters || [])
-            .map((p, i) => new Parameter(context.childContext(['parameters', '' + i]), p));
+        const parameters = (oaPath.parameters || []).map(
+            (p, i) => new Parameter(context.childContext(['parameters', '' + i]), p)
+        );
 
         exegesisController = oaPath[EXEGESIS_CONTROLLER] || exegesisController;
-        this._operations = HTTP_METHODS
-            .map(method => method.toLowerCase())
+        this._operations = HTTP_METHODS.map(method => method.toLowerCase())
             .filter(method => oaPath[method])
-            .reduce(
-                (result: OperationsMap, method: string) => {
-                    result[method] = new Operation(
-                        context.childContext(method),
-                        oaPath[method],
-                        oaPath,
-                        method,
-                        exegesisController,
-                        parameters
-                    );
-                    return result;
-                },
-                Object.create(null)
-            );
+            .reduce((result: OperationsMap, method: string) => {
+                result[method] = new Operation(
+                    context.childContext(method),
+                    oaPath[method],
+                    oaPath,
+                    method,
+                    exegesisController,
+                    parameters
+                );
+                return result;
+            }, Object.create(null));
     }
 
-    getOperation(method: string) : Operation | undefined {
+    getOperation(method: string): Operation | undefined {
         return this._operations[method.toLowerCase()];
     }
 }

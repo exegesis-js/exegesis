@@ -1,7 +1,14 @@
-import { ExegesisContext } from ".";
-import * as ajv from "ajv";
+import { ExegesisContext } from '.';
+import * as ajv from 'ajv';
 
-export type ParameterLocationIn =  "path" | "server" | "query" | "cookie" | "header" | "request" | "response";
+export type ParameterLocationIn =
+    | 'path'
+    | 'server'
+    | 'query'
+    | 'cookie'
+    | 'header'
+    | 'request'
+    | 'response';
 
 /**
  * The location of a parameter or property within a request.
@@ -26,12 +33,12 @@ export interface ParameterLocation {
  * A dictionary of parameters, where keys are the source of the parameters.
  */
 export interface ParameterLocations {
-    path: {[parameter: string]: ParameterLocation};
-    query: {[parameter: string]: ParameterLocation};
-    cookie: {[parameter: string]: ParameterLocation};
-    header: {[parameter: string]: ParameterLocation};
-    request?: {body: ParameterLocation};
-    response?: {body: ParameterLocation};
+    path: { [parameter: string]: ParameterLocation };
+    query: { [parameter: string]: ParameterLocation };
+    cookie: { [parameter: string]: ParameterLocation };
+    header: { [parameter: string]: ParameterLocation };
+    request?: { body: ParameterLocation };
+    response?: { body: ParameterLocation };
 }
 
 /**
@@ -60,21 +67,22 @@ export interface IValidationError {
  *   (possibly modified) value.
  */
 export interface ValidatorFunction {
-    (doc: any) : {
-        errors: IValidationError[] | null,
-        value: any
+    (doc: any): {
+        errors: IValidationError[] | null;
+        value: any;
     };
 }
 
 export interface ResponseValidationResult {
     errors: IValidationError[] | null;
+    /**
+     * In OAS3, you can specify a response schema for different return codes.
+     * If the status code doesn't have an explicit schema, or if it falls into
+     * the "default" case, this flag will be true.
+     */
     isDefault: boolean;
 }
 
 export interface ResponseValidationCallback {
-    (result: {
-        errors: IValidationError[];
-        isDefault: boolean;
-        context: ExegesisContext;
-    }): void;
+    (result: { errors: IValidationError[]; isDefault: boolean; context: ExegesisContext }): void;
 }

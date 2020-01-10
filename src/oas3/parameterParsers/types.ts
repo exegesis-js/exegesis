@@ -1,4 +1,4 @@
-import { ParametersMap, ParameterLocation, StringParser } from "../../types";
+import { ParametersMap, ParameterLocation, StringParser } from '../../types';
 
 /**
  * A descriptor for a parameter that has a "style".
@@ -41,7 +41,7 @@ export type RawValues = ParametersMap<string | string[] | undefined>;
  * A parameter parser that takes in a string and returns a value.
  */
 export interface RawStringParameterParser {
-    (value: string | undefined) : any;
+    (value: string | undefined): any;
 }
 
 /**
@@ -50,5 +50,10 @@ export interface RawStringParameterParser {
  * `rawParamValues[location.name]`.
  */
 export interface ParameterParser {
-    (location: ParameterLocation, rawParamValues: RawValues, rawValue: string, parserContext: any) : any;
+    (
+        location: ParameterLocation,
+        rawParamValues: RawValues,
+        rawValue: string,
+        parserContext: any
+    ): any;
 }

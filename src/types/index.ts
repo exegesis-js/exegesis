@@ -1,6 +1,6 @@
 import * as oas3 from 'openapi3-ts';
 
-export {oas3 as oas3};
+export { oas3 };
 
 export * from './bodyParser';
 export * from './basicTypes';

@@ -7,7 +7,7 @@ export class ExtendableError extends Error {
         if (typeof Error.captureStackTrace === 'function') {
             Error.captureStackTrace(this, this.constructor);
         } else {
-            this.stack = (new Error(message)).stack;
+            this.stack = new Error(message).stack;
         }
     }
 }
@@ -30,10 +30,8 @@ export class HttpBadRequestError extends HttpError {
 export class ValidationError extends HttpBadRequestError {
     errors: IValidationError[];
 
-    constructor(
-        errors: IValidationError[] | IValidationError
-    ) {
-        if(!Array.isArray(errors)) {
+    constructor(errors: IValidationError[] | IValidationError) {
+        if (!Array.isArray(errors)) {
             errors = [errors];
         }
         super(errors.length === 1 ? errors[0].message : 'Multiple validation errors');

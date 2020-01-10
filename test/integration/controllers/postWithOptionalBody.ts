@@ -1,4 +1,4 @@
-import { ExegesisContext } from "../../../src";
+import { ExegesisContext } from '../../../src';
 
 export function postWithOptionalBody(context: ExegesisContext) {
     const hasBody = !!context.requestBody;

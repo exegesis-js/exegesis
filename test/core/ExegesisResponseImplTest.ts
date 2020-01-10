@@ -3,9 +3,7 @@ import { expect } from 'chai';
 import ExegesisResponseImpl from '../../lib/core/ExegesisResponseImpl';
 
 describe('ExegesisResponseImpl', () => {
-
     describe('json', () => {
-
         it('uses the object toJSON', () => {
             class StringWrapper {
                 private readonly _content: string;
@@ -27,7 +25,5 @@ describe('ExegesisResponseImpl', () => {
             res.json(data);
             expect(res.body).to.eql(JSON.stringify({ content: 'foo' }));
         });
-
     });
-
 });

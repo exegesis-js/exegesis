@@ -1,4 +1,4 @@
-import { ExegesisContext } from "../../../src";
+import { ExegesisContext } from '../../../src';
 
 export function setStatus(context: ExegesisContext) {
     context.res.setStatus(400);

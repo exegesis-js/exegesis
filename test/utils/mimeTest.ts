@@ -1,24 +1,30 @@
 import 'mocha';
-import {expect} from 'chai';
+import { expect } from 'chai';
 
-import {MimeTypeRegistry, parseMimeType} from '../../src/utils/mime';
+import { MimeTypeRegistry, parseMimeType } from '../../src/utils/mime';
 
-describe("mime utils", function() {
+describe('mime utils', function() {
     describe('parseMimeType', function() {
         it('should parse a mime type', function() {
-            expect(parseMimeType('application/json')).to.eql({type: 'application', subtype: 'json'});
+            expect(parseMimeType('application/json')).to.eql({
+                type: 'application',
+                subtype: 'json',
+            });
         });
 
         it('should always return lower case', function() {
-            expect(parseMimeType('APPLICATION/JSON')).to.eql({type: 'application', subtype: 'json'});
+            expect(parseMimeType('APPLICATION/JSON')).to.eql({
+                type: 'application',
+                subtype: 'json',
+            });
         });
 
         it('should ignore parameters', function() {
-            expect(parseMimeType('text/html; foo=bar')).to.eql({type: 'text', subtype: 'html'});
+            expect(parseMimeType('text/html; foo=bar')).to.eql({ type: 'text', subtype: 'html' });
         });
     });
 
-    describe("MimeTypeRegistry", function() {
+    describe('MimeTypeRegistry', function() {
         it('should register and retrieve mime types', function() {
             const registry = new MimeTypeRegistry<number>();
             registry.set('application/json', 7);
@@ -34,18 +40,18 @@ describe("mime utils", function() {
 
         it('should register and retrieve parsed mime types', function() {
             const registry = new MimeTypeRegistry<number>();
-            registry.set({type: 'application', subtype: 'json'}, 7);
+            registry.set({ type: 'application', subtype: 'json' }, 7);
             registry.set('application/xml', 8);
 
             expect(registry.get('application/json')).to.equal(7);
-            expect(registry.get({type: 'application', subtype: 'xml'})).to.equal(8);
+            expect(registry.get({ type: 'application', subtype: 'xml' })).to.equal(8);
         });
 
         it('should allow initialization via a hash of mime types', function() {
             const registry = new MimeTypeRegistry<number>({
                 'application/json': 7,
                 'application/xml': 8,
-                'text/plain': 9
+                'text/plain': 9,
             });
 
             expect(registry.get('application/json')).to.equal(7);
@@ -100,7 +106,7 @@ describe("mime utils", function() {
                 'application/*',
                 'application/xml',
                 'image/*',
-                'text/plain'
+                'text/plain',
             ]);
         });
 
@@ -130,14 +136,13 @@ describe("mime utils", function() {
         it('should complain about invalid mime types', function() {
             const registry = new MimeTypeRegistry<number>();
 
-            expect(
-                () => registry.set('application/json/foo', 7)
-            ).to.throw('Invalid MIME type: "application/json/foo"');
+            expect(() => registry.set('application/json/foo', 7)).to.throw(
+                'Invalid MIME type: "application/json/foo"'
+            );
 
-            expect(
-                () => registry.set('application', 7)
-            ).to.throw('Invalid MIME type: "application"');
-
+            expect(() => registry.set('application', 7)).to.throw(
+                'Invalid MIME type: "application"'
+            );
         });
     });
 });

@@ -20,39 +20,36 @@ import { Controllers, ControllerModule } from '../types';
  */
 export function loadControllersSync(
     folder: string,
-    pattern: string = "**/*.js",
+    pattern: string = '**/*.js',
     loader: (path: string) => ControllerModule = require
-) : Controllers {
-    const controllerNames = glob.sync(pattern, {cwd: folder});
+): Controllers {
+    const controllerNames = glob.sync(pattern, { cwd: folder });
 
-    return controllerNames.reduce<Controllers>(
-        (result, controllerName) => {
-            const fullPath = path.resolve(folder, controllerName);
-            if(fs.statSync(fullPath).isDirectory()) {
-                // Skip directories.
-                return result;
-            }
-            try {
-                // Add the file at the full path
-                const mod = loader(fullPath);
-                result[controllerName] = mod;
-
-                // Add the file at the full path, minus the extension
-                const ext = path.extname(controllerName);
-                result[controllerName.slice(0, -ext.length)] = mod;
-
-                // If the file is an "index" file, then add it at the folder
-                // name (unless there's already something there.)
-                const basename = path.basename(controllerName, ext);
-                if(basename === 'index') {
-                    const indexFolder = controllerName.slice(0, -(ext.length + basename.length + 1));
-                    result[indexFolder] = result[indexFolder] || mod;
-                }
-            } catch(err) {
-                throw new Error(`Could not load controller '${fullPath}': ${err.message}`);
-            }
+    return controllerNames.reduce<Controllers>((result, controllerName) => {
+        const fullPath = path.resolve(folder, controllerName);
+        if (fs.statSync(fullPath).isDirectory()) {
+            // Skip directories.
             return result;
-        },
-        {}
-    );
+        }
+        try {
+            // Add the file at the full path
+            const mod = loader(fullPath);
+            result[controllerName] = mod;
+
+            // Add the file at the full path, minus the extension
+            const ext = path.extname(controllerName);
+            result[controllerName.slice(0, -ext.length)] = mod;
+
+            // If the file is an "index" file, then add it at the folder
+            // name (unless there's already something there.)
+            const basename = path.basename(controllerName, ext);
+            if (basename === 'index') {
+                const indexFolder = controllerName.slice(0, -(ext.length + basename.length + 1));
+                result[indexFolder] = result[indexFolder] || mod;
+            }
+        } catch (err) {
+            throw new Error(`Could not load controller '${fullPath}': ${err.message}`);
+        }
+        return result;
+    }, {});
 }

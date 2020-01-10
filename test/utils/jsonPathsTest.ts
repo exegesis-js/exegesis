@@ -1,8 +1,8 @@
 import 'mocha';
-import {expect} from 'chai';
+import { expect } from 'chai';
 import * as jsonPaths from '../../src/utils/jsonPaths';
 
-describe("jsonPaths utils", function() {
+describe('jsonPaths utils', function() {
     it('should find prefix', function() {
         expect(jsonPaths.jsonPointerStartsWith('/foo/bar', '/foo')).to.equal(true);
         expect(jsonPaths.jsonPointerStartsWith('/foo/bar', '/baz')).to.equal(false);

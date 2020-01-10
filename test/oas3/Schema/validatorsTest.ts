@@ -247,7 +247,12 @@ describe('schema validators', function() {
     it('should validate an integer with a format', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
-        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false, 'application/json');
+        const validator = validators.generateRequestValidator(
+            context,
+            QUERY_PARAM_LOCATION,
+            false,
+            'application/json'
+        );
 
         // A generally safe value to test
         expect(validator(7).errors).to.eql(null);
@@ -260,44 +265,48 @@ describe('schema validators', function() {
 
         // Float values are not allowed by the 'integer' type validator, putting this here as insurance to make
         // sure it correctly catches decimal values.
-        expect(validator(7.5).errors).to.eql([{
-            message: 'should be integer',
-            location: {
-                in: 'query',
-                name: 'foo',
-                docPath: '/components/schemas/int32',
-                path: ''
-            },
-            ajvError: {
-                dataPath: '/value',
-                keyword: 'type',
+        expect(validator(7.5).errors).to.eql([
+            {
                 message: 'should be integer',
-                params: {
-                    type: 'integer',
+                location: {
+                    in: 'query',
+                    name: 'foo',
+                    docPath: '/components/schemas/int32',
+                    path: '',
                 },
-                schemaPath: '#/properties/value/type',
-            }
-        }]);
+                ajvError: {
+                    dataPath: '/value',
+                    keyword: 'type',
+                    message: 'should be integer',
+                    params: {
+                        type: 'integer',
+                    },
+                    schemaPath: '#/properties/value/type',
+                },
+            },
+        ]);
 
         // The expected failure result for an int32 format failure.
-        const int32FailValue = [{
-            message: 'should match format "int32"',
-            location: {
-                in: 'query',
-                name: 'foo',
-                docPath: '/components/schemas/int32',
-                path: '',
-            },
-            ajvError: {
-                dataPath: '/value',
-                keyword: 'format',
+        const int32FailValue = [
+            {
                 message: 'should match format "int32"',
-                params: {
-                    "format": "int32"
+                location: {
+                    in: 'query',
+                    name: 'foo',
+                    docPath: '/components/schemas/int32',
+                    path: '',
                 },
-                schemaPath: "#/properties/value/format"
-            }
-        }];
+                ajvError: {
+                    dataPath: '/value',
+                    keyword: 'format',
+                    message: 'should match format "int32"',
+                    params: {
+                        format: 'int32',
+                    },
+                    schemaPath: '#/properties/value/format',
+                },
+            },
+        ];
         // One less than the minimum value allowed
         expect(validator(-1 * Math.pow(2, 31) - 1).errors).to.eql(int32FailValue);
 
@@ -531,7 +540,7 @@ describe('schema validators', function() {
                         message: 'should be number',
                     },
                 ],
-                value: "9",
+                value: '9',
             });
 
             expect(validator(undefined)).to.eql({

@@ -14,22 +14,20 @@ import {
     RawValues,
     ParameterDescriptor,
     MediaTypeParameterDescriptor,
-    StyledParameterDescriptor
+    StyledParameterDescriptor,
 } from './types';
 
 export * from './types';
 
 function isMediaTypeParameterDescriptor(
     descriptor: ParameterDescriptor
-) : descriptor is MediaTypeParameterDescriptor {
+): descriptor is MediaTypeParameterDescriptor {
     return descriptor && (descriptor as any).contentType && (descriptor as any).parser;
 }
 
-export function generateParser(
-    parameterDescriptor: ParameterDescriptor
-) : ParameterParser {
-    let answer : ParameterParser;
-    if(isMediaTypeParameterDescriptor(parameterDescriptor)) {
+export function generateParser(parameterDescriptor: ParameterDescriptor): ParameterParser {
+    let answer: ParameterParser;
+    if (isMediaTypeParameterDescriptor(parameterDescriptor)) {
         answer = generateMediaTypeParser(parameterDescriptor);
     } else {
         answer = generateStyleParser(parameterDescriptor);
@@ -39,49 +37,50 @@ export function generateParser(
 
 function generateMediaTypeParser(
     parameterDescriptor: MediaTypeParameterDescriptor
-) : ParameterParser {
+): ParameterParser {
     // request and response are here for application/x-www-form-urlencoded.
 
-    let answer : ParameterParser = (location: ParameterLocation, values: RawValues) : any => {
+    let answer: ParameterParser = (location: ParameterLocation, values: RawValues): any => {
         try {
             let value = values[location.name];
-            if(value === undefined || value === null) {return value;}
+            if (value === undefined || value === null) {
+                return value;
+            }
 
-            if(parameterDescriptor.uriEncoded) {
-                if(Array.isArray(value)) {
+            if (parameterDescriptor.uriEncoded) {
+                if (Array.isArray(value)) {
                     value = value.map(decodeURIComponent);
                 } else {
                     value = decodeURIComponent(value);
                 }
             }
 
-            if(Array.isArray(value)) {
+            if (Array.isArray(value)) {
                 return value.map(v => parameterDescriptor.parser.parseString(v));
             } else {
                 return parameterDescriptor.parser.parseString(value);
             }
         } catch (err) {
             throw new ValidationError({
-                message: `Error parsing parameter ${location.name} of ` +
+                message:
+                    `Error parsing parameter ${location.name} of ` +
                     `type ${parameterDescriptor.contentType}: ${err.message}`,
-                location
+                location,
             });
         }
     };
 
-    if(parameterDescriptor.schema && parameterDescriptor.schema.default) {
+    if (parameterDescriptor.schema && parameterDescriptor.schema.default) {
         answer = setDefault(answer, parameterDescriptor.schema.default);
     }
     return answer;
 }
 
-function generateStyleParser(
-    descriptor: StyledParameterDescriptor
-) {
-    const {schema, explode} = descriptor;
-    let answer : ParameterParser;
+function generateStyleParser(descriptor: StyledParameterDescriptor) {
+    const { schema, explode } = descriptor;
+    let answer: ParameterParser;
 
-    switch(descriptor.style) {
+    switch (descriptor.style) {
         case 'simple':
             answer = toStructuredParser(getSimpleStringParser(schema, explode));
             break;
@@ -104,7 +103,7 @@ function generateStyleParser(
             throw new Error(`Don't know how to parse parameters with style ${descriptor.style}`);
     }
 
-    if('default' in descriptor.schema) {
+    if ('default' in descriptor.schema) {
         answer = setDefault(answer, descriptor.schema.default);
     }
     return answer;
@@ -118,7 +117,7 @@ function setDefault(parser: ParameterParser, def: any) {
         parserContext: any
     ) {
         const answer = parser(location, rawParamValues, rawValue, parserContext);
-        if(answer !== undefined) {
+        if (answer !== undefined) {
             return answer;
         } else {
             return ld.cloneDeep(def);
@@ -129,7 +128,7 @@ function setDefault(parser: ParameterParser, def: any) {
 function toStructuredParser(parser: RawStringParameterParser) {
     return (location: ParameterLocation, rawParamValues: RawValues) => {
         const value = rawParamValues[location.name];
-        if(Array.isArray(value)) {
+        if (Array.isArray(value)) {
             return value.map(parser);
         } else {
             return parser(value);
@@ -142,8 +141,8 @@ function deepObjectParser(
     _rawParamValues: RawValues,
     rawValue: string,
     parserContext: any
-) : any {
-    if(!parserContext.qsParsed) {
+): any {
+    if (!parserContext.qsParsed) {
         parserContext.qsParsed = qs.parse(rawValue);
     }
     const qsParsed = parserContext.qsParsed;
@@ -152,39 +151,38 @@ function deepObjectParser(
 
 function _parseParameterGroup(
     params: {
-        location: ParameterLocation,
-        parser: ParameterParser
+        location: ParameterLocation;
+        parser: ParameterParser;
     }[],
     rawValues: RawValues,
     rawQueryString: string
-) : ParametersMap<any> {
+): ParametersMap<any> {
     const parserContext = {};
-    return params.reduce(
-        (result: any, {location, parser}) => {
-            result[location.name] = parser(location, rawValues, rawQueryString, parserContext);
-            return result;
-        },
-        {}
-    );
+    return params.reduce((result: any, { location, parser }) => {
+        result[location.name] = parser(location, rawValues, rawQueryString, parserContext);
+        return result;
+    }, {});
 }
 
 export function parseParameterGroup(
     params: {
-        location: ParameterLocation,
-        parser: ParameterParser
+        location: ParameterLocation;
+        parser: ParameterParser;
     }[],
     rawValues: RawValues
-) : ParametersMap<any> {
+): ParametersMap<any> {
     return _parseParameterGroup(params, rawValues, '');
 }
 
 export function parseQueryParameters(
     params: {
-        location: ParameterLocation,
-        parser: ParameterParser
+        location: ParameterLocation;
+        parser: ParameterParser;
     }[],
     query: string | undefined
 ) {
-    const rawValues = querystring.parse(query || '', '&', '=', {decodeURIComponent: (val: string) => val});
+    const rawValues = querystring.parse(query || '', '&', '=', {
+        decodeURIComponent: (val: string) => val,
+    });
     return _parseParameterGroup(params, rawValues, query || '');
 }

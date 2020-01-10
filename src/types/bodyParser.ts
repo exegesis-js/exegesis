@@ -2,7 +2,11 @@ import * as http from 'http';
 import { Callback, HttpIncomingMessage } from './basicTypes';
 
 // Stolen from @types/connect#NextHandleFunction.
-export type ReqParserFunction = (req: HttpIncomingMessage, res: http.ServerResponse, next: Callback<any>) => void;
+export type ReqParserFunction = (
+    req: HttpIncomingMessage,
+    res: http.ServerResponse,
+    next: Callback<any>
+) => void;
 
 export type StringParserFunction = (encoded: string) => any;
 
