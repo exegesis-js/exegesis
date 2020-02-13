@@ -17,16 +17,20 @@ function callFn(
 
 export default class PluginsManager {
     private readonly _plugins: exegesis.ExegesisPluginInstance[];
+    private readonly _preRoutingPlugins: exegesis.ExegesisPluginInstance[];
     private readonly _postRoutingPlugins: exegesis.ExegesisPluginInstance[];
     private readonly _postSecurityPlugins: exegesis.ExegesisPluginInstance[];
     private readonly _postControllerPlugins: exegesis.ExegesisPluginInstance[];
+    private readonly _postResponseValidation: exegesis.ExegesisPluginInstance[];
 
     constructor(apiDoc: any, plugins: exegesis.ExegesisPlugin[]) {
         this._plugins = plugins.map(plugin => plugin.makeExegesisPlugin({ apiDoc }));
 
+        this._preRoutingPlugins = this._plugins.filter(p => !!p.preRouting);
         this._postRoutingPlugins = this._plugins.filter(p => !!p.postRouting);
         this._postSecurityPlugins = this._plugins.filter(p => !!p.postSecurity);
         this._postControllerPlugins = this._plugins.filter(p => !!p.postController);
+        this._postResponseValidation = this._plugins.filter(p => !!p.postResponseValidation);
     }
 
     async preCompile(data: { apiDoc: any; options: exegesis.ExegesisOptions }) {
@@ -38,7 +42,7 @@ export default class PluginsManager {
     }
 
     async preRouting(data: { req: http.IncomingMessage; res: http.ServerResponse }) {
-        for (const plugin of this._postRoutingPlugins) {
+        for (const plugin of this._preRoutingPlugins) {
             await callFn(plugin, 'preRouting', data);
         }
     }
@@ -62,7 +66,7 @@ export default class PluginsManager {
     }
 
     async postResponseValidation(context: exegesis.ExegesisContext) {
-        for (const plugin of this._postControllerPlugins) {
+        for (const plugin of this._postResponseValidation) {
             await callFn(plugin, 'postResponseValidation', context);
         }
     }
