@@ -5,7 +5,7 @@ so commit messages should follow [Angular commit message conventions](https://gi
 
 ## Supported Node Versions
 
-Exegesis should run on node 6.x.x and up.
+Exegesis should run on node 10.x.x and up.
 
 In a perfect world, no polyfills will be required.  Exegesis should *not* add
 any polyfills on its own.  If there are required polyfills, we should document
