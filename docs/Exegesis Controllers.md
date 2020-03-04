@@ -25,8 +25,8 @@ export function myController(context) {
 
 This will return the object provided as a JSONdocs response. You can return a
 JSON object, a string, a buffer, or a readble stream. You can also more
-explicitly set the body by setting `res.body` or calling `res.setBody()`
-or `res.json()`:
+explicitly set the body by setting `res.body` or calling `res.setBody()`,
+`res.json()`, or `res.pureJson()`:
 
 ```js
 export function myController(context) {
