@@ -1,5 +1,5 @@
-import stringToStream from '../../src/utils/stringToStream';
-import { ValidationError } from '../../src/errors';
+import stringToStream from '../../../src/utils/stringToStream';
+import { ValidationError } from '../../../src/errors';
 
 export function handleError(err: Error) {
     if (err instanceof ValidationError) {

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as http from 'http';
 import * as path from 'path';
 import { makeFetch } from 'supertest-fetch';
-import * as exegesis from '../../src';
+import * as exegesis from '../../../src';
 
 async function sessionAuthenticator(
     context: exegesis.ExegesisPluginContext

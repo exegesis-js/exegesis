@@ -2,9 +2,10 @@ import Ajv from 'ajv';
 import traveseSchema from 'json-schema-traverse';
 import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction } from '../../types';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
+import * as jsonPaths from '../../utils/jsonPaths';
 import * as jsonSchema from '../../utils/jsonSchema';
-import Oas3CompileContext from '../Oas3CompileContext';
 import { MimeTypeRegistry } from '../../utils/mime';
+import Oas3CompileContext from '../Oas3CompileContext';
 
 // urlencoded and form-data requests do not contain any type information;
 // for example `?foo=9` doesn't tell us if `foo` is the number 9, or the string
@@ -199,7 +200,11 @@ function generateValidator(
     // So that we can replace the "root" value of the schema using ajv's type coercion...
     traveseSchema(schema, node => {
         if (node.$ref) {
-            node.$ref = `#/properties/value/${node.$ref.slice(2)}`;
+            if (node.$ref.startsWith('#')) {
+                node.$ref = `#/properties/value/${node.$ref.slice(2)}`;
+            } else {
+                node.$ref = jsonPaths.toUriFragment(`/properties/value/${node.$ref.slice(1)}`);
+            }
         }
     });
     schema = {

@@ -1,4 +1,4 @@
-import { ExegesisContext } from '../../../src';
+import { ExegesisContext } from '../../../../src';
 
 export function postWithDefault(context: ExegesisContext) {
     const { name } = context.requestBody;

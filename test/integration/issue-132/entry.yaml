@@ -1,0 +1,22 @@
+# entry.yaml
+paths:
+  Entry:
+    get:
+      operationId: fetch
+      responses:
+        default:
+          description: Recursive entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entry:
+                    $ref: '#/components/schemas/Recurse'
+components:
+  schemas:
+    Recurse:
+      type: object
+      properties:
+        recurse:
+          $ref: '#/components/schemas/Recurse'
