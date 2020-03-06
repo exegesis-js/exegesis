@@ -126,6 +126,17 @@ describe('integration test', function() {
         });
     });
 
+    describe('streaming reply', function() {
+        it('should stream a reply to the client', async function() {
+            const fetch = makeFetch(this.server);
+            await fetch(`/streamResponse`)
+                .expect(200)
+                .expectBody({
+                    message: 'This was streamed',
+                });
+        });
+    });
+
     describe('security', function() {
         it('should require authentication from an authenticator', async function() {
             const fetch = makeFetch(this.server);

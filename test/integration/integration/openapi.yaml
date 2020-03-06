@@ -127,6 +127,28 @@ paths:
           content:
             application/json:
               schema: { type: 'object' }
+  /streamResponse:
+    get:
+      summary: Reply with a stream instead of a JSON object.
+      x-exegesis-controller: streamController
+      operationId: replyWithStream
+      responses:
+        '200':
+          description: Streamed reply.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message: { type: string }
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /wwwFormUrlencoded:
     post:
       summary: Post with application/x-www-form-urlencoded
