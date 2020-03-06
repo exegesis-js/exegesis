@@ -9,6 +9,7 @@ import { makeOpenApiDoc } from '../fixtures';
 import { ExegesisOptions } from '../../src';
 import { compileOptions } from '../../src/options';
 import FakeExegesisContext from '../fixtures/FakeExegesisContext';
+import { Readable, Transform } from 'stream';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -609,6 +610,119 @@ describe('oas3 Operation', function() {
                     statusCode: 200,
                     headers: {},
                     body: undefined,
+                } as any,
+                false
+            );
+
+            expect(result.errors).to.equal(null);
+        });
+
+        it('should correctly validate a response', function() {
+            const operation = makeOperation('delete', {
+                responses: {
+                    200: DEFAULT_RESPONSE,
+                    default: DEFAULT_RESPONSE,
+                },
+            });
+
+            const result = operation.validateResponse(
+                {
+                    statusCode: 200,
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: {
+                        message: 'ok',
+                    },
+                } as any,
+                false
+            );
+
+            expect(result.errors).to.equal(null);
+        });
+
+        it('should error on an invalid response', function() {
+            const operation = makeOperation('delete', {
+                responses: {
+                    200: DEFAULT_RESPONSE,
+                    default: DEFAULT_RESPONSE,
+                },
+            });
+
+            const result = operation.validateResponse(
+                {
+                    statusCode: 200,
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: {},
+                } as any,
+                false
+            );
+
+            expect(result.errors).to.not.be.empty;
+        });
+
+        it('should not try to validate a Readable body', function() {
+            const operation = makeOperation('delete', {
+                responses: {
+                    200: DEFAULT_RESPONSE,
+                    default: DEFAULT_RESPONSE,
+                },
+            });
+
+            const body = new Readable({
+                read() {
+                    this.push('foo');
+                    this.push(null);
+                },
+            });
+
+            const result = operation.validateResponse(
+                {
+                    statusCode: 200,
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body,
+                } as any,
+                false
+            );
+
+            expect(result.errors).to.equal(null);
+        });
+
+        it('should not try to validate a Transform body', function() {
+            const operation = makeOperation('delete', {
+                responses: {
+                    200: DEFAULT_RESPONSE,
+                    default: DEFAULT_RESPONSE,
+                },
+            });
+
+            const readable = new Readable({
+                read() {
+                    this.push('foo');
+                    this.push(null);
+                },
+            });
+
+            const body = new Transform({
+                transform(chunk, _encoding, callback) {
+                    this.push(chunk);
+                    callback();
+                },
+            });
+
+            readable.pipe(body);
+
+            const result = operation.validateResponse(
+                {
+                    statusCode: 200,
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body,
                 } as any,
                 false
             );

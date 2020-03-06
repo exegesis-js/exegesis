@@ -94,7 +94,6 @@ export default class Responses {
             } else if (isJson) {
                 if (body instanceof Buffer || isReadable(body)) {
                     // Can't validate this.
-                    // TODO: Could probably parse the buffer.
                     return null;
                 }
 
