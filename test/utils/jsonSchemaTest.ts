@@ -108,5 +108,111 @@ describe('jsonSchema utils', function() {
                 },
             });
         });
+
+        it('should correctly handle nested refs (#134)', function() {
+            const doc = {
+                paths: {
+                    '/test': {
+                        get: {
+                            responses: {
+                                '200': {
+                                    description: 'test.',
+                                    content: {
+                                        'application/json': {
+                                            schema: {
+                                                type: 'object',
+                                                properties: {
+                                                    test: {
+                                                        $ref:
+                                                            '#/definitions/LinkObject/properties/test/allOf/0',
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                definitions: {
+                    LinkObject: {
+                        type: 'object',
+                        properties: {
+                            test: {
+                                allOf: [
+                                    {
+                                        type: 'object',
+                                        properties: {
+                                            next: {
+                                                anyOf: [
+                                                    {
+                                                        $ref:
+                                                            '#/definitions/LinkObject/properties/test/allOf/0/additionalProperties/anyOf/0',
+                                                    },
+                                                    {
+                                                        $ref:
+                                                            '#/definitions/LinkObject/properties/test/allOf/0/additionalProperties/anyOf/1',
+                                                    },
+                                                ],
+                                            },
+                                        },
+                                        additionalProperties: {
+                                            anyOf: [
+                                                {
+                                                    type: 'array',
+                                                    items: { type: 'object' },
+                                                },
+                                                { type: 'object' },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            };
+            const result = jsonSchema.extractSchema(
+                doc,
+                '/paths/~1test/get/responses/200/content/application~1json/schema'
+            );
+
+            expect(result).to.eql({
+                type: 'object',
+                properties: {
+                    test: {
+                        $ref: '#/definitions/0',
+                    },
+                },
+                definitions: {
+                    schema0: {
+                        type: 'array',
+                        items: { type: 'object' },
+                    },
+                    '1': { type: 'object' },
+                    '0': {
+                        type: 'object',
+                        properties: {
+                            next: {
+                                anyOf: [
+                                    { $ref: '#/definitions/schema0' },
+                                    { $ref: '#/definitions/1' },
+                                ],
+                            },
+                        },
+                        additionalProperties: {
+                            anyOf: [
+                                {
+                                    type: 'array',
+                                    items: { type: 'object' },
+                                },
+                                { type: 'object' },
+                            ],
+                        },
+                    },
+                },
+            });
+        });
     });
 });
