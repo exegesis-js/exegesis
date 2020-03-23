@@ -68,7 +68,7 @@
         "markdownlint-cli": "^0.18.0",
         "mocha": "^7.0.1",
         "nyc": "^15.0.0",
-        "prettier": "^1.19.1",
+        "prettier": "^2.0.1",
         "pretty-quick": "^2.0.1",
         "semantic-release": "^17.0.4",
         "supertest-fetch": "^1.2.2",
