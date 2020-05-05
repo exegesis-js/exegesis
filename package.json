@@ -65,7 +65,7 @@
         "coveralls": "^3.0.2",
         "husky": "^4.0.2",
         "lint-staged": "^10.1.0",
-        "markdownlint-cli": "^0.18.0",
+        "markdownlint-cli": "^0.23.0",
         "mocha": "^7.0.1",
         "nyc": "^15.0.0",
         "prettier": "^1.19.1",
