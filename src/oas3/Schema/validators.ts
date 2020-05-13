@@ -81,31 +81,39 @@ function removeExamples(schema: any) {
 }
 
 export function _fixNullables(schema: any) {
-    traveseSchema(schema, (childSchema: any) => {
-        if (schema.properties) {
-            for (const propName of Object.keys(childSchema.properties)) {
-                const prop = childSchema.properties[propName];
-                const resolvedProp = resolveRef(schema, prop);
-                if (resolvedProp.nullable) {
-                    childSchema.properties[propName] = { anyOf: [{ type: 'null' }, prop] };
+    traveseSchema(schema, {
+        cb: {
+            post: (
+                childSchema: any,
+                _jsonPtr,
+                rootSchema: any,
+                _parentJsonPtr,
+                parentKeyword,
+                _parentSchema,
+                keyIndex
+            ) => {
+                if (childSchema.nullable) {
+                    let ref = rootSchema;
+                    let key = parentKeyword;
+                    if (key && keyIndex) {
+                        ref = ref[key];
+                        key = `${keyIndex}`;
+                    }
+                    if (ref && key) {
+                        ref[key] = {
+                            anyOf: [{ type: 'null' }, childSchema],
+                        };
+                    } else if (childSchema === schema) {
+                        schema = {
+                            anyOf: [{ type: 'null' }, schema],
+                        };
+                    }
                 }
-            }
-        }
-        if (childSchema.additionalProperties) {
-            const resolvedProp = resolveRef(schema, childSchema.additionalProperties);
-            if (resolvedProp.nullable) {
-                childSchema.additionalProperties = {
-                    anyOf: [{ type: 'null' }, childSchema.additionalProperties],
-                };
-            }
-        }
-        if (childSchema.items) {
-            const resolvedItems = resolveRef(schema, childSchema.items);
-            if (resolvedItems.nullable) {
-                childSchema.items = { anyOf: [{ type: 'null' }, childSchema.items] };
-            }
-        }
+            },
+        },
     });
+
+    return schema;
 }
 
 export function _filterRequiredProperties(schema: any, propNameToFilter: string) {
@@ -195,10 +203,10 @@ function generateValidator(
     _filterRequiredProperties(schema, propNameToFilter);
     removeExamples(schema);
     // TODO: Should we do this?  Or should we rely on the schema being correct in the first place?
-    // _fixNullables(schema);
+    // schema = _fixNullables(schema);
 
     // So that we can replace the "root" value of the schema using ajv's type coercion...
-    traveseSchema(schema, node => {
+    traveseSchema(schema, (node: any) => {
         if (node.$ref) {
             if (node.$ref.startsWith('#')) {
                 node.$ref = `#/properties/value/${node.$ref.slice(2)}`;

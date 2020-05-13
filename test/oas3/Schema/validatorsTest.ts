@@ -377,6 +377,78 @@ describe('schema validators', function() {
         expect(validator(undefined).errors).to.eql(null);
     });
 
+    it('should not error for a null object in array', function() {
+        const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
+            components: {
+                schemas: {
+                    anArray: {
+                        type: 'array',
+                        items: {
+                            $ref: '#/components/schemas/aNullableObject',
+                        },
+                    },
+                    aNullableObject: {
+                        type: 'object',
+                        required: ['a'],
+                        nullable: true,
+                        properties: {
+                            a: {
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const context = makeContext(openApiDoc, '#/components/schemas/anArray');
+
+        const validator = validators.generateRequestValidator(
+            context,
+            REQUEST_BODY_LOCATION,
+            false,
+            'application/json'
+        );
+
+        expect(validator([{ a: 'foo' }, null]).errors).to.eql(null);
+        expect(validator([{ a: 'foo' }]).errors).to.eql(null);
+    });
+
+    it('should not error for a nullable array', function() {
+        const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
+            components: {
+                schemas: {
+                    anArray: {
+                        nullable: true,
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                        },
+                    },
+                    other: {
+                        required: ['arr'],
+                        properties: {
+                            arr: {
+                                $ref: '#/components/schemas/anArray',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const context = makeContext(openApiDoc, '#/components/schemas/other');
+
+        const validator = validators.generateRequestValidator(
+            context,
+            REQUEST_BODY_LOCATION,
+            false,
+            'application/json'
+        );
+
+        expect(validator({ arr: null }).errors).to.eql(null);
+    });
+
     it('should fill in default values', function() {
         const context = makeContext(openApiDoc, '#/components/schemas/withDefault');
 
