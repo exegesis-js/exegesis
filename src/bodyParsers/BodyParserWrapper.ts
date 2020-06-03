@@ -2,7 +2,7 @@ import http from 'http';
 import contentType from 'content-type';
 import getRawBody from 'raw-body';
 
-import httpHasBody from '../utils/httpHasBody';
+import { httpHasBody } from '../utils/httpUtils';
 import { MimeTypeParser, StringParser, HttpIncomingMessage, Callback } from '../types';
 
 export default class BodyParserWrapper implements MimeTypeParser {
