@@ -21,6 +21,7 @@ import Oas3CompileContext from './Oas3CompileContext';
 import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import RequestMediaType from './RequestMediaType';
 import { HttpBadRequestError } from '../errors';
+import { httpHasBody, requestMayHaveBody } from '../utils/httpUtils';
 
 export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
     readonly openApiDoc: oas3.OpenAPIObject;
@@ -95,7 +96,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
 
                 if (operation && contentType) {
                     mediaType = operation.getRequestMediaType(contentType);
-                    if (!mediaType) {
+                    if (!mediaType && (httpHasBody(headers) || requestMayHaveBody(method))) {
                         throw new HttpBadRequestError(`Invalid content-type: ${contentType}`);
                     }
                 } else if (
