@@ -16,7 +16,7 @@ export default class JsonBodyParser implements MimeTypeParser {
     }
 
     parseString(value: string) {
-        JSON.parse(value);
+        return JSON.parse(value);
     }
 
     parseReq(req: http.IncomingMessage, res: http.ServerResponse, done: Callback<void>): void {
