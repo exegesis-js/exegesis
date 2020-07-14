@@ -5,7 +5,7 @@ function resolveRefPriv(document: any, ref: string): any {
         throw new Error(`Cannot resolve non-local ref ${ref}`);
     }
 
-    const path = jsonPtr.decode(ref);
+    const path = jsonPtr.JsonPointer.decode(ref).slice();
     let currentDoc = document;
     while (path.length > 0) {
         const pathname = path.shift() as string;

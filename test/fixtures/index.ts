@@ -23,7 +23,7 @@ export function makeContext(
 ) {
     return new Oas3CompileContext(
         openApiDoc,
-        jsonPtr.decode(jsonPointer),
+        jsonPtr.JsonPointer.decode(jsonPointer).map(x => `${x}`),
         Object.assign({}, defaultCompiledOptions, options || {})
     );
 }

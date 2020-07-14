@@ -10,6 +10,7 @@ import { ExegesisCompiledOptions } from '../options';
  * A path to an object within a JSON document.
  */
 export type JsonPath = string[];
+export type ReadOnlyJsonPath = readonly string[];
 
 /**
  * This has common stuff that we want to pass all the way down through the OAS
@@ -29,9 +30,13 @@ export default class Oas3CompileContext {
      * @param path - The path to the object represented by this context.
      * @param options - Options.
      */
-    constructor(openApiDoc: oas3.OpenAPIObject, path: JsonPath, options: ExegesisCompiledOptions);
-    constructor(parent: Oas3CompileContext, relativePath: JsonPath);
-    constructor(a: any, path: JsonPath, options?: ExegesisCompiledOptions) {
+    constructor(
+        openApiDoc: oas3.OpenAPIObject,
+        path: ReadOnlyJsonPath,
+        options: ExegesisCompiledOptions
+    );
+    constructor(parent: Oas3CompileContext, relativePath: ReadOnlyJsonPath);
+    constructor(a: any, path: ReadOnlyJsonPath, options?: ExegesisCompiledOptions) {
         if (a instanceof Oas3CompileContext) {
             // TODO: Could make this WAY more efficient with Object.create().
             const parent = a;
@@ -39,7 +44,7 @@ export default class Oas3CompileContext {
             this.openApiDoc = parent.openApiDoc;
             this.options = parent.options;
         } else if (options) {
-            this.path = path;
+            this.path = path.slice();
             this.openApiDoc = a;
             this.options = options;
         } else {

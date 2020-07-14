@@ -62,9 +62,9 @@ function extractSchemaPriv(
                 // all the `newRefSuffix`es we pick in `ctx.replacements`, and
                 // then we can make sure this doesn't happen.
                 const origRef = schema.$ref;
-                const jsonPath = jsonPtr.decode(schema.$ref);
+                const jsonPath = jsonPtr.JsonPointer.decode(schema.$ref);
                 let newRefSuffix: string | undefined =
-                    jsonPath.length > 0 ? jsonPath[jsonPath.length - 1] : undefined;
+                    jsonPath.length > 0 ? `${jsonPath[jsonPath.length - 1]}` : undefined;
                 while (
                     !newRefSuffix ||
                     ctx.result.definitions[newRefSuffix] ||

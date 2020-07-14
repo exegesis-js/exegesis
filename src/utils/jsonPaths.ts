@@ -1,11 +1,11 @@
 import * as jsonPtr from 'json-ptr';
 
 function normalize(path: string): string {
-    return jsonPtr.encodePointer(jsonPtr.decode(path));
+    return jsonPtr.encodePointer(jsonPtr.JsonPointer.decode(path));
 }
 
 export function toUriFragment(path: string) {
-    return jsonPtr.encodeUriFragmentIdentifier(jsonPtr.decode(path));
+    return jsonPtr.encodeUriFragmentIdentifier(jsonPtr.JsonPointer.decode(path));
 }
 
 export function jsonPointerStartsWith(path: string, prefix: string): boolean {

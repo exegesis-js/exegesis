@@ -68,8 +68,8 @@ async function findControllerTest(
 ) {
     const context = new FakeExegesisContext();
     const openApiDoc = generateOpenApi();
-    ld.set(openApiDoc, jsonPtr.decode(controllerLocation), 'myController');
-    ld.set(openApiDoc, jsonPtr.decode(operationLocation), 'op');
+    ld.set(openApiDoc, jsonPtr.JsonPointer.decode(controllerLocation), 'myController');
+    ld.set(openApiDoc, jsonPtr.JsonPointer.decode(operationLocation), 'op');
 
     const openApi = new OpenApi(openApiDoc, options);
 
