@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 import pb from 'promise-breaker';
 import pump from 'pump';
-import $RefParser from 'json-schema-ref-parser';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import { compileOptions } from './options';
 import { compile as compileOpenApi } from './oas3';
