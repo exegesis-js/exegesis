@@ -96,8 +96,8 @@ const QUERY_PARAM_LOCATION: ParameterLocation = {
     docPath: '/components/parameters/foo',
 };
 
-describe('schema validators', function() {
-    it('should validate a schema', function() {
+describe('schema validators', function () {
+    it('should validate a schema', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/number');
 
         const validator = validators.generateRequestValidator(
@@ -130,7 +130,7 @@ describe('schema validators', function() {
         ]);
     });
 
-    it('should not require properties marked readOnly in a request', function() {
+    it('should not require properties marked readOnly in a request', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
         const validator = validators.generateRequestValidator(
@@ -164,7 +164,7 @@ describe('schema validators', function() {
         ]);
     });
 
-    it('should not require properties marked writeOnly in a response', function() {
+    it('should not require properties marked writeOnly in a response', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/object');
 
         const validator = validators.generateResponseValidator(
@@ -197,7 +197,7 @@ describe('schema validators', function() {
         ]);
     });
 
-    it('should strip additional properties', function() {
+    it('should strip additional properties', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/noAdditional', {});
 
         const validator = validators.generateRequestValidator(
@@ -211,7 +211,7 @@ describe('schema validators', function() {
         expect(value).to.eql({ a: 7 });
     });
 
-    it('should generate a path for the errored element', function() {
+    it('should generate a path for the errored element', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/object2');
 
         const validator = validators.generateRequestValidator(
@@ -243,7 +243,7 @@ describe('schema validators', function() {
         ]);
     });
 
-    it('should validate an integer with a format', function() {
+    it('should validate an integer with a format', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
         const validator = validators.generateRequestValidator(
@@ -313,7 +313,7 @@ describe('schema validators', function() {
         expect(validator(Math.pow(2, 31)).errors).to.eql(int32FailValue);
     });
 
-    it('should validate a float', function() {
+    it('should validate a float', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/float');
 
         const validator = validators.generateRequestValidator(
@@ -325,7 +325,7 @@ describe('schema validators', function() {
         expect(validator(7.5).errors).to.eql(null);
     });
 
-    it('should error for a missing value if required', function() {
+    it('should error for a missing value if required', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
         const validator = validators.generateRequestValidator(
@@ -349,7 +349,7 @@ describe('schema validators', function() {
         ]);
     });
 
-    it('should not error for a missing value if not required', function() {
+    it('should not error for a missing value if not required', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/int32');
 
         const validator = validators.generateRequestValidator(
@@ -363,7 +363,7 @@ describe('schema validators', function() {
         expect(validator(undefined).errors).to.eql(null);
     });
 
-    it('should not error for a missing object if nullable', function() {
+    it('should not error for a missing object if nullable', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/aNullableObject');
 
         const validator = validators.generateRequestValidator(
@@ -377,7 +377,7 @@ describe('schema validators', function() {
         expect(validator(undefined).errors).to.eql(null);
     });
 
-    it('should not error for a null object in array', function() {
+    it('should not error for a null object in array', function () {
         const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
             components: {
                 schemas: {
@@ -414,7 +414,7 @@ describe('schema validators', function() {
         expect(validator([{ a: 'foo' }]).errors).to.eql(null);
     });
 
-    it('should not error for a nullable array', function() {
+    it('should not error for a nullable array', function () {
         const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
             components: {
                 schemas: {
@@ -449,7 +449,7 @@ describe('schema validators', function() {
         expect(validator({ arr: null }).errors).to.eql(null);
     });
 
-    it('should fill in default values', function() {
+    it('should fill in default values', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/withDefault');
 
         const validator = validators.generateRequestValidator(
@@ -464,7 +464,7 @@ describe('schema validators', function() {
         expect(obj.a).to.equal(6);
     });
 
-    it('only return the first error if options.allErrors is false', function() {
+    it('only return the first error if options.allErrors is false', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/object3');
 
         const validator = validators.generateRequestValidator(
@@ -500,7 +500,7 @@ describe('schema validators', function() {
         });
     });
 
-    it('return multiple errors if options.allErrors is true', function() {
+    it('return multiple errors if options.allErrors is true', function () {
         const context = makeContext(openApiDoc, '#/components/schemas/object3', {
             allErrors: true,
         });
@@ -556,8 +556,8 @@ describe('schema validators', function() {
         });
     });
 
-    describe('type coercion', function() {
-        it('type coerce root values', function() {
+    describe('type coercion', function () {
+        it('type coerce root values', function () {
             const context = makeContext(openApiDoc, '#/components/schemas/numberWithDefault');
 
             const validator = validators.generateRequestValidator(
@@ -579,7 +579,7 @@ describe('schema validators', function() {
             });
         });
 
-        it('not type coerce request values for application/json', function() {
+        it('not type coerce request values for application/json', function () {
             const context = makeContext(openApiDoc, '#/components/schemas/numberWithDefault');
 
             const validator = validators.generateRequestValidator(
@@ -620,7 +620,7 @@ describe('schema validators', function() {
             });
         });
 
-        it('not type coerce values for a response', function() {
+        it('not type coerce values for a response', function () {
             const context = makeContext(openApiDoc, '#/components/schemas/numberOrString');
 
             const validator = validators.generateResponseValidator(
@@ -641,7 +641,7 @@ describe('schema validators', function() {
         });
     });
 
-    it('should validate minItems (#125)', function() {
+    it('should validate minItems (#125)', function () {
         const openApiDoc: oas3.OpenAPIObject = Object.assign(makeOpenApiDoc(), {
             components: {
                 schemas: {

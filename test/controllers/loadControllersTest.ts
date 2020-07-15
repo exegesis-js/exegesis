@@ -5,8 +5,8 @@ import * as load from '../../src/controllers/loadControllers';
 import { invokeController } from '../../src/controllers/invoke';
 import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 
-describe('controllers - loadControllers', function() {
-    it('should load controllers from a folder', function() {
+describe('controllers - loadControllers', function () {
+    it('should load controllers from a folder', function () {
         const controllers = load.loadControllersSync(
             path.resolve(__dirname, './fixtures/controllers')
         );
@@ -21,7 +21,7 @@ describe('controllers - loadControllers', function() {
         ]);
     });
 
-    it('should load controllers from a folder with a pattern', function() {
+    it('should load controllers from a folder with a pattern', function () {
         const controllers = load.loadControllersSync(
             path.resolve(__dirname, './fixtures/controllers'),
             'b/c.js'
@@ -29,7 +29,7 @@ describe('controllers - loadControllers', function() {
         expect(Object.keys(controllers).sort()).to.eql(['b/c', 'b/c.js']);
     });
 
-    it('should skip directories', function() {
+    it('should skip directories', function () {
         const controllers = load.loadControllersSync(
             path.resolve(__dirname, './fixtures/controllers'),
             '@(b|a.js)'
@@ -37,13 +37,13 @@ describe('controllers - loadControllers', function() {
         expect(Object.keys(controllers).sort()).to.eql(['a', 'a.js']);
     });
 
-    it('should error if there are controllers that can not be loaded', function() {
+    it('should error if there are controllers that can not be loaded', function () {
         expect(() =>
             load.loadControllersSync(path.resolve(__dirname, './fixtures/badControllers'), '**')
         ).to.throw(`Could not load controller`);
     });
 
-    it('should correctly load index files that are shadowed by a file in the parent folder', async function() {
+    it('should correctly load index files that are shadowed by a file in the parent folder', async function () {
         const controllers = load.loadControllersSync(path.resolve(__dirname, './fixtures/shadow'));
         const context = new FakeExegesisContext();
 

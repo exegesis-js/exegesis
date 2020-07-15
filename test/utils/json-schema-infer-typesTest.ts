@@ -4,17 +4,17 @@ import { expect } from 'chai';
 import inferTypes from '../../src/utils/json-schema-infer-types';
 import { JSONSchema4 } from 'json-schema';
 
-describe('json-schema-infer-types', function() {
-    it('should get the type from a simple object', function() {
+describe('json-schema-infer-types', function () {
+    it('should get the type from a simple object', function () {
         expect(inferTypes({ type: 'object' })).to.eql(['object']);
         expect(inferTypes({ type: 'integer' })).to.eql(['integer']);
     });
 
-    it('number includes integer', function() {
+    it('number includes integer', function () {
         expect(new Set(inferTypes({ type: 'number' }))).to.have.all.keys(['number', 'integer']);
     });
 
-    it('should get the type from a schema with multiple types', function() {
+    it('should get the type from a schema with multiple types', function () {
         const schema: JSONSchema4 = {
             type: ['object', 'integer'],
         };
@@ -22,7 +22,7 @@ describe('json-schema-infer-types', function() {
         expect(new Set(inferTypes(schema))).to.have.all.keys(['object', 'integer']);
     });
 
-    it('should not infer anything from minProperties', function() {
+    it('should not infer anything from minProperties', function () {
         // Since minProperties only applies if the value being validated is an
         // object, then the presence of a 'minProperties' key doesn't imply
         // the the value has to be an object.
@@ -41,7 +41,7 @@ describe('json-schema-infer-types', function() {
         ]);
     });
 
-    it('should get the type from a schema with oneOf', function() {
+    it('should get the type from a schema with oneOf', function () {
         const schema: JSONSchema4 = {
             oneOf: [{ type: 'object' }, { type: 'integer' }],
         };
@@ -49,7 +49,7 @@ describe('json-schema-infer-types', function() {
         expect(new Set(inferTypes(schema))).to.have.all.keys(['object', 'integer']);
     });
 
-    it('should get the type from a schema with anyOf', function() {
+    it('should get the type from a schema with anyOf', function () {
         const schema: JSONSchema4 = {
             anyOf: [{ type: 'object' }, { type: 'integer' }],
         };
@@ -57,7 +57,7 @@ describe('json-schema-infer-types', function() {
         expect(new Set(inferTypes(schema))).to.have.all.keys(['object', 'integer']);
     });
 
-    it('should get the type from a schema with anyOf and oneOf', function() {
+    it('should get the type from a schema with anyOf and oneOf', function () {
         const schema: JSONSchema4 = {
             anyOf: [{ type: 'object' }, { type: 'integer' }],
             oneOf: [{ type: 'object' }, { type: 'array' }],
@@ -66,7 +66,7 @@ describe('json-schema-infer-types', function() {
         expect(inferTypes(schema)).to.eql(['object']);
     });
 
-    it('should get the type from an object with allOf', function() {
+    it('should get the type from an object with allOf', function () {
         const schema: JSONSchema4 = {
             allOf: [{ type: 'object' }, { type: 'object' }],
         };
@@ -74,7 +74,7 @@ describe('json-schema-infer-types', function() {
         expect(inferTypes(schema)).to.eql(['object']);
     });
 
-    it('should get the type from an object with enum', function() {
+    it('should get the type from an object with enum', function () {
         const schema: JSONSchema4 = {
             enum: ['foo', 'bar', 7],
         };
@@ -82,7 +82,7 @@ describe('json-schema-infer-types', function() {
         expect(new Set(inferTypes(schema))).to.have.all.keys(['string', 'integer']);
     });
 
-    it('should get the type from an object with const', function() {
+    it('should get the type from an object with const', function () {
         expect(inferTypes({ const: 'foo' })).to.eql(['string']);
         expect(inferTypes({ const: { foo: 'bar' } })).to.eql(['object']);
         expect(inferTypes({ const: ['foo'] })).to.eql(['array']);
@@ -93,7 +93,7 @@ describe('json-schema-infer-types', function() {
         expect(inferTypes({ const: false })).to.eql(['boolean']);
     });
 
-    it('should follow $refs', function() {
+    it('should follow $refs', function () {
         const schema: JSONSchema4 = {
             allOf: [{ $ref: '#/definitions/a' }, { $ref: '#/definitions/b' }],
             definitions: {
@@ -105,7 +105,7 @@ describe('json-schema-infer-types', function() {
         expect(inferTypes(schema)).to.eql(['object']);
     });
 
-    it('should get the type from an impossible object', function() {
+    it('should get the type from an impossible object', function () {
         const schema: JSONSchema4 = {
             allOf: [{ type: 'object' }, { type: 'integer' }],
         };
@@ -113,7 +113,7 @@ describe('json-schema-infer-types', function() {
         expect(inferTypes(schema)).to.eql([]);
     });
 
-    it('should handle crazy complicated cases', function() {
+    it('should handle crazy complicated cases', function () {
         const schema: JSONSchema4 = {
             allOf: [{ type: ['object', 'integer'] }, { type: ['object', 'number', 'integer'] }],
             oneOf: [{ type: 'integer' }, { type: 'array' }, { type: ['null', 'object'] }],

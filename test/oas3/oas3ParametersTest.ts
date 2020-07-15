@@ -136,8 +136,8 @@ const types: { [key: string]: any } = {
     },
 };
 
-describe('oas3 integration parameter parsing', function() {
-    describe('path parameters', function() {
+describe('oas3 integration parameter parsing', function () {
+    describe('path parameters', function () {
         for (const typeName of Object.keys(types)) {
             const typeDef = types[typeName];
 
@@ -146,7 +146,7 @@ describe('oas3 integration parameter parsing', function() {
                     if (!(pathStyle in sample)) {
                         continue;
                     }
-                    it(`should correctly parse ${typeName} with ${pathStyle} style: ${sample[pathStyle]}`, function() {
+                    it(`should correctly parse ${typeName} with ${pathStyle} style: ${sample[pathStyle]}`, function () {
                         const openApi = generateOpenApi({
                             [`/path-${pathStyle}-${typeName}/{var}`]: {
                                 parameters: [
@@ -178,7 +178,7 @@ describe('oas3 integration parameter parsing', function() {
         }
     });
 
-    describe('header parameters', function() {
+    describe('header parameters', function () {
         for (const typeName of Object.keys(types)) {
             const typeDef = types[typeName];
 
@@ -204,7 +204,7 @@ describe('oas3 integration parameter parsing', function() {
             };
 
             for (const sample of typeDef.samples) {
-                it(`should correctly parse ${typeName} with simple style: ${sample.simple}`, function() {
+                it(`should correctly parse ${typeName} with simple style: ${sample.simple}`, function () {
                     const openApi = generateHeaderDoc();
                     const result = openApi.resolve('GET', `/header-${typeName}`, {
                         'x-custom-header': sample.simple,
@@ -216,7 +216,7 @@ describe('oas3 integration parameter parsing', function() {
                 });
             }
 
-            it(`should correctly parse ${typeName} with simple style: undefined`, function() {
+            it(`should correctly parse ${typeName} with simple style: undefined`, function () {
                 const openApi = generateHeaderDoc();
                 const result = openApi.resolve('GET', `/header-${typeName}`, {});
 
@@ -227,7 +227,7 @@ describe('oas3 integration parameter parsing', function() {
         }
     });
 
-    describe('query parameters', function() {
+    describe('query parameters', function () {
         for (const typeName of Object.keys(types)) {
             const typeDef = types[typeName];
 
@@ -259,7 +259,7 @@ describe('oas3 integration parameter parsing', function() {
                     if (!(style in sample)) {
                         continue;
                     }
-                    it(`should correctly parse ${typeName} with ${style} style: ${sample.simple}`, function() {
+                    it(`should correctly parse ${typeName} with ${style} style: ${sample.simple}`, function () {
                         const openApi = generateQueryOpenApi();
                         const result = openApi.resolve(
                             'GET',
@@ -274,7 +274,7 @@ describe('oas3 integration parameter parsing', function() {
                     });
                 }
 
-                it(`should correctly parse ${typeName} with ${style} style: undefined`, function() {
+                it(`should correctly parse ${typeName} with ${style} style: undefined`, function () {
                     const openApi = generateQueryOpenApi();
                     const result = openApi.resolve('GET', `/query-${typeName}-${explodeStr}`, {});
 
@@ -287,7 +287,7 @@ describe('oas3 integration parameter parsing', function() {
             }
         }
 
-        it(`should correctly parse deepObject style`, function() {
+        it(`should correctly parse deepObject style`, function () {
             const openApi = generateOpenApi({
                 ['/query']: {
                     parameters: [
@@ -316,7 +316,7 @@ describe('oas3 integration parameter parsing', function() {
             { style: 'pipeDelimited', delimiter: '|' },
             { style: 'spaceDelimited', delimiter: ' ' },
         ]) {
-            it(`should correctly parse ${style.style} style`, function() {
+            it(`should correctly parse ${style.style} style`, function () {
                 const openApi = generateOpenApi({
                     ['/query']: {
                         parameters: [

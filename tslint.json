@@ -1,8 +1,6 @@
 {
     "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
+    "extends": ["tslint:recommended"],
     "jsRules": {},
     "rules": {
         "array-type": [true, "array"],
@@ -11,6 +9,7 @@
         "eofline": false,
         "interface-name": false,
         "max-classes-per-file": false,
+        "max-line-length": false,
         "member-access": false,
         "member-ordering": false,
         "no-shadowed-variable": false,
@@ -21,6 +20,7 @@
         "only-arrow-functions": false,
         "ordered-imports": false,
         "quotemark": [false, "single", "avoid-escape"],
+        "space-before-function-paren": false,
         "trailing-comma": false,
         "typedef-whitespace": false,
         "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],

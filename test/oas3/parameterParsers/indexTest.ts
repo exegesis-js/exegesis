@@ -3,14 +3,14 @@ import { expect } from 'chai';
 import { ParameterLocation } from '../../../src/types';
 import * as parameterParsers from '../../../src/oas3/parameterParsers';
 
-describe('oas3 parameter parsers', function() {
+describe('oas3 parameter parsers', function () {
     const queryParameterLocation: ParameterLocation = {
         in: 'query',
         name: 'myParam',
         docPath: '/paths/~1foo/parameters/0',
     };
 
-    it('should generate a pipe-delimited parser', function() {
+    it('should generate a pipe-delimited parser', function () {
         const parser = parameterParsers.generateParser({
             style: 'pipeDelimited',
             explode: false,
@@ -25,7 +25,7 @@ describe('oas3 parameter parsers', function() {
         expect(result).to.eql({ myParam: ['foo', 'bar'] });
     });
 
-    it('should fill in default value if not provided', function() {
+    it('should fill in default value if not provided', function () {
         const parser = parameterParsers.generateParser({
             style: 'simple',
             explode: false,
@@ -48,7 +48,7 @@ describe('oas3 parameter parsers', function() {
         expect(unspecified, 'unspecified').to.eql({ myParam: 6 });
     });
 
-    it('should fill in falsey default value if not provided', function() {
+    it('should fill in falsey default value if not provided', function () {
         const parser = parameterParsers.generateParser({
             style: 'simple',
             explode: false,

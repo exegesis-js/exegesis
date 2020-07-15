@@ -39,7 +39,7 @@ function union<T>(a: Set<T>, b: Set<T>) {
 }
 
 function intersection<T>(a: Set<T>, b: Set<T>) {
-    return new Set<T>([...a].filter(x => b.has(x)));
+    return new Set<T>([...a].filter((x) => b.has(x)));
 }
 
 function inferTypesOneOf(rootSchema: any, oneOf: any[], stack: any[]): Set<string> {

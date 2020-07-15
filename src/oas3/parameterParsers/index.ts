@@ -56,7 +56,7 @@ function generateMediaTypeParser(
             }
 
             if (Array.isArray(value)) {
-                return value.map(v => parameterDescriptor.parser.parseString(v));
+                return value.map((v) => parameterDescriptor.parser.parseString(v));
             } else {
                 return parameterDescriptor.parser.parseString(value);
             }

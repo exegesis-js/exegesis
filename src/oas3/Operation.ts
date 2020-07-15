@@ -36,7 +36,7 @@ function getMissing(required: string[], have: string[] | undefined) {
     if (!have || have.length === 0) {
         return required;
     } else {
-        return required.filter(r => !have.includes(r));
+        return required.filter((r) => !have.includes(r));
     }
 }
 
@@ -448,7 +448,7 @@ export default class Operation {
             // Someone already wrote a response.
             return undefined;
         } else {
-            const authSchemes = this.securityRequirements.map(requirement => {
+            const authSchemes = this.securityRequirements.map((requirement) => {
                 const schemes = Object.keys(requirement);
                 return schemes.length === 1 ? schemes[0] : `(${schemes.join(' + ')})`;
             });
@@ -460,7 +460,7 @@ export default class Operation {
                     (schemeName: string) =>
                         challenges[schemeName] || this._securitySchemes.getChallenge(schemeName)
                 )
-                .filter(challenge => challenge !== undefined)
+                .filter((challenge) => challenge !== undefined)
                 .value() as string[];
 
             const message =

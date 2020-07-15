@@ -166,7 +166,7 @@ function doValidate(
     if (!errors) {
         ajvValidate(value);
         if (ajvValidate.errors) {
-            errors = ajvValidate.errors.map(err => {
+            errors = ajvValidate.errors.map((err) => {
                 let pathPtr = err.dataPath || '';
                 if (pathPtr.startsWith('/value')) {
                     pathPtr = pathPtr.slice(6);
@@ -233,7 +233,7 @@ function generateValidator(
     addCustomFormats(ajv, customFormats);
     const validate = ajv.compile(schema);
 
-    return function(json: any) {
+    return function (json: any) {
         return doValidate(schemaPtr, parameterLocation, parameterRequired, validate, json);
     };
 }

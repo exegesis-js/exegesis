@@ -3,9 +3,9 @@ import { expect } from 'chai';
 
 import * as jsonSchema from '../../src/utils/jsonSchema';
 
-describe('jsonSchema utils', function() {
-    describe('extractSchema', function() {
-        it('should extract a schema from a parent document and resolve refs', function() {
+describe('jsonSchema utils', function () {
+    describe('extractSchema', function () {
+        it('should extract a schema from a parent document and resolve refs', function () {
             const doc = {
                 myDoc: {
                     someStuff: {
@@ -76,7 +76,7 @@ describe('jsonSchema utils', function() {
             });
         });
 
-        it('should extract a schema when one scheme is a prefix of the other', function() {
+        it('should extract a schema when one scheme is a prefix of the other', function () {
             const doc = {
                 components: {
                     schemas: {
@@ -109,7 +109,7 @@ describe('jsonSchema utils', function() {
             });
         });
 
-        it('should correctly handle nested refs (#134)', function() {
+        it('should correctly handle nested refs (#134)', function () {
             const doc = {
                 paths: {
                     '/test': {

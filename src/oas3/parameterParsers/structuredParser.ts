@@ -102,7 +102,7 @@ function generateGenericStructuredParser(schema: any): ParameterParser {
 }
 
 function explodedKeysStructuredParser(values: RawValues) {
-    return ld.mapValues(values, v => {
+    return ld.mapValues(values, (v) => {
         if (Array.isArray(v)) {
             return v.map(decodeURIComponent);
         } else if (v) {

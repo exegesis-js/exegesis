@@ -35,7 +35,7 @@ async function createServer(options: exegesis.ExegesisOptions) {
     );
 
     const server = http.createServer((req, res) =>
-        middleware!(req, res, err => {
+        middleware!(req, res, (err) => {
             // if(err instanceof exegesis.ValidationError) {
             //     res.writeHead(err.status);
             //     res.end(JSON.stringify({message: err.message, errors: err.errors}));
@@ -57,8 +57,8 @@ async function createServer(options: exegesis.ExegesisOptions) {
     return server;
 }
 
-describe('integration test', function() {
-    beforeEach(async function() {
+describe('integration test', function () {
+    beforeEach(async function () {
         this.server = await createServer({
             controllers: path.resolve(__dirname, './controllers'),
             authenticators: {
@@ -68,14 +68,14 @@ describe('integration test', function() {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
         if (this.server) {
             this.server.close();
         }
     });
 
-    describe('parameters', function() {
-        it('should succesfully call an API', async function() {
+    describe('parameters', function () {
+        it('should succesfully call an API', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet?name=Jason`)
                 .expect(200)
@@ -83,7 +83,7 @@ describe('integration test', function() {
                 .expectBody({ greeting: 'Hello, Jason!' });
         });
 
-        it('should return an error for missing parameters', async function() {
+        it('should return an error for missing parameters', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet`)
                 .expect(400)
@@ -104,7 +104,7 @@ describe('integration test', function() {
                 });
         });
 
-        it('should return an error for invalid parameters', async function() {
+        it('should return an error for invalid parameters', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet?name=A`)
                 .expect(400)
@@ -126,28 +126,24 @@ describe('integration test', function() {
         });
     });
 
-    describe('streaming reply', function() {
-        it('should stream a reply to the client', async function() {
+    describe('streaming reply', function () {
+        it('should stream a reply to the client', async function () {
             const fetch = makeFetch(this.server);
-            await fetch(`/streamResponse`)
-                .expect(200)
-                .expectBody({
-                    message: 'This was streamed',
-                });
+            await fetch(`/streamResponse`).expect(200).expectBody({
+                message: 'This was streamed',
+            });
         });
     });
 
-    describe('security', function() {
-        it('should require authentication from an authenticator', async function() {
+    describe('security', function () {
+        it('should require authentication from an authenticator', async function () {
             const fetch = makeFetch(this.server);
-            await fetch(`/secure`)
-                .expect(401)
-                .expectBody({
-                    message: 'Must authenticate using one of the following schemes: sessionKey.',
-                });
+            await fetch(`/secure`).expect(401).expectBody({
+                message: 'Must authenticate using one of the following schemes: sessionKey.',
+            });
         });
 
-        it('should return an error from an authenticator', async function() {
+        it('should return an error from an authenticator', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {
                 headers: { session: 'wrong' },
@@ -156,7 +152,7 @@ describe('integration test', function() {
                 .expectBody({ message: 'Invalid session.' });
         });
 
-        it('should authenticate successfully', async function() {
+        it('should authenticate successfully', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {
                 headers: { session: 'secret' },
@@ -175,20 +171,20 @@ describe('integration test', function() {
         });
     });
 
-    describe('set return status', function() {
-        it('should set status with `setStatus`', async function() {
+    describe('set return status', function () {
+        it('should set status with `setStatus`', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/status/setStatus`).expect(400);
         });
 
-        it('should set status with `status`', async function() {
+        it('should set status with `status`', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/status/status`).expect(400);
         });
     });
 
-    describe('post', function() {
-        it('should post a body', async function() {
+    describe('post', function () {
+        it('should post a body', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',
@@ -199,7 +195,7 @@ describe('integration test', function() {
                 .expectBody({ greeting: 'Hello, Joe!' });
         });
 
-        it('return an error for invalid content-type', async function() {
+        it('return an error for invalid content-type', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',
@@ -210,14 +206,14 @@ describe('integration test', function() {
                 .expectBody({ message: 'Invalid content-type: application/xml' });
         });
 
-        it('return an error for no body if body is required', async function() {
+        it('return an error for no body if body is required', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, { method: 'post' })
                 .expect(400)
                 .expectBody({ message: 'Missing content-type. Expected one of: application/json' });
         });
 
-        it('should handle a missing optional body correctly', async function() {
+        it('should handle a missing optional body correctly', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithOptionalBody`, {
                 method: 'post',
@@ -226,7 +222,7 @@ describe('integration test', function() {
                 .expectBody({ hasBody: false });
         });
 
-        it('should handle an optional body correctly', async function() {
+        it('should handle an optional body correctly', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithOptionalBody`, {
                 method: 'post',
@@ -238,7 +234,7 @@ describe('integration test', function() {
         });
     });
 
-    it('should correctly parse application/x-www-form-urlencoded', async function() {
+    it('should correctly parse application/x-www-form-urlencoded', async function () {
         const fetch = makeFetch(this.server);
         await fetch(`/wwwFormUrlencoded`, {
             method: 'post',
@@ -250,10 +246,10 @@ describe('integration test', function() {
         });
     });
 
-    describe('response validation', function() {
+    describe('response validation', function () {
         let errors = 0;
 
-        beforeEach(async function() {
+        beforeEach(async function () {
             errors = 0;
 
             this.server.close();
@@ -269,14 +265,14 @@ describe('integration test', function() {
             });
         });
 
-        it('should identify a bad response', async function() {
+        it('should identify a bad response', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/malformedResponse`).expect(200);
 
             expect(errors).to.equal(1);
         });
 
-        it('should not complaint about an OK response', async function() {
+        it('should not complaint about an OK response', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet?name=Jason`).expect(200);
 

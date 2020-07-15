@@ -22,7 +22,7 @@ export function arrayToObject(values: string | string[] | undefined) {
 // Converts all simple types that are not "string" into "string".
 export function removeSimpleTypes(allowedTypes: string[]) {
     return ld.uniq(
-        allowedTypes.map(t => {
+        allowedTypes.map((t) => {
             if (t === 'object') {
                 return 'object';
             } else if (t === 'array') {

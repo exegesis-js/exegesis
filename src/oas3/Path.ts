@@ -33,8 +33,8 @@ export default class Path {
         );
 
         exegesisController = oaPath[EXEGESIS_CONTROLLER] || exegesisController;
-        this._operations = HTTP_METHODS.map(method => method.toLowerCase())
-            .filter(method => oaPath[method])
+        this._operations = HTTP_METHODS.map((method) => method.toLowerCase())
+            .filter((method) => oaPath[method])
             .reduce((result: OperationsMap, method: string) => {
                 result[method] = new Operation(
                     context.childContext(method),

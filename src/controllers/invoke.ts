@@ -7,7 +7,7 @@ export function invokeController(
     controller: Controller,
     context: ExegesisContext
 ): Promise<any> {
-    return pb.apply(controller, controllerModule, [context]).then(result => {
+    return pb.apply(controller, controllerModule, [context]).then((result) => {
         if (!context.res.ended) {
             if (result === undefined || result === null) {
                 context.res.end();

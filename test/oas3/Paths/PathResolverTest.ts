@@ -3,13 +3,13 @@ import { expect } from 'chai';
 
 import PathResolver from '../../../src/oas3/Paths/PathResolver';
 
-describe('oas3 PathResolver', function() {
-    it('empty path resolver should not resolve anything', function() {
+describe('oas3 PathResolver', function () {
+    it('empty path resolver should not resolve anything', function () {
         const resolver = new PathResolver<string>();
         expect(resolver.resolvePath('/foo/bar')).to.equal(undefined);
     });
 
-    it('should resolve concrete paths', function() {
+    it('should resolve concrete paths', function () {
         const resolver = new PathResolver<string>();
         resolver.registerPath('/foo/bar', 'hello');
         resolver.registerPath('/foo/baz', 'world');
@@ -27,7 +27,7 @@ describe('oas3 PathResolver', function() {
         expect(resolver.resolvePath('/foo/qux'), '/foo/qux').to.equal(undefined);
     });
 
-    it('should resolve templated paths, and parse raw parameter values', function() {
+    it('should resolve templated paths, and parse raw parameter values', function () {
         const resolver = new PathResolver<string>();
         resolver.registerPath('/a/b/{var}', 'hello');
         resolver.registerPath('/c/{otherVar}/d', 'world');
@@ -59,7 +59,7 @@ describe('oas3 PathResolver', function() {
         expect(resolver.resolvePath('/foo/qux')).to.equal(undefined);
     });
 
-    it('should resolve templated paths with multiple parameters', function() {
+    it('should resolve templated paths with multiple parameters', function () {
         const resolver = new PathResolver<string>();
         resolver.registerPath('/{a}/{b}/{c}', 'hello');
         expect(resolver.resolvePath('/1/2/3')).to.eql({
@@ -69,7 +69,7 @@ describe('oas3 PathResolver', function() {
         });
     });
 
-    it('should resolve paths with unusual templating', function() {
+    it('should resolve paths with unusual templating', function () {
         const resolver = new PathResolver<string>();
         resolver.registerPath('/{a}x{b}x{c}', 'hello');
         resolver.registerPath('/foo/{a}{b}{c}', 'hello');
@@ -90,7 +90,7 @@ describe('oas3 PathResolver', function() {
         });
     });
 
-    it('should resolve concrete paths before paths with templates', function() {
+    it('should resolve concrete paths before paths with templates', function () {
         const resolver = new PathResolver<string>();
         resolver.registerPath('/a/b/{var}', 'hello');
         resolver.registerPath('/a/b/c', 'world');

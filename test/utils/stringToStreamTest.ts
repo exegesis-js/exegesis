@@ -3,12 +3,12 @@ import { expect } from 'chai';
 
 import stringToStream from '../../src/utils/stringToStream';
 
-describe('stringToStream', function() {
-    it('should convert a string to a stream', function(done) {
+describe('stringToStream', function () {
+    it('should convert a string to a stream', function (done) {
         const stream = stringToStream('hello');
         let result = '';
 
-        stream.on('data', chunk => {
+        stream.on('data', (chunk) => {
             if (typeof chunk === 'string') {
                 result += chunk;
             } else {

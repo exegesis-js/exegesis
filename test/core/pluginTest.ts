@@ -8,8 +8,8 @@ import { FakeApiInterface } from '../fixtures/FakeApiInterface';
 
 const { expect } = chai;
 
-describe('Plugin Test', function() {
-    it('should run all the phases of a plugin on a request', async function() {
+describe('Plugin Test', function () {
+    it('should run all the phases of a plugin on a request', async function () {
         const callOrder: string[] = [];
 
         const controller = () => {

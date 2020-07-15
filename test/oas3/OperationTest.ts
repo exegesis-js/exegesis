@@ -60,9 +60,9 @@ function makeOperation(
     return new Operation(context, operation, openApiDoc.paths['/path'], method, undefined, []);
 }
 
-describe('oas3 Operation', function() {
-    describe('security', function() {
-        beforeEach(function() {
+describe('oas3 Operation', function () {
+    describe('security', function () {
+        beforeEach(function () {
             this.operation = {
                 responses: { 200: { description: 'ok' } },
                 security: [{ oauth: ['admin'] }],
@@ -71,13 +71,13 @@ describe('oas3 Operation', function() {
             this.exegesisContext = new FakeExegesisContext();
         });
 
-        it('should identify the security requirements for an operation', function() {
+        it('should identify the security requirements for an operation', function () {
             const operation: Operation = makeOperation('get', this.operation);
 
             expect(operation.securityRequirements).to.eql([{ oauth: ['admin'] }]);
         });
 
-        it('should identify the security requirements for an operation from root', function() {
+        it('should identify the security requirements for an operation from root', function () {
             delete this.operation.security;
             const operation: Operation = makeOperation('get', this.operation, {
                 openApiDoc: {
@@ -88,7 +88,7 @@ describe('oas3 Operation', function() {
             expect(operation.securityRequirements).to.eql([{ basicAuth: [] }]);
         });
 
-        it('should override the security requirements for an operation', function() {
+        it('should override the security requirements for an operation', function () {
             const operation: Operation = makeOperation('get', this.operation, {
                 openApiDoc: { security: [{ basicAuth: [] }] },
             });
@@ -96,14 +96,14 @@ describe('oas3 Operation', function() {
             expect(operation.securityRequirements).to.eql([{ oauth: ['admin'] }]);
         });
 
-        it('should error if an op requires a security scheme without a configured authenticator', function() {
+        it('should error if an op requires a security scheme without a configured authenticator', function () {
             this.operation.security = [{ foo: [] }];
             expect(() => makeOperation('get', this.operation)).to.throw(
                 'Operation /paths/~1path/get references security scheme "foo" but no authenticator was provided'
             );
         });
 
-        it('should authenticate an incoming request', async function() {
+        it('should authenticate an incoming request', async function () {
             const operation: Operation = makeOperation('get', this.operation);
             const authenticated = await operation.authenticate(this.exegesisContext);
 
@@ -113,7 +113,7 @@ describe('oas3 Operation', function() {
             });
         });
 
-        it('should fail to authenticate an incoming request if no credentials are provided', async function() {
+        it('should fail to authenticate an incoming request if no credentials are provided', async function () {
             const options = {
                 authenticators: {
                     oauth() {
@@ -131,7 +131,7 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Bearer']);
         });
 
-        it('should set response message to failed authenticator message if set', async function() {
+        it('should set response message to failed authenticator message if set', async function () {
             const options = {
                 authenticators: {
                     oauth() {
@@ -149,7 +149,7 @@ describe('oas3 Operation', function() {
             expect(this.exegesisContext.res.headers['www-authenticate']).to.eql(['Bearer']);
         });
 
-        it('should fail to auth an incoming request if the user does not have the correct scopes', async function() {
+        it('should fail to auth an incoming request if the user does not have the correct scopes', async function () {
             this.operation.security = [{ oauth: ['scopeYouDontHave'] }];
             const operation: Operation = makeOperation('get', this.operation);
             await operation.authenticate(this.exegesisContext);
@@ -160,7 +160,7 @@ describe('oas3 Operation', function() {
             });
         });
 
-        it('should always authenticate a request with no security requirements', async function() {
+        it('should always authenticate a request with no security requirements', async function () {
             const options = {
                 authenticators: {
                     oauth() {
@@ -175,8 +175,8 @@ describe('oas3 Operation', function() {
             expect(authenticated).to.eql({});
         });
 
-        describe('Security schemes combined via OR', async function() {
-            it('should return result of first successful authenticator', async function() {
+        describe('Security schemes combined via OR', async function () {
+            it('should return result of first successful authenticator', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -201,7 +201,7 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should authenticate a request if a missing result encountered with a success', async function() {
+            it('should authenticate a request if a missing result encountered with a success', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -226,7 +226,7 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should not authenticate a request if an invalid result encountered before a success', async function() {
+            it('should not authenticate a request if an invalid result encountered before a success', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -257,7 +257,7 @@ describe('oas3 Operation', function() {
                 ]);
             });
 
-            it('should not authenticate a request if an invalid result encountered after a success', async function() {
+            it('should not authenticate a request if an invalid result encountered after a success', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -288,7 +288,7 @@ describe('oas3 Operation', function() {
                 ]);
             });
 
-            it('should set message from first authenticator if it all results are invalid', async function() {
+            it('should set message from first authenticator if it all results are invalid', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -319,8 +319,8 @@ describe('oas3 Operation', function() {
             });
         });
 
-        describe('Security schemes combined via AND', async function() {
-            it('should authenticate an incoming request if all authenticators succeed', async function() {
+        describe('Security schemes combined via AND', async function () {
+            it('should authenticate an incoming request if all authenticators succeed', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -346,7 +346,7 @@ describe('oas3 Operation', function() {
                 });
             });
 
-            it('should not authenticate an incoming request if one of the results is missing', async function() {
+            it('should not authenticate an incoming request if one of the results is missing', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -377,7 +377,7 @@ describe('oas3 Operation', function() {
                 ]);
             });
 
-            it('should not authenticate an incoming request if one of the results is invalid', async function() {
+            it('should not authenticate an incoming request if one of the results is invalid', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -408,7 +408,7 @@ describe('oas3 Operation', function() {
                 ]);
             });
 
-            it('should set message from first authenticator if it all results are invalid', async function() {
+            it('should set message from first authenticator if it all results are invalid', async function () {
                 const options = {
                     authenticators: {
                         basicAuth() {
@@ -440,8 +440,8 @@ describe('oas3 Operation', function() {
         });
     });
 
-    describe('body', function() {
-        it('should generate a MediaType for each content type', function() {
+    describe('body', function () {
+        it('should generate a MediaType for each content type', function () {
             const operation = makeOperation('post', {
                 responses: { 200: { description: 'ok' } },
                 requestBody: {
@@ -468,8 +468,8 @@ describe('oas3 Operation', function() {
         });
     });
 
-    describe('parameters', function() {
-        it('should generate a parameter parser for parameters', function() {
+    describe('parameters', function () {
+        it('should generate a parameter parser for parameters', function () {
             const operation = makeOperation('get', {
                 responses: { 200: { description: 'ok' } },
                 parameters: [
@@ -497,7 +497,7 @@ describe('oas3 Operation', function() {
             });
         });
 
-        it('should generate a validator for parameters', function() {
+        it('should generate a validator for parameters', function () {
             const operation = makeOperation('get', {
                 responses: { 200: { description: 'ok' } },
                 parameters: [
@@ -531,7 +531,7 @@ describe('oas3 Operation', function() {
             expect(errors!).to.not.be.empty;
         });
 
-        it('should include raw Ajv response in error', function() {
+        it('should include raw Ajv response in error', function () {
             const operation = makeOperation('get', {
                 responses: { 200: { description: 'ok' } },
                 parameters: [
@@ -557,7 +557,7 @@ describe('oas3 Operation', function() {
             }
         });
 
-        it('should generate a map of parameter locations', function() {
+        it('should generate a map of parameter locations', function () {
             const operation = makeOperation('get', {
                 responses: { 200: { description: 'ok' } },
                 parameters: [
@@ -583,7 +583,7 @@ describe('oas3 Operation', function() {
         });
     });
 
-    describe('validate response body', function() {
+    describe('validate response body', function () {
         const DEFAULT_RESPONSE = {
             description: 'Unexpected error',
             content: {
@@ -597,7 +597,7 @@ describe('oas3 Operation', function() {
             },
         };
 
-        it('should correctly validate a response that does not expect a body', function() {
+        it('should correctly validate a response that does not expect a body', function () {
             const operation = makeOperation('delete', {
                 responses: {
                     200: { description: 'ok' },
@@ -617,7 +617,7 @@ describe('oas3 Operation', function() {
             expect(result.errors).to.equal(null);
         });
 
-        it('should correctly validate a response', function() {
+        it('should correctly validate a response', function () {
             const operation = makeOperation('delete', {
                 responses: {
                     200: DEFAULT_RESPONSE,
@@ -641,7 +641,7 @@ describe('oas3 Operation', function() {
             expect(result.errors).to.equal(null);
         });
 
-        it('should error on an invalid response', function() {
+        it('should error on an invalid response', function () {
             const operation = makeOperation('delete', {
                 responses: {
                     200: DEFAULT_RESPONSE,
@@ -663,7 +663,7 @@ describe('oas3 Operation', function() {
             expect(result.errors).to.not.be.empty;
         });
 
-        it('should not try to validate a Readable body', function() {
+        it('should not try to validate a Readable body', function () {
             const operation = makeOperation('delete', {
                 responses: {
                     200: DEFAULT_RESPONSE,
@@ -692,7 +692,7 @@ describe('oas3 Operation', function() {
             expect(result.errors).to.equal(null);
         });
 
-        it('should not try to validate a Transform body', function() {
+        it('should not try to validate a Transform body', function () {
             const operation = makeOperation('delete', {
                 responses: {
                     200: DEFAULT_RESPONSE,

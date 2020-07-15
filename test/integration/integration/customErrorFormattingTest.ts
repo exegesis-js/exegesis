@@ -44,7 +44,7 @@ async function createServer() {
     );
 
     return http.createServer((req, res) =>
-        middleware!(req, res, err => {
+        middleware!(req, res, (err) => {
             if (err) {
                 console.error(err.stack); // tslint:disable-line no-console
                 res.writeHead(500);
@@ -57,19 +57,19 @@ async function createServer() {
     );
 }
 
-describe('integration test', function() {
-    beforeEach(async function() {
+describe('integration test', function () {
+    beforeEach(async function () {
         this.server = await createServer();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         if (this.server) {
             this.server.close();
         }
     });
 
-    describe('parameters', function() {
-        it('should return an error for missing parameters', async function() {
+    describe('parameters', function () {
+        it('should return an error for missing parameters', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet`)
                 .expect(400)
@@ -90,7 +90,7 @@ describe('integration test', function() {
                 });
         });
 
-        it('should return an error for invalid parameters', async function() {
+        it('should return an error for invalid parameters', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/greet?name=A`)
                 .expect(400)
@@ -115,17 +115,15 @@ describe('integration test', function() {
         });
     });
 
-    describe('security', function() {
-        it('should require authentication from an authenticator', async function() {
+    describe('security', function () {
+        it('should require authentication from an authenticator', async function () {
             const fetch = makeFetch(this.server);
-            await fetch(`/secure`)
-                .expect(401)
-                .expectBody({
-                    message: 'Must authenticate using one of the following schemes: sessionKey.',
-                });
+            await fetch(`/secure`).expect(401).expectBody({
+                message: 'Must authenticate using one of the following schemes: sessionKey.',
+            });
         });
 
-        it('should return an error from an authenticator', async function() {
+        it('should return an error from an authenticator', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/secure`, {
                 headers: { session: 'wrong' },
@@ -135,8 +133,8 @@ describe('integration test', function() {
         });
     });
 
-    describe('post', function() {
-        it('return an error for invalid content-type', async function() {
+    describe('post', function () {
+        it('return an error for invalid content-type', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',
@@ -147,14 +145,14 @@ describe('integration test', function() {
                 .expectBody({ message: 'Invalid content-type: application/xml' });
         });
 
-        it('return an error for no body if body is required', async function() {
+        it('return an error for no body if body is required', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, { method: 'post' })
                 .expect(400)
                 .expectBody({ message: 'Missing content-type. Expected one of: application/json' });
         });
 
-        it('return an error for bad json', async function() {
+        it('return an error for bad json', async function () {
             const fetch = makeFetch(this.server);
             await fetch(`/postWithDefault`, {
                 method: 'post',

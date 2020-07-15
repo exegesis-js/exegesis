@@ -75,7 +75,7 @@ export class MimeTypeRegistry<T> {
 
     getRegisteredTypes() {
         const answer = Object.keys(this._staticMimeTypes).concat(
-            Object.keys(this._wildcardSubtypes).map(type => `${type}/*`)
+            Object.keys(this._wildcardSubtypes).map((type) => `${type}/*`)
         );
 
         if (this._defaultMimeType) {

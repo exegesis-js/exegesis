@@ -3,7 +3,7 @@ import { ValidationError } from '../../../src/errors';
 
 export function handleError(err: Error) {
     if (err instanceof ValidationError) {
-        const errors = err.errors.map(error => {
+        const errors = err.errors.map((error) => {
             let formattedError = {
                 message: error.message,
             };

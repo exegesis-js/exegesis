@@ -98,8 +98,8 @@ async function findControllerTest(
     ).to.equal(7);
 }
 
-describe('oas3 integration controller extensions', function() {
-    it('should resolve controller and operationId with body', async function() {
+describe('oas3 integration controller extensions', function () {
+    it('should resolve controller and operationId with body', async function () {
         const EXEGESIS_CONTROLLER_LOCATIONS = [
             '/x-exegesis-controller',
             '/paths/x-exegesis-controller',
@@ -121,7 +121,7 @@ describe('oas3 integration controller extensions', function() {
         }
     });
 
-    it('should resolve controller and operationId without body', async function() {
+    it('should resolve controller and operationId without body', async function () {
         const EXEGESIS_CONTROLLER_LOCATIONS = [
             '/x-exegesis-controller',
             '/paths/x-exegesis-controller',
@@ -141,7 +141,7 @@ describe('oas3 integration controller extensions', function() {
         }
     });
 
-    it('should resolve controller and operationId without body and ignore the content-type header', async function() {
+    it('should resolve controller and operationId without body and ignore the content-type header', async function () {
         const EXEGESIS_CONTROLLER_LOCATIONS = [
             '/x-exegesis-controller',
             '/paths/x-exegesis-controller',
@@ -163,7 +163,7 @@ describe('oas3 integration controller extensions', function() {
         }
     });
 
-    it('should throw an error if there is no content-type header in a POST request', function() {
+    it('should throw an error if there is no content-type header in a POST request', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
         expect(() => openApi.resolve('post', '/path', {})).to.throw(
@@ -171,7 +171,7 @@ describe('oas3 integration controller extensions', function() {
         );
     });
 
-    it('should throw an error in a post request with body but invalid content-type', function() {
+    it('should throw an error in a post request with body but invalid content-type', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
         expect(() =>
@@ -182,7 +182,7 @@ describe('oas3 integration controller extensions', function() {
         ).to.throw('Invalid content-type: application/jsontypo');
     });
 
-    it('should throw an error in a post request without body but invalid content-type', function() {
+    it('should throw an error in a post request without body but invalid content-type', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
         expect(() =>
@@ -192,7 +192,7 @@ describe('oas3 integration controller extensions', function() {
         ).to.throw('Invalid content-type: application/jsontypo');
     });
 
-    it('should not an error in a get request with invalid content-type', function() {
+    it('should not an error in a get request with invalid content-type', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
         expect(
@@ -202,7 +202,7 @@ describe('oas3 integration controller extensions', function() {
         ).to.be.ok;
     });
 
-    it('should throw an error in a post request without (optional) body but invalid content-type', function() {
+    it('should throw an error in a post request without (optional) body but invalid content-type', function () {
         const openApiDoc = generateOpenApi();
         openApiDoc.paths['/path'].post.requestBody.required = false;
         const openApi = new OpenApi(openApiDoc, options);
@@ -213,7 +213,7 @@ describe('oas3 integration controller extensions', function() {
         ).to.throw('Invalid content-type: application/jsontypo');
     });
 
-    it('should resolve even if there is no controller', function() {
+    it('should resolve even if there is no controller', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
 
@@ -230,7 +230,7 @@ describe('oas3 integration controller extensions', function() {
         });
     });
 
-    it('should throw an error if there is a controller defined, but it does not exist', function() {
+    it('should throw an error if there is a controller defined, but it does not exist', function () {
         const openApiDoc = generateOpenApi();
         openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'idonotexist';
         openApiDoc.paths['/path'].get.operationId = 'idonotexist';
@@ -240,7 +240,7 @@ describe('oas3 integration controller extensions', function() {
         );
     });
 
-    it('should throw an error if there is an operationId defined, but it does not exist', function() {
+    it('should throw an error if there is an operationId defined, but it does not exist', function () {
         const openApiDoc = generateOpenApi();
         openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'myController';
         openApiDoc.paths['/path'].get.operationId = 'idonotexist';
@@ -250,7 +250,7 @@ describe('oas3 integration controller extensions', function() {
         );
     });
 
-    it('should return undefined if there is no path to resolve', function() {
+    it('should return undefined if there is no path to resolve', function () {
         const openApiDoc = generateOpenApi();
         const openApi = new OpenApi(openApiDoc, options);
 
@@ -258,7 +258,7 @@ describe('oas3 integration controller extensions', function() {
         expect(resolved).to.be.undefined;
     });
 
-    it('should throw an error if there is no openapi version field', function() {
+    it('should throw an error if there is no openapi version field', function () {
         const openApiDoc = generateOpenApi();
         delete openApiDoc['openapi'];
         expect(() => new OpenApi(openApiDoc, options)).to.throw(
@@ -266,7 +266,7 @@ describe('oas3 integration controller extensions', function() {
         );
     });
 
-    it('should throw an error if the openapi version is invalid', function() {
+    it('should throw an error if the openapi version is invalid', function () {
         const openApiDoc = generateOpenApi();
         openApiDoc['openapi'] = '2.0.0';
         expect(() => new OpenApi(openApiDoc, options)).to.throw(
@@ -274,7 +274,7 @@ describe('oas3 integration controller extensions', function() {
         );
     });
 
-    it('should utilize the servers field', async function() {
+    it('should utilize the servers field', async function () {
         const openApiDoc = generateOpenApi();
         openApiDoc.servers = [{ url: '/basepath' }];
         const openApi = new OpenApi(openApiDoc, options);
@@ -284,20 +284,20 @@ describe('oas3 integration controller extensions', function() {
         expect(resolved2).to.be.not.ok;
     });
 
-    describe('allowMissingControllers: false', function() {
+    describe('allowMissingControllers: false', function () {
         const options2 = compileOptions({
             controllers,
             allowMissingControllers: false,
         });
 
-        it('should error if an operation has no controller defined', function() {
+        it('should error if an operation has no controller defined', function () {
             const openApiDoc = generateOpenApi();
             expect(() => new OpenApi(openApiDoc, options2)).to.throw(
                 `Missing ${EXEGESIS_CONTROLLER} for /paths/~1path/get`
             );
         });
 
-        it('should error if an operation has no operationId', function() {
+        it('should error if an operation has no operationId', function () {
             const openApiDoc = generateOpenApi();
             openApiDoc.paths['/path'].get[EXEGESIS_CONTROLLER] = 'myController';
             expect(() => new OpenApi(openApiDoc, options2)).to.throw(

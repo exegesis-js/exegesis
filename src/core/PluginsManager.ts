@@ -24,13 +24,13 @@ export default class PluginsManager {
     private readonly _postResponseValidation: exegesis.ExegesisPluginInstance[];
 
     constructor(apiDoc: any, plugins: exegesis.ExegesisPlugin[]) {
-        this._plugins = plugins.map(plugin => plugin.makeExegesisPlugin({ apiDoc }));
+        this._plugins = plugins.map((plugin) => plugin.makeExegesisPlugin({ apiDoc }));
 
-        this._preRoutingPlugins = this._plugins.filter(p => !!p.preRouting);
-        this._postRoutingPlugins = this._plugins.filter(p => !!p.postRouting);
-        this._postSecurityPlugins = this._plugins.filter(p => !!p.postSecurity);
-        this._postControllerPlugins = this._plugins.filter(p => !!p.postController);
-        this._postResponseValidation = this._plugins.filter(p => !!p.postResponseValidation);
+        this._preRoutingPlugins = this._plugins.filter((p) => !!p.preRouting);
+        this._postRoutingPlugins = this._plugins.filter((p) => !!p.postRouting);
+        this._postSecurityPlugins = this._plugins.filter((p) => !!p.postSecurity);
+        this._postControllerPlugins = this._plugins.filter((p) => !!p.postController);
+        this._postResponseValidation = this._plugins.filter((p) => !!p.postResponseValidation);
     }
 
     async preCompile(data: { apiDoc: any; options: exegesis.ExegesisOptions }) {

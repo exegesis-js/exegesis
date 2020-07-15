@@ -106,7 +106,7 @@ export default class Servers {
 
     constructor(servers: oas3.ServerObject[] | undefined) {
         servers = servers || [{ url: '/' }];
-        this._servers = servers.map(server => generateServerParser(server));
+        this._servers = servers.map((server) => generateServerParser(server));
     }
 
     /**

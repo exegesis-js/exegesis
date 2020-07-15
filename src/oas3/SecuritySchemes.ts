@@ -15,7 +15,7 @@ export default class SecuritySchemes {
             ? resolveRef(openApiDoc, securitySchemes)
             : securitySchemes;
 
-        this._challenges = ld.mapValues(this._securitySchemes, scheme => {
+        this._challenges = ld.mapValues(this._securitySchemes, (scheme) => {
             if (scheme.type === 'http') {
                 return scheme.scheme || 'Basic';
             }
@@ -25,7 +25,7 @@ export default class SecuritySchemes {
             return undefined;
         });
 
-        this._infos = ld.mapValues(this._securitySchemes, scheme => {
+        this._infos = ld.mapValues(this._securitySchemes, (scheme) => {
             if (scheme.type === 'apiKey') {
                 return {
                     in: scheme.in as any,

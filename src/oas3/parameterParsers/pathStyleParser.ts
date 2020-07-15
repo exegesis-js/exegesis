@@ -30,7 +30,7 @@ export function generatePathStyleParser(schema: any, explode: boolean): Paramete
             // This will never happen, since "matrix" parameters are only
             // allowed in the path, and no one is going to define some
             // crazy path like "/foo/{bar}/{bar}".
-            answer = value.map(v => parsePathParameter(location, v, structuredParser));
+            answer = value.map((v) => parsePathParameter(location, v, structuredParser));
         } else {
             answer = parsePathParameter(location, value, structuredParser);
         }

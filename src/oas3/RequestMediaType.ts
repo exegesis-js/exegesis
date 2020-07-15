@@ -81,7 +81,7 @@ export default class RequestMediaType {
                 mediaType
             );
         } else {
-            this.validator = value => ({ errors: null, value });
+            this.validator = (value) => ({ errors: null, value });
         }
     }
 }

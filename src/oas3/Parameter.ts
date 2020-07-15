@@ -66,7 +66,7 @@ export default class Parameter {
 
         this.context = context;
         this.oaParameter = resOaParameter;
-        this.validate = value => ({ errors: null, value });
+        this.validate = (value) => ({ errors: null, value });
 
         // Find the schema for this parameter.
         if (resOaParameter.schema) {

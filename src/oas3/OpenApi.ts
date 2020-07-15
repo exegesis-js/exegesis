@@ -112,7 +112,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
 
                 let resolvedOperation: ResolvedOperation | undefined;
                 if (operation) {
-                    const parseParameters = function() {
+                    const parseParameters = function () {
                         return operation.parseParameters({
                             headers,
                             rawPathParams,
@@ -121,7 +121,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         });
                     };
 
-                    const validateParameters: ParsedParameterValidator = parameterValues =>
+                    const validateParameters: ParsedParameterValidator = (parameterValues) =>
                         operation.validateParameters(parameterValues);
 
                     const bodyParser = mediaType && mediaType.parser;

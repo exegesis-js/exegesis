@@ -15,8 +15,8 @@ const DUMMY_PATH_OBJECT = {
     },
 };
 
-describe('oas3 Paths', function() {
-    it('should resolve paths', function() {
+describe('oas3 Paths', function () {
+    it('should resolve paths', function () {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['/foo'] = DUMMY_PATH_OBJECT;
         const paths = new Paths(
@@ -29,7 +29,7 @@ describe('oas3 Paths', function() {
         expect(resolved!.rawPathParams).to.eql(undefined);
     });
 
-    it('should resolve a path with parameters', function() {
+    it('should resolve a path with parameters', function () {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['/{var}/foo'] = Object.assign(
             {
@@ -54,7 +54,7 @@ describe('oas3 Paths', function() {
         expect(resolved!.rawPathParams).to.eql({ var: 'bar' });
     });
 
-    it('should not treat specitifcation extensions as paths', function() {
+    it('should not treat specitifcation extensions as paths', function () {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['x-my-extension'] = DUMMY_PATH_OBJECT;
         const paths = new Paths(
@@ -65,7 +65,7 @@ describe('oas3 Paths', function() {
         expect(resolved).to.not.exist;
     });
 
-    it('error on paths that do not start with /', function() {
+    it('error on paths that do not start with /', function () {
         const openApiDoc = makeOpenApiDoc();
         openApiDoc.paths['foo'] = DUMMY_PATH_OBJECT;
         expect(
@@ -77,7 +77,7 @@ describe('oas3 Paths', function() {
         ).to.throw('Invalid path "foo"');
     });
 
-    it('should allow empty paths object', function() {
+    it('should allow empty paths object', function () {
         const openApiDoc = makeOpenApiDoc();
         expect(
             () =>

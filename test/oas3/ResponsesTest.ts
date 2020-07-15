@@ -104,8 +104,8 @@ function makeResponses(responses: oas3.ResponsesObject) {
     return new Responses(context, responses);
 }
 
-describe('oas3 Responses', function() {
-    it('should validate a JSON response', async function() {
+describe('oas3 Responses', function () {
+    it('should validate a JSON response', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             200,
@@ -119,7 +119,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a bad JSON response', async function() {
+    it('should fail a bad JSON response', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const result = responses.validateResponse(
@@ -154,7 +154,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a response with an unexpected content-type', async function() {
+    it('should fail a response with an unexpected content-type', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const result = responses.validateResponse(
@@ -179,7 +179,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should be strict about JSON responses', async function() {
+    it('should be strict about JSON responses', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const result = responses.validateResponse(
@@ -192,7 +192,7 @@ describe('oas3 Responses', function() {
         expect(result.errors!.length).to.be.greaterThan(0);
     });
 
-    it('should fail a bad JSON response, even if validateDefaultResponses', async function() {
+    it('should fail a bad JSON response, even if validateDefaultResponses', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const result = responses.validateResponse(
@@ -206,7 +206,7 @@ describe('oas3 Responses', function() {
         expect(result.errors!.length).to.equal(1);
     });
 
-    it('should validate a default response', async function() {
+    it('should validate a default response', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
@@ -220,7 +220,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a default response', async function() {
+    it('should fail a default response', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
@@ -255,7 +255,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should pass a result with no message body', async function() {
+    it('should pass a result with no message body', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(203, {}, undefined, true);
         expect(result).to.eql({
@@ -264,14 +264,14 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a result with a message body which was not expecting a message body', async function() {
+    it('should fail a result with a message body which was not expecting a message body', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(203, {}, 'hello', true);
         expect(result.errors).to.exist;
         expect(result.errors!.length).to.be.greaterThan(0);
     });
 
-    it('should not fail a default response if validateDefaultResponses is false', async function() {
+    it('should not fail a default response if validateDefaultResponses is false', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
         const result = responses.validateResponse(
             500,
@@ -286,7 +286,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should validate JSON strings', async function() {
+    it('should validate JSON strings', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const body = '{"what": "bar"}';
@@ -300,7 +300,7 @@ describe('oas3 Responses', function() {
         expect(result.errors).to.have.length(1);
     });
 
-    it('should not validate non-JSON strings', async function() {
+    it('should not validate non-JSON strings', async function () {
         const responses = makeResponses(RESPONSE_WITH_TEXT_PLAIN);
 
         const body = '{"what": "bar"}';
@@ -317,7 +317,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should skip validation for buffers, strings, and streams', async function() {
+    it('should skip validation for buffers, strings, and streams', async function () {
         const responses = makeResponses(DEFAULT_RESPONSE);
 
         const cases = [
@@ -340,7 +340,7 @@ describe('oas3 Responses', function() {
         }
     });
 
-    it('should validate a JSON response for a result with multiple content-types', async function() {
+    it('should validate a JSON response for a result with multiple content-types', async function () {
         const responses = makeResponses(RESPONSE_WITH_MULTIPLE_CONTENT_TYPES);
         const jsonResult = responses.validateResponse(
             200,
@@ -387,7 +387,7 @@ describe('oas3 Responses', function() {
         expect(erroredXmlResult.errors!.length, 'erroredXmlResult').to.be.greaterThan(0);
     });
 
-    it('should validate a response with no schema', async function() {
+    it('should validate a response with no schema', async function () {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
@@ -401,7 +401,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a message with a content-type and no body', async function() {
+    it('should fail a message with a content-type and no body', async function () {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
@@ -412,7 +412,7 @@ describe('oas3 Responses', function() {
         expect(result.errors![0].message).to.equal('Missing response body for 200.');
     });
 
-    it('should pass a message with a content-type and a zero-length body', async function() {
+    it('should pass a message with a content-type and a zero-length body', async function () {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
@@ -426,7 +426,7 @@ describe('oas3 Responses', function() {
         });
     });
 
-    it('should fail a message with a more than one content-type header', async function() {
+    it('should fail a message with a more than one content-type header', async function () {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             200,
@@ -439,7 +439,7 @@ describe('oas3 Responses', function() {
         );
     });
 
-    it('should fail for an undefined status code if there is no default', async function() {
+    it('should fail for an undefined status code if there is no default', async function () {
         const responses = makeResponses(RESPONSE_WITH_NO_SCHEMA);
         const result = responses.validateResponse(
             404,

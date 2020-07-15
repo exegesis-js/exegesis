@@ -172,7 +172,7 @@ export function writeHttpResult(
     done?: Callback<void>
 ) {
     return pb.addCallback(done, async () => {
-        Object.keys(httpResult.headers).forEach(header =>
+        Object.keys(httpResult.headers).forEach((header) =>
             res.setHeader(header, httpResult.headers[header])
         );
         res.statusCode = httpResult.status;
@@ -226,7 +226,7 @@ export function compileApi(
             next: Callback<void>
         ) {
             runner(req, res)
-                .then(result => {
+                .then((result) => {
                     let answer: Promise<void> | undefined;
 
                     if (!result) {
@@ -244,7 +244,7 @@ export function compileApi(
                     }
                     return answer;
                 })
-                .catch(err => {
+                .catch((err) => {
                     if (next) {
                         next(err);
                     } else {
