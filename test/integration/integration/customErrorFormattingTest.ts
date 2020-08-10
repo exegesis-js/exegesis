@@ -46,7 +46,7 @@ async function createServer() {
     return http.createServer((req, res) =>
         middleware!(req, res, (err) => {
             if (err) {
-                console.error(err.stack); // tslint:disable-line no-console
+                console.error(err.stack);
                 res.writeHead(500);
                 res.end(`Internal error: ${err.message}`);
             } else {

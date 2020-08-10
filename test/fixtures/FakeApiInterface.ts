@@ -1,5 +1,4 @@
 import { ApiInterface, ResolvedPath } from '../../src';
-import http from 'http';
 import { Controller } from '../../lib/types';
 
 export class FakeApiInterface implements ApiInterface<void> {
@@ -8,11 +7,7 @@ export class FakeApiInterface implements ApiInterface<void> {
         this.controller = controller;
     }
 
-    resolve(
-        _method: string,
-        url: string,
-        _headers: http.IncomingHttpHeaders
-    ): ResolvedPath<void> | undefined {
+    resolve(_method: string, url: string): ResolvedPath<void> | undefined {
         const path: ResolvedPath<void> = {
             operation: {
                 parseParameters: () => ({

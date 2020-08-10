@@ -31,7 +31,7 @@ export * from './types';
  * @param openApiDocFile - The file containing the document, or a JSON object.
  * @returns - Returns the bundled document
  */
-function bundle(openApiDocFile: string | object): Promise<object> {
+function bundle(openApiDocFile: string | unknown): Promise<any> {
     const refParser = new $RefParser();
 
     return refParser.bundle(openApiDocFile as any, { dereference: { circular: false } });
@@ -82,7 +82,7 @@ export function compileApiInterface(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions,
     done?: Callback<ApiInterface<OAS3ApiInfo>>
-) {
+): Promise<ApiInterface<OAS3ApiInfo>> {
     return pb.addCallback(done, async () => {
         return (await compileDependencies(openApiDoc, options)).apiInterface;
     });
@@ -125,7 +125,7 @@ export function compileRunner(
     openApiDoc: string | oas3.OpenAPIObject,
     options?: ExegesisOptions,
     done?: Callback<ExegesisRunner>
-) {
+): Promise<ExegesisRunner> {
     return pb.addCallback(done, async () => {
         options = options || {};
         const { compiledOptions, apiInterface, plugins } = await compileDependencies(
@@ -170,7 +170,7 @@ export function writeHttpResult(
     httpResult: HttpResult,
     res: http.ServerResponse,
     done?: Callback<void>
-) {
+): Promise<void> {
     return pb.addCallback(done, async () => {
         Object.keys(httpResult.headers).forEach((header) =>
             res.setHeader(header, httpResult.headers[header])
@@ -178,7 +178,8 @@ export function writeHttpResult(
         res.statusCode = httpResult.status;
 
         if (httpResult.body) {
-            await pb.call((done2: pump.Callback) => pump(httpResult.body!, res, done2));
+            const body = httpResult.body;
+            await pb.call((done2: pump.Callback) => pump(body, res, done2));
         } else {
             res.end();
         }
@@ -216,7 +217,7 @@ export function compileApi(
     openApiDoc: string | oas3.OpenAPIObject,
     options?: ExegesisOptions | undefined,
     done?: Callback<MiddlewareFunction> | undefined
-) {
+): Promise<MiddlewareFunction> {
     return pb.addCallback(done, async () => {
         const runner = await compileRunner(openApiDoc, options);
 

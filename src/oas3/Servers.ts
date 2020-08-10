@@ -41,7 +41,6 @@ function generateServerParser(oaServer: oas3.ServerObject): ServerParser {
             serverParams: Object.create(null),
             baseUrl: '',
         });
-        // tslint:disable-next-line: no-conditional-assignment
     } else if ((match = FULL_URL_RE.exec(serverUrl))) {
         const hostname = match[2];
         const basepath = match[3] || '';
@@ -75,7 +74,6 @@ function generateServerParser(oaServer: oas3.ServerObject): ServerParser {
                 return null;
             }
         };
-        // tslint:disable-next-line: no-conditional-assignment
     } else if ((match = ABSOLUTE_URL_RE.exec(serverUrl))) {
         const basepath = match[1];
         const { parser: basepathParser } = compileTemplatePath(basepath, { openEnded: true });

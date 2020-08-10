@@ -419,11 +419,17 @@ export default class Operation {
                 securityRequirementResult.type === 'missing' ||
                 securityRequirementResult.type === 'invalid'
             ) {
-                const failure = securityRequirementResult.failure!;
+                const failure = securityRequirementResult.failure;
+                if (!failure) {
+                    throw new Error('Missing failure.');
+                }
+                if (!securityRequirementResult.failedSchemeName) {
+                    throw new Error('Missing failed scheme name.');
+                }
 
                 // No luck with this security requirement.
                 if (failure.status === 401 && failure.challenge) {
-                    challenges[securityRequirementResult.failedSchemeName!] = failure.challenge;
+                    challenges[securityRequirementResult.failedSchemeName] = failure.challenge;
                 }
 
                 if (securityRequirementResult.type === 'invalid') {

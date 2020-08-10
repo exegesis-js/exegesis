@@ -138,8 +138,9 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
 
                 // Parse the body.
                 if (this._operation.bodyParser) {
+                    const bodyParser = this._operation.bodyParser;
                     body = await pb.call((done: Callback<void>) =>
-                        this._operation!.bodyParser!.parseReq(this.req, this.origRes, done)
+                        bodyParser.parseReq(this.req, this.origRes, done)
                     );
                     body = body || this.req.body;
                 }

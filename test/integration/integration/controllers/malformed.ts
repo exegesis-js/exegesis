@@ -1,5 +1,3 @@
-import { ExegesisContext } from '../../../../src';
-
-export function getBadResponse(_context: ExegesisContext) {
+export function getBadResponse() {
     return { wat: 7 };
 }

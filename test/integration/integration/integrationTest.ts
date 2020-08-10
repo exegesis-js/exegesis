@@ -44,7 +44,7 @@ async function createServer(options: exegesis.ExegesisOptions) {
             //     res.end(JSON.stringify({message: err.message}));
             // } else if(err) {
             if (err) {
-                console.error(err.stack); // tslint:disable-line no-console
+                console.error(err.stack);
                 res.writeHead(500);
                 res.end(`Internal error: ${err.message}`);
             } else {
