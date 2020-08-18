@@ -1,6 +1,20 @@
 # OAS3 Security
 
-Each operation in OAS3 can have a list of [Security Requirement Objects](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securityRequirementObject)
+<!-- markdownlint-disable MD007 -->
+<!-- TOC depthFrom:2 -->
+
+- [OAS3 Security](#oas3-security)
+  - [Authenticators](#authenticators)
+    - [Example: Basic Auth](#example-basic-auth)
+    - [Example: Basic Auth with Passport](#example-basic-auth-with-passport)
+  - [Example](#example)
+    - [Using Multiple Authentication Types](#using-multiple-authentication-types)
+      - [Scenarios](#scenarios)
+
+<!-- /TOC -->
+<!-- markdownlint-enable MD007 -->
+
+Each operation in OAS3 can have a list of [Security Requirement Objects](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#securityRequirementObject)
 associated with it, in `security` (or inherited from the root document's `security`).
 Each security requirement object has a list of security schemes; in order to
 access an operation, a request must satisfy all security schemes for at least
@@ -42,8 +56,8 @@ const options: exegesis.ExegesisOptions = {
 };
 ```
 
-Authenticators are very similar to controllers, except their roll is to
-return an authentication information. Note that the `context` passed to an
+Authenticators are very similar to controllers, except their role is to
+return authentication information. Note that the `context` passed to an
 authenticator is a "plugin context" - this differs from a regular context
 in that `body` and `params` will be undefined as they have not been
 parsed yet (although access to the body and parameters are available via
@@ -142,15 +156,15 @@ import bcrypt from 'bcrypt';
 // Note the name of the auth scheme here should match the name of the security
 // role.
 passport.use('basicAuth', new BasicStrategy(
-    function(name, password, done) {
-        db.User.find({name}, (err, user) => {
-            if(err) {return done(err);}
-            bcrypt.compare(password, user.password, (err, matched) => {
-                if(err) {return done(err);}
-                return done(null, matched ? user : false);
-            }
-        });
-    }
+  function(name, password, done) {
+    db.User.find({name}, (err, user) => {
+      if (err) {return done(err);}
+      bcrypt.compare(password, user.password, (err, matched) => {
+        if (err) {return done(err);}
+        return done(null, matched ? user : false);
+      }
+    });
+  }
 ));
 
 const basicAuthAuthenticator = passportSecurity('basicAuth');
@@ -194,8 +208,8 @@ listed security requirements.
 
 If a user authenticated using `basicAuth`, then the controller would have
 access to the object returned by the authenticator via `context.security.basicAuth`.
-Simliarly, if the request used oauth, then `context.security.oauth` would be
-populated with the result of the oauth authenticator.
+Similarly, if the request used OAuth then `context.security.oauth` would be
+populated with the result of the OAuth authenticator.
 
 ### Using Multiple Authentication Types
 
@@ -204,7 +218,7 @@ using logical OR and AND to achieve the desired result.
 
 While the [Security requirement object section of the Open API Spec](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#security-requirement-object)
 specifies that `only one of Security Requirement Objects in the list needs to be satisfied to authorize the request` this
-library follows the principal of least privilege by **failing authorisation if _any_ of the authenticators return an `invalid` result**.
+library follows the principal of least privilege by **failing authorization if _any_ of the authenticators return an `invalid` result**.
 One side affect of this decision is that all authenticators will run for every request to ensure that there are no invalid results.
 
 #### Scenarios
@@ -228,8 +242,8 @@ security: # A AND B
 
 - The request will authenticate only if **both** `A` and `B` return a `success` result and **none** return an `invalid` result.
 - `A` will run first then `B`
-- The authentication process will return the result of both the successful authenticators.
-- If a authenticator returns an invalid result the authentication process will be halted and the invalid result will be returned.
+- The authentication process will return the result of both of the successful authenticators.
+- If an authenticator returns an invalid result the authentication process will be halted and the invalid result will be returned.
 
 ```yaml
 security: # (A AND B) OR (C AND D)
@@ -239,4 +253,4 @@ security: # (A AND B) OR (C AND D)
     D
 ```
 
-- The request will authenticate only if (`A` and `B`) OR (`C` AND `D`) return a success a `success` result and **none** return an `invalid` result.
+- The request will authenticate only if (`A` and `B`) OR (`C` AND `D`) return a `success` result and **none** return an `invalid` result.

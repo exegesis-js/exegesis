@@ -1,5 +1,14 @@
 # Plugins
 
+<!-- markdownlint-disable MD007 -->
+<!-- TOC depthFrom:2 -->
+
+- [Plugins](#plugins)
+  - [Writing a Plugin](#writing-a-plugin)
+
+<!-- /TOC -->
+<!-- markdownlint-enable MD007 -->
+
 Plugins can be used to add functionality to Exegesis.
 
 Today Exegesis only supports OpenAPI 3.x.x (OAS3), however the core of Exegesis
@@ -21,7 +30,7 @@ divides the execution of an API up into the following phases:
   and plugins access to the body and parameters if required, but also means
   if no one asks for the parameters or the body, we won't bother to parse
   them. However, to make writing controllers easier, if they have not be parsed
-  by this point, Exegesis explicitly parses them and stores them in
+  by this point Exegesis explicitly parses them and stores them in
   `context.params` and `context.requestBody`.
 - **Controller** - Exegesis calls into a controller to run business logic
   associated with the resource being accessed.
@@ -29,7 +38,7 @@ divides the execution of an API up into the following phases:
   has been correctly generated. For OAS3, this means checking the response
   against the response schema.
 
-Finally, the repsonse is written out back to the client.
+Finally, the response is written out back to the client.
 
 Plugins allow you to add functionality before (almost) any of these phases,
 and even to modify the API document before it is compiled.
@@ -39,9 +48,9 @@ and even to modify the API document before it is compiled.
 Plugins are published on NPM with the prefix `exegesis-plugin-` to make it
 easy to find plugins.
 
-To write a plugin, you write a Javascript module which exports a default function.
-This function accepts a single parameter which is the options to configure
-your plugin. It returns a `{info, makeExegesisPlugin(data)}` object.
+To write a plugin, you write a JavaScript module which exports a default function.
+This function accepts a single parameter which is an object with the options to
+configure your plugin. It returns a `{info, makeExegesisPlugin(data)}` object.
 `makeExegesisPlugin` takes a single parameter, an `{apiDoc}` object. Right now
 the API document will always be an OAS3 document, however this may not be the
 case in the future, so plugins should take care to verify the document they are
@@ -69,84 +78,83 @@ written a response.
 import * as semver from 'semver';
 
 function makeExegesisPlugin({apiDoc}) {
-    // Verify the apiDoc is an OpenAPI 3.x.x document, because this plugin
-    // doesn't know how to handle anything else.
-    if(!apiDoc.openapi) {
-        throw new Error("OpenAPI definition is missing 'openapi' field");
+  // Verify the apiDoc is an OpenAPI 3.x.x document, because this plugin
+  // doesn't know how to handle anything else.
+  if (!apiDoc.openapi) {
+    throw new Error("OpenAPI definition is missing 'openapi' field");
+  }
+  if (!semver.satisfies(apiDoc.openapi, '>=3.0.0 <4.0.0')) {
+    throw new Error(`OpenAPI version ${apiDoc.openapi} not supported`);
+  }
+
+  // Can make modifications to apiDoc at this point, such as adding new
+  // routes, or modifying documentation - whatever you want to do.  Just
+  // keep in mind that other plugins might make changes, also, either before
+  // or after this.  If you need the "final" apiDoc, see `preCompile`.
+
+  // Return an ExegesisPluginInstance.
+  return {
+    // Called exactly once, before Exegesis "compiles" the API document.
+    // Plugins must not modify apiDoc here.
+    preCompile({apiDoc, options}) {
     }
-    if(!semver.satisfies(apiDoc.openapi, '>=3.0.0 <4.0.0')) {
-        throw new Error(`OpenAPI version ${apiDoc.openapi} not supported`);
+
+    // Called before routing.  Note that the context hasn't been created yet,
+    // so you just get a raw `req` and `res` object here.
+    preRouting({req, res}) {
     }
 
-    // Can make modifications to apiDoc at this point, such as adding new
-    // routes, or modifying documentation - whatever you want to do.  Just
-    // keep in mind that other plugins might make changes, also, either before
-    // or after this.  If you need the "final" apiDoc, see `preCompile`.
+    // Called immediately after the routing phase.  Note that this is
+    // called before Exegesis verifies routing was valid - the
+    // `pluginContext.api` object will have information about the
+    // matched route, but will this information may be incomplete.
+    // For example, for OAS3 we may have matched a route, but not
+    // matched an operation within the route. Or we may have matched
+    // an operation but that operation may have no controller defined.
+    // (If we failed to match a route at all, this will not be called.)
+    //
+    // If your API added a route to the API document, this function is a
+    // good place to write a reply.
+    //
+    // Note that calling `pluginContext.getParams()` or `pluginContext.getRequestBody()`
+    // will throw here if routing was not successful.
+    postRouting(pluginContext) {
+    }
 
-    // Return an ExegesisPluginInstance.
-    return {
-        // Called exactly once, before Exegesis "compiles" the API document.
-        // Plugins must not modify apiDoc here.
-        preCompile({apiDoc, options}) {
-        }
+    // Called for each request, after security phase and before input
+    // is parsed and the controller is run.  This is a good place to
+    // do extra security checks.  The `exegesis-plugin-roles` plugin,
+    // for example, generates a 403 response here if the authenticated
+    // user has insufficient privliedges to access this path.
+    //
+    // Note that this function will not be called if a previous pluing
+    // has already written a response.
+    postSecurity(pluginContext) {
+    }
 
-        // Called before routing.  Note that the context hasn't been created yet,
-        // so you just get a raw `req` and `res` object here.
-        preRouting({req, res}) {
-        }
+    // Called immediately after the controller has been run, but before
+    // any response validation.  This is a good place to do custom
+    // response validation.  If you have to deal with something weird
+    // like XML, this is where you'd handle it.
+    //
+    // This function can modify the contents of the response.
+    postController(context) {
+    }
 
-        // Called immediately after the routing phase.  Note that this is
-        // called before Exegesis verifies routing was valid - the
-        // `pluginContext.api` object will have information about the
-        // matched route, but will this information may be incomplete.
-        // For example, for OAS3 we may have matched a route, but not
-        // matched an operation within the route. Or we may have matched
-        // an operation but that operation may have no controller defined.
-        // (If we failed to match a route at all, this will not be called.)
-        //
-        // If your API added a route to the API document, this function is a
-        // good place to write a reply.
-        //
-        // Note that calling `pluginContext.getParams()` or `pluginContext.getRequestBody()`
-        // will throw here if routing was not successful.
-        postRouting(pluginContext) {
-        }
-
-        // Called for each request, after security phase and before input
-        // is parsed and the controller is run.  This is a good place to
-        // do extra security checks.  The `exegesis-plugin-roles` plugin,
-        // for example, generates a 403 response here if the authenticated
-        // user has insufficient privliedges to access this path.
-        //
-        // Note that this function will not be called if a previous pluing
-        // has already written a response.
-        postSecurity(pluginContext) {
-        }
-
-        // Called immediately after the controller has been run, but before
-        // any response validation.  This is a good place to do custom
-        // response validation.  If you have to deal with something weird
-        // like XML, this is where you'd handle it.
-        //
-        // This function can modify the contents of the response.
-        postController(context) {
-        }
-
-        // Called after the response validation step.  This is the last step before
-        // the response is converted to JSON and written to the output.
-        postResponseValidation(context) {
-        }
-    };
-
+    // Called after the response validation step.  This is the last step before
+    // the response is converted to JSON and written to the output.
+    postResponseValidation(context) {
+    }
+  };
 }
 
 export default function plugin(options) {
-    return {
-        info: {
-            // This should match the name of your npm package.
-            name: 'exegesis-plugin-example'
-        },
-        makeExegesisPlugin
-    };
+  return {
+    info: {
+      // This should match the name of your npm package.
+      name: 'exegesis-plugin-example'
+    },
+    makeExegesisPlugin
+  };
 }
 ```

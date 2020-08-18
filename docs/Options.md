@@ -3,17 +3,19 @@
 <!-- markdownlint-disable MD007 -->
 <!-- TOC depthFrom:2 -->
 
-- [controllers](#controllers)
-- [allowMissingControllers](#allowmissingcontrollers)
-- [authenticators](#authenticators)
-- [mimeTypeParsers](#mimetypeparsers)
-- [defaultMaxBodySize](#defaultmaxbodysize)
-- [customFormats](#customformats)
-- [ignoreServers](#ignoreservers)
-- [autoHandleHttpErrors](#autohandlehttperrors)
-- [onResponseValidationError](#onresponsevalidationerror)
-- [validateDefaultResponses](#validatedefaultresponses)
-- [allErrors](#allErrors)
+- [Exegesis Options](#exegesis-options)
+  - [controllers](#controllers)
+  - [allowMissingControllers](#allowmissingcontrollers)
+  - [authenticators](#authenticators)
+  - [mimeTypeParsers](#mimetypeparsers)
+  - [defaultMaxBodySize](#defaultmaxbodysize)
+  - [customFormats](#customformats)
+  - [ignoreServers](#ignoreservers)
+  - [autoHandleHttpErrors](#autohandlehttperrors)
+  - [onResponseValidationError](#onresponsevalidationerror)
+  - [validateDefaultResponses](#validatedefaultresponses)
+  - [treatReturnedJsonAsPure](#treatreturnedjsonaspure)
+  - [allErrors](#allerrors)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
@@ -26,20 +28,21 @@ You can read about controllers
 
 The `controllers` option tells Exegesis how to find controller functions to
 call. This can either be the name of a folder containing controller modules,
-or it can be a hash where keys are controller names. If it is a folder,
-you can additionally specified `controllersPattern`, which is a glob pattern
+or it can be an object where keys are controller names. If it is a folder,
+you can additionally specify `controllersPattern`, which is a glob pattern
 telling Exegesis which files to load.
 
-For example, suppose you have a folder in your project named "src/controllers",
+For example: suppose you have a folder in your project named "src/controllers",
 which contains "Pets.js" and "Users.ts". If you're loading your OpenAPI
-document in "/src/index.js", you could specify `controllers`
-as:
+document in "/src/index.js", you could specify `controllers` as:
 
 ```js
 import * as path from 'path';
-{
+
+const options = {
     controllers: path.resolve(__dirname, 'controllers'),
     controllersPattern: "**/*.@(ts|js)"
+}
 ```
 
 Then you can use [`x-exegesis-controller: Pets`](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md)
@@ -58,21 +61,21 @@ Defaults to true.
 
 ## authenticators
 
-An hash of authenticators. Keys are security scheme names from your
+An object specifying authenticators. Keys are security scheme names from your
 OpenAPI document, values are authenticator functions. See [OAS3 Security](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Security.md)
 for details.
 
 ## mimeTypeParsers
 
-A hash where keys are either mime types or mimetype wildcards (e.g. 'text/\*'),
+An objet where keys are either mime types or mime type wildcards (e.g. 'text/*'),
 and values are parsers.
 
 This option is used to control how Exegesis parses message bodies and certain
-parameters. By default, parsers are provided for 'text/\*', and
-'application/json', however you can override either of these.
+parameters. By default, parsers are provided for 'text/*' and
+'application/json'; however you can override either of these.
 
 OpenAPI 3.x defines special handling for 'application/x-www-form-urlencoded',
-and Exegseis will automatically generate an appropriate parser for this content,
+and Exegesis will automatically generate an appropriate parser for this content,
 however you can override the built-in implementation by supplying your own
 parser for this media type.
 
@@ -128,7 +131,7 @@ Built in body parsers will also respect this option.
 If you use the "format" specifier in your OpenAPI document with custom defined
 formats, you must provide validation functions for each format used.
 
-`customFormats` is a hash where keys are format names. Values can be one of:
+`customFormats` is an object where keys are format names. Values can be one of:
 
 - A RegExp for checking a string.
 - A `function(string) : boolean` for checking a string, which returns
@@ -145,7 +148,7 @@ servers:
   - url: '/api/v2'
 ```
 
-By default, exegesis will take 'servers' into account when routing requests,
+By default, Exegesis will take 'servers' into account when routing requests,
 so if you have the above servers section, and a path in your API called
 "/users", then exegesis will only match the route if the incoming requests has
 the URL "/api/v2/users".
@@ -154,14 +157,14 @@ If you have path templates in your servers, the variables will be available to
 your controllers via `context.params.server`.
 
 If you specify the `ignoreServers` option, however, exegesis will ignore the
-servers section, an route purely based on your paths.
+servers section, and route purely based on your paths.
 
 ## autoHandleHttpErrors
 
 By default, ExegesisRunner will turn `exegesis.HttpError`s (such as errors
 generated from `context.makeError()`, `exegesis.ValidationError`s, or any error
-with a `.status` into JSON replies with appropriate error messages. If you want
-to handle these errors yourself, set this value to false, alternatively set the value
+with a `.status`) into JSON replies with appropriate error messages. If you want
+to handle these errors yourself, set this value to false. Alternatively, you can set the value
 to a `function(err, { req })` function that handles the error returning a `HttpResult` object.
 See [customErrorHandler](../test/integration/customErrorHandler.ts) for an example.
 
@@ -190,8 +193,8 @@ A note about response validation and performance; if you call `context.res.json(
 or return an object from your controller, then the object or any nested objects
 could have a `toJSON()` method on them. This would happen when, for example,
 you return a Mongoose object, or use a Mongoose object as a child of your object.
-In order to correctly validate the response for such an object, exegesis must
-first serialized the object to JSON, and then deserialize it again to get the
+In order to correctly validate the response for such an object, Exegesis must
+first serialize the object to JSON, and then deserialize it again to get the
 actual transmitted object. This is murderous for performance. Checking to see
 if an object has any toJSON() functions is also not great for performance. In
 order to get around this, you can call `context.res.pureJson()` to set the JSON
@@ -214,7 +217,7 @@ This option is ignored if `onResponseValidationError` is not set. If
 ## treatReturnedJsonAsPure
 
 If true, then when a controller returns a JSON object, exegesis will call
-`context.res.pureJson(val)` to set the body of the response. If false, exegesis
+`context.res.pureJson(val)` to set the body of the response. If false, Exegesis
 will call `context.res.json(val)`. See `onResponseValidationError()` for
 a discussion about the difference between these.
 
@@ -223,6 +226,6 @@ This defaults to false, but in a future release it will default to true.
 ## allErrors
 
 If set, then when encountering a validation error Exegesis will return
-all errors found in the document, instead of just the first error. This
+all errors found in the document instead of just the first error. This
 causes Exegesis to spend more time on requests with errors in them, so
 for performance reasons this is disabled by default.

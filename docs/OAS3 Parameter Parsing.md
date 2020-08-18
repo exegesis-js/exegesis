@@ -1,5 +1,15 @@
 # Parameter Parsing
 
+<!-- markdownlint-disable MD007 -->
+<!-- TOC depthFrom:2 -->
+
+- [Parameter Parsing](#parameter-parsing)
+  - [Parameter Parser Functions](#parameter-parser-functions)
+  - [Cookie Parameters](#cookie-parameters)
+
+<!-- /TOC -->
+<!-- markdownlint-enable MD007 -->
+
 Parameters in OpenAPI 3 are serialized using URI Templates from RFC 6570.
 The RFC explains exactly how to convert various values into strings
 (a process the RFC calls "expansion") but says nothing about going in the
@@ -30,13 +40,13 @@ parameters = {
 ```
 
 The path resolver extracts all the values of the path parameters for us as raw
-strings and stores them in a hash object. Node.js does the same for us for
-headers. So, our goal is; given a hash object of path parmaters, a hash object
-of headers, and a query string, produce the above, in as short a time as possible.
+strings and stores them in an object. Node.js does the same for us for
+headers. So, our goal is: given an object of path parameters, an object
+of headers, and a query string, produce the above in as short a time as possible.
 
 The first thing to note about URI template expansion is that, using "[form-style
 query expansion](https://tools.ietf.org/html/rfc6570#section-3.2.8)", without
-the "explode" modifier, the array `['a', 'b', 'c', 'd']` would be expanded as
+the "explode" modifier the array `['a', 'b', 'c', 'd']` would be expanded as
 `?var=a,b,c,d`, and the object `{a: 'b', c: 'd'}` would be expanded as exactly
 the same thing. So the first thing we need to know about a parameter, before
 we can parse the value, is the target type we're trying to parse the parameter
@@ -64,20 +74,21 @@ So, the general approach taken, when compiling a parser for an object, is:
 - If the object can be multiple types and at least one of those types is
   "object", then in a future version we'll do something clever here, like try
   to parse it as an array and do full validation and if that fails move on to
-  try to parse it as an object... Right now though, we throw an exception
-  when compiling the schema. See [discussion here](https://github.com/OAI/OpenAPI-Specification/issues/1535#issuecomment-380032898).
+  trying to parse it as an object. Right now though, we throw an exception
+  when compiling the schema. See
+  [discussion here](https://github.com/OAI/OpenAPI-Specification/issues/1535#issuecomment-380032898).
 
 ## Parameter Parser Functions
 
 At run time, parameter parsers are functions that take in some input, and produce
-a value. These functions are synchonous, because it makes the parameter
+a value. These functions are synchronous, because it makes the parameter
 code easy to work with, and we don't have the overhead of creating Promises or
 dealing with callbacks.
 
-Parser functions take in a hash object from a specific "in", where keys are
+Parser functions take in an object from a specific "in", where keys are
 parameter names, and values are either a string or an array of strings. A
 "path parser" function will only receive values parsed out of the path, a
-"query parser" will only receive values parsed out of the querystring, etc...
+"query parser" will only receive values parsed out of the query string, etc.
 
 Parsers also receive a second parameter, a `parameterContext`, which has
 information about where the parameter came from, and in the case of query
@@ -85,8 +96,8 @@ parameters has access to the original query string.
 
 Note that values passed to parameter parsers will not be passed through
 `decodeURIComponent()` first; RFC 6570 requires that characters from the
-"reserved set" be pct-encoded. So, for a "simple" list, a value that contains
-a "," will have that "," pct-encoded. This means we need to split the raw
+"reserved set" be %-encoded. So, for a "simple" list, a value that contains
+a "," will have that "," encoded. This means we need to split the raw
 value on "," and then pass each resulting string through `decodeURIComponent()`
 to correctly parse a list.
 
@@ -110,15 +121,15 @@ parameter:
 This will be expanded in the query string as '?a=foo&b=bar'. Note that the name
 of our parameter, 'myParam', doesn't even appear in the query string.
 
-As a result, query parameter parsers for exploded objects are passesd the entire
+As a result, query parameter parsers for exploded objects are passed the entire
 set of extracted values as their 'value', and simply return it. We let validation
 take care of working out if the are extra fields in the object that shouldn't be
 there.
 
-The second special case is query parmaeters where the style is set to "deepObject".
+The second special case is for query parameters where the style is set to "deepObject".
 In this case, we parse the entire query string with the `qs` library, find the
 value for the parameter name, and return this as the parsed object. Here we
-don't worry about pct-encoding anything, we just let `qs` handle everything.
+don't worry about %-encoding anything, we just let `qs` handle everything.
 
 Note that the same query parsers are used to handle `application/x-www-form-urlencoded`
 bodies.
