@@ -3,9 +3,10 @@
 <!-- markdownlint-disable MD007 -->
 <!-- TOC depthFrom:2 -->
 
-- [Writing Controllers](#writing-controllers)
-- [Specifying a Controller to Run](#specifying-a-controller-to-run)
-- [What's in a Context?](#whats-in-a-context)
+- [Introduction to Controllers](#introduction-to-controllers)
+  - [Writing Controllers](#writing-controllers)
+  - [Specifying a Controller to Run](#specifying-a-controller-to-run)
+  - [What's in a Context?](#whats-in-a-context)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
@@ -24,17 +25,17 @@ export function myController(context) {
 ```
 
 This will return the object provided as a JSONdocs response. You can return a
-JSON object, a string, a buffer, or a readble stream. You can also more
+JSON object, a string, a buffer, or a readable stream. You can also more
 explicitly set the body by setting `res.body` or calling `res.setBody()`,
 `res.json()`, or `res.pureJson()`:
 
 ```js
 export function myController(context) {
-    const name = context.params.query.name;
-    context.res
-        .status(200)
-        .set('content-type', 'application/json');
-        .setBody({message: `Hello ${name}`});
+  const name = context.params.query.name;
+  context.res
+      .status(200)
+      .set('content-type', 'application/json');
+      .setBody({message: `Hello ${name}`});
 }
 ```
 
@@ -67,51 +68,59 @@ JSON object.
 
 ## Specifying a Controller to Run
 
-Controllers are defined inside modules (.js files). In order to resolve a controller, you specify both the name of the module, and the name of the function to call within the module. Here's a quick example:
+Controllers are defined inside modules (.js files). In order to resolve a
+controller, you specify both the name of the module and the name of the
+function to call within the module. Here's a quick example:
 
 ```yaml
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-    title: Example
-    version: 1.0.0
+  title: Example
+  version: 1.0.0
 paths:
-    "/users"
-        x-exegesis-controller: userController
-        get:
-            operationId: getUsers
+  "/users"
+    x-exegesis-controller: userController
+    get:
+      operationId: getUsers
 ```
 
-Here, we'd find a module named "userControler.js", and then we'd call into `getUsers(context)` within that module.
+Here, we'd find a module named "userController.js", and then we'd call
+`getUsers(context)` within that module.
 
-If you have a path that takes input in multiple different formats, you can also specify the `operationId` in the MediaType object, using `x-exegesis-operationId`:
+If you have a path that takes input in multiple different formats, you can
+also specify the `operationId` in the MediaType object, using
+`x-exegesis-operationId`:
 
 ```yaml
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-    title: Example
-    version: 1.0.0
+  title: Example
+  version: 1.0.0
 paths:
-    "/users"
-        x-exegesis-controller: userController
-        post:
-            content:
-                application/json:
-                    schema: {}
-                    x-exegesis-operationId: getUsersJson
-                multipart/form-data:
-                    schema: {}
-                    x-exegesis-operationId: getUsersMultipart
+  "/users"
+    x-exegesis-controller: userController
+    post:
+      content:
+        application/json:
+          schema: {}
+          x-exegesis-operationId: getUsersJson
+        multipart/form-data:
+          schema: {}
+          x-exegesis-operationId: getUsersMultipart
 ```
 
 You may specify `x-exegesis-controller` in any of the following:
 
-- [OpenAPI Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#oasObject)
-- [Paths Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#pathsObject)
-- [Path Item Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#pathItemObject)
-- [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#operationObject)
-- [Media Type Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#mediaTypeObject) within the Operation Object's `requestBody.content[string]`.
+- [OpenAPI Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#oasObject)
+- [Paths Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#pathsObject)
+- [Path Item Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#pathItemObject)
+- [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#operationObject)
+- [Media Type Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#mediaTypeObject) within the Operation Object's `requestBody.content[string]`.
 
-Exegesis will start from the Media Type Object specified by a given request, and walk it's way upwards to find the "closest" `x-exegesis-controller`, and then do the same for `x-exegesis-operationId`. This will uniquely identify which controller module and function to call.
+Exegesis will start from the Media Type Object specified by a given request,
+walk its way upwards to find the "closest" `x-exegesis-controller`, and then
+do the same for `x-exegesis-operationId`. This will uniquely identify which
+controller module and function to call.
 
 ## What's in a Context?
 
@@ -124,8 +133,8 @@ Exegesis will start from the Media Type Object specified by a given request, and
   be unable to do response validation if you write directly to the origRes
   object.
 - `context.params` - This is a `{query, header, path, server, cookie}` object.
-  Each member is a hash where keys are parameter names, and values are the
-  parsed parameters.
+  Each member is an object where the keys are parameter names, and values are
+  the parsed parameters.
 - `context.parameterLocations` - This is a mirror of the `context.params` object,
   but instead of parameter values, this has parameter locations. (`server`
   parameters are not preset in `parameterLocations` in the current release.)
@@ -142,7 +151,7 @@ Exegesis will start from the Media Type Object specified by a given request, and
   will be an object with the following fields:
 
   - `openApiDoc` - The OpenAPI document for your API. This is a "bundled" object,
-    with all extenral $refs resolved, and only internal $refs remaining.
+    with all external $refs resolved, and only internal $refs remaining.
   - `serverObject` - The Server Object which was matched.
   - `serverPtr` - A JSON Pointer to the server object in `openApiDoc`.
   - `pathItemObject` - The Path Item Object which was matched.
