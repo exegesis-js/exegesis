@@ -259,7 +259,7 @@ describe('oas3 integration controller extensions', function () {
     });
 
     it('should throw an error if there is no openapi version field', function () {
-        const openApiDoc = generateOpenApi();
+        const openApiDoc = generateOpenApi() as any;
         delete openApiDoc['openapi'];
         expect(() => new OpenApi(openApiDoc, options)).to.throw(
             "OpenAPI definition is missing 'openapi' field"
