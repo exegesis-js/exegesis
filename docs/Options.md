@@ -166,7 +166,7 @@ generated from `context.makeError()`, `exegesis.ValidationError`s, or any error
 with a `.status`) into JSON replies with appropriate error messages. If you want
 to handle these errors yourself, set this value to false. Alternatively, you can set the value
 to a `function(err, { req })` function that handles the error returning a `HttpResult` object.
-See [customErrorHandler](../test/integration/customErrorHandler.ts) for an example.
+See [customErrorHandler](../test/integration/integration/customErrorHandler.ts) for an example.
 
 Note that all `HttpError`s will have a `.status` property with a suggested
 numeric HTTP response code.
