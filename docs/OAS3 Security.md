@@ -150,7 +150,7 @@ Here's the exact same example, but using [Passport](http://www.passportjs.org/):
 ```js
 import exegesisPassport from 'exegesis-passport';
 import passport from 'passport';
-import { BasicStragety } from 'passport-http';
+import { BasicStrategy } from 'passport-http';
 import bcrypt from 'bcrypt';
 
 // Note the name of the auth scheme here should match the name of the security
