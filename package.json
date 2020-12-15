@@ -78,7 +78,7 @@
     },
     "dependencies": {
         "@apidevtools/json-schema-ref-parser": "^9.0.3",
-        "ajv": "^6.12.2",
+        "ajv": "^7.0.0",
         "body-parser": "^1.18.3",
         "content-type": "^1.0.4",
         "deep-freeze": "0.0.1",
