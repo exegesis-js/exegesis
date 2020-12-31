@@ -87,7 +87,7 @@
         "json-ptr": "^1.3.1",
         "json-schema-traverse": "^0.4.1",
         "lodash": "^4.17.11",
-        "openapi3-ts": "^1.2.0",
+        "openapi3-ts": "^2.0.1",
         "promise-breaker": "^5.0.0",
         "pump": "^3.0.0",
         "qs": "^6.6.0",
