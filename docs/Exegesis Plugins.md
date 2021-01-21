@@ -127,7 +127,7 @@ function makeExegesisPlugin({apiDoc}) {
     // for example, generates a 403 response here if the authenticated
     // user has insufficient privliedges to access this path.
     //
-    // Note that this function will not be called if a previous pluing
+    // Note that this function will not be called if a previous plugin
     // has already written a response.
     postSecurity(pluginContext) {
     }
