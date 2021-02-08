@@ -64,7 +64,7 @@
         "chai-as-promised": "^7.1.1",
         "coveralls": "^3.0.2",
         "eslint": "^7.6.0",
-        "husky": "^4.0.2",
+        "husky": "^5.0.9",
         "lint-staged": "^10.1.0",
         "markdownlint-cli": "^0.26.0",
         "mocha": "^8.0.1",
