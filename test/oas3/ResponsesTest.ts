@@ -140,11 +140,11 @@ describe('oas3 Responses', function () {
                         name: 'body',
                         path: '',
                     },
-                    message: "should have required property 'foo'",
+                    message: "must have required property 'foo'",
                     ajvError: {
-                        dataPath: '/value',
+                        instancePath: '/value',
                         keyword: 'required',
-                        message: "should have required property 'foo'",
+                        message: "must have required property 'foo'",
                         params: {
                             missingProperty: 'foo',
                         },
@@ -241,11 +241,11 @@ describe('oas3 Responses', function () {
                         name: 'body',
                         path: '',
                     },
-                    message: "should have required property 'message'",
+                    message: "must have required property 'message'",
                     ajvError: {
-                        dataPath: '/value',
+                        instancePath: '/value',
                         keyword: 'required',
-                        message: "should have required property 'message'",
+                        message: "must have required property 'message'",
                         params: {
                             missingProperty: 'message',
                         },

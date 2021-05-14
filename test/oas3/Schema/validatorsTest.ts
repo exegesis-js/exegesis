@@ -110,7 +110,7 @@ describe('schema validators', function () {
 
         expect(validator('foo').errors).to.eql([
             {
-                message: 'should be number',
+                message: 'must be number',
                 location: {
                     in: 'query',
                     name: 'foo',
@@ -118,9 +118,9 @@ describe('schema validators', function () {
                     path: '',
                 },
                 ajvError: {
-                    dataPath: '/value',
+                    instancePath: '/value',
                     keyword: 'type',
-                    message: 'should be number',
+                    message: 'must be number',
                     params: {
                         type: 'number',
                     },
@@ -144,7 +144,7 @@ describe('schema validators', function () {
 
         expect(validator({}).errors, 'should still require "b"').to.eql([
             {
-                message: "should have required property 'b'",
+                message: "must have required property 'b'",
                 location: {
                     in: 'request',
                     name: 'body',
@@ -152,9 +152,9 @@ describe('schema validators', function () {
                     path: '',
                 },
                 ajvError: {
-                    dataPath: '/value',
+                    instancePath: '/value',
                     keyword: 'required',
-                    message: "should have required property 'b'",
+                    message: "must have required property 'b'",
                     params: {
                         missingProperty: 'b',
                     },
@@ -177,7 +177,7 @@ describe('schema validators', function () {
 
         expect(validator({}).errors, 'should still require "a"').to.eql([
             {
-                message: "should have required property 'a'",
+                message: "must have required property 'a'",
                 location: {
                     in: 'request',
                     name: 'body',
@@ -185,9 +185,9 @@ describe('schema validators', function () {
                     path: '',
                 },
                 ajvError: {
-                    dataPath: '/value',
+                    instancePath: '/value',
                     keyword: 'required',
-                    message: "should have required property 'a'",
+                    message: "must have required property 'a'",
                     params: {
                         missingProperty: 'a',
                     },
@@ -223,7 +223,7 @@ describe('schema validators', function () {
 
         expect(validator({ a: 'hello' }).errors).to.eql([
             {
-                message: 'should be number',
+                message: 'must be number',
                 location: {
                     in: 'request',
                     name: 'body',
@@ -231,9 +231,9 @@ describe('schema validators', function () {
                     path: '/a',
                 },
                 ajvError: {
-                    dataPath: '/value/a',
+                    instancePath: '/value/a',
                     keyword: 'type',
-                    message: 'should be number',
+                    message: 'must be number',
                     params: {
                         type: 'number',
                     },
@@ -266,7 +266,7 @@ describe('schema validators', function () {
         // sure it correctly catches decimal values.
         expect(validator(7.5).errors).to.eql([
             {
-                message: 'should be integer',
+                message: 'must be integer',
                 location: {
                     in: 'query',
                     name: 'foo',
@@ -274,9 +274,9 @@ describe('schema validators', function () {
                     path: '',
                 },
                 ajvError: {
-                    dataPath: '/value',
+                    instancePath: '/value',
                     keyword: 'type',
-                    message: 'should be integer',
+                    message: 'must be integer',
                     params: {
                         type: 'integer',
                     },
@@ -288,7 +288,7 @@ describe('schema validators', function () {
         // The expected failure result for an int32 format failure.
         const int32FailValue = [
             {
-                message: 'should match format "int32"',
+                message: 'must match format "int32"',
                 location: {
                     in: 'query',
                     name: 'foo',
@@ -296,9 +296,9 @@ describe('schema validators', function () {
                     path: '',
                 },
                 ajvError: {
-                    dataPath: '/value',
+                    instancePath: '/value',
                     keyword: 'format',
-                    message: 'should match format "int32"',
+                    message: 'must match format "int32"',
                     params: {
                         format: 'int32',
                     },
@@ -479,9 +479,9 @@ describe('schema validators', function () {
             errors: [
                 {
                     ajvError: {
-                        dataPath: '/value',
+                        instancePath: '/value',
                         keyword: 'required',
-                        message: "should have required property 'a'",
+                        message: "must have required property 'a'",
                         params: {
                             missingProperty: 'a',
                         },
@@ -493,7 +493,7 @@ describe('schema validators', function () {
                         name: 'body',
                         path: '',
                     },
-                    message: "should have required property 'a'",
+                    message: "must have required property 'a'",
                 },
             ],
             value: {},
@@ -517,9 +517,9 @@ describe('schema validators', function () {
             errors: [
                 {
                     ajvError: {
-                        dataPath: '/value',
+                        instancePath: '/value',
                         keyword: 'required',
-                        message: "should have required property 'a'",
+                        message: "must have required property 'a'",
                         params: {
                             missingProperty: 'a',
                         },
@@ -531,13 +531,13 @@ describe('schema validators', function () {
                         name: 'body',
                         path: '',
                     },
-                    message: "should have required property 'a'",
+                    message: "must have required property 'a'",
                 },
                 {
                     ajvError: {
-                        dataPath: '/value',
+                        instancePath: '/value',
                         keyword: 'required',
-                        message: "should have required property 'b'",
+                        message: "must have required property 'b'",
                         params: {
                             missingProperty: 'b',
                         },
@@ -549,7 +549,7 @@ describe('schema validators', function () {
                         name: 'body',
                         path: '',
                     },
-                    message: "should have required property 'b'",
+                    message: "must have required property 'b'",
                 },
             ],
             value: {},
@@ -594,9 +594,9 @@ describe('schema validators', function () {
                 errors: [
                     {
                         ajvError: {
-                            dataPath: '/value',
+                            instancePath: '/value',
                             keyword: 'type',
-                            message: 'should be number',
+                            message: 'must be number',
                             params: {
                                 type: 'number',
                             },
@@ -608,7 +608,7 @@ describe('schema validators', function () {
                             name: 'body',
                             path: '',
                         },
-                        message: 'should be number',
+                        message: 'must be number',
                     },
                 ],
                 value: '9',
@@ -685,7 +685,7 @@ describe('schema validators', function () {
                 kind: 'test',
             }).errors?.[0].message,
             'should be invalid with 0 items'
-        ).to.equal('should NOT have fewer than 1 items');
+        ).to.equal('must NOT have fewer than 1 items');
 
         expect(
             validator({

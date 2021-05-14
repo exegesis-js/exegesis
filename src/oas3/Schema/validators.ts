@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import Ajv, { ValidateFunction } from 'ajv';
 import traveseSchema from 'json-schema-traverse';
 import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction } from '../../types';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
@@ -48,26 +48,17 @@ function getParameterDescription(parameterLocation: ParameterLocation) {
     return description;
 }
 
-function addCustomFormats(
-    ajv: Ajv.Ajv,
-    customFormats: CustomFormats
-): { [k: string]: Ajv.FormatDefinition } {
-    return Object.keys(customFormats).reduce<{ [k: string]: Ajv.FormatDefinition }>(
-        (result: { [k: string]: Ajv.FormatDefinition }, key: string) => {
-            const customFormat = customFormats[key];
-            if (typeof customFormat === 'function' || customFormat instanceof RegExp) {
-                result[key] = { type: 'string', validate: customFormat };
-            } else if (customFormat.type === 'string') {
-                result[key] = { type: 'string', validate: customFormat.validate };
-            } else if (customFormat.type === 'number') {
-                result[key] = { type: 'number', validate: customFormat.validate };
-            }
-
-            ajv.addFormat(key, result[key]);
-            return result;
-        },
-        {}
-    );
+function addCustomFormats(ajv: Ajv, customFormats: CustomFormats) {
+    for (const key of Object.keys(customFormats)) {
+        const customFormat = customFormats[key];
+        if (typeof customFormat === 'function' || customFormat instanceof RegExp) {
+            ajv.addFormat(key, { type: 'string', validate: customFormat });
+        } else if (customFormat.type === 'string') {
+            ajv.addFormat(key, { type: 'string', validate: customFormat.validate });
+        } else if (customFormat.type === 'number') {
+            ajv.addFormat(key, { type: 'number', validate: customFormat.validate });
+        }
+    }
 }
 
 function removeExamples(schema: any) {
@@ -139,7 +130,7 @@ function doValidate(
     schemaPtr: string,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
-    ajvValidate: Ajv.ValidateFunction,
+    ajvValidate: ValidateFunction,
     json: any
 ) {
     const value = { value: json };
@@ -167,7 +158,7 @@ function doValidate(
         ajvValidate(value);
         if (ajvValidate.errors) {
             errors = ajvValidate.errors.map((err) => {
-                let pathPtr = err.dataPath || '';
+                let pathPtr = err.instancePath || '';
                 if (pathPtr.startsWith('/value')) {
                     pathPtr = pathPtr.slice(6);
                 }
@@ -226,8 +217,6 @@ function generateValidator(
         useDefaults: true,
         coerceTypes: allowTypeCoercion ? 'array' : false,
         removeAdditional: allowTypeCoercion ? 'failing' : false,
-        jsonPointers: true,
-        nullable: true,
         allErrors: schemaContext.options.allErrors,
     });
     addCustomFormats(ajv, customFormats);

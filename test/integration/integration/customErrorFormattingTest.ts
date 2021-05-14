@@ -104,7 +104,7 @@ describe('integration test', function () {
                                 name: 'name',
                                 path: '',
                             },
-                            message: 'should NOT be shorter than 2 characters',
+                            message: 'must NOT have fewer than 2 characters',
                             keyword: 'minLength',
                             params: {
                                 limit: 2,
