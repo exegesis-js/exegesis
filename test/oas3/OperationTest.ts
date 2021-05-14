@@ -10,6 +10,7 @@ import { ExegesisOptions } from '../../src';
 import { compileOptions } from '../../src/options';
 import FakeExegesisContext from '../fixtures/FakeExegesisContext';
 import { Readable, Transform } from 'stream';
+import { ResponseObject } from 'openapi3-ts';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -584,7 +585,7 @@ describe('oas3 Operation', function () {
     });
 
     describe('validate response body', function () {
-        const DEFAULT_RESPONSE = {
+        const DEFAULT_RESPONSE: ResponseObject = {
             description: 'Unexpected error',
             content: {
                 'application/json': {

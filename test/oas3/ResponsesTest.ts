@@ -7,11 +7,12 @@ import Responses from '../../src/oas3/Responses';
 import { compileOptions } from '../../src/options';
 import { makeOpenApiDoc } from '../fixtures';
 import stringToStream from '../../src/utils/stringToStream';
+import { ResponsesObject } from 'openapi3-ts';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
 
-const DEFAULT_RESPONSE = {
+const DEFAULT_RESPONSE: ResponsesObject = {
     200: {
         description: '',
         content: {
