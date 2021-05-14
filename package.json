@@ -18,7 +18,7 @@
         "lint:source": "eslint --ext .ts src",
         "lint:tests": "eslint --ext .ts test",
         "lint:markdown": "markdownlint **/*.md *.md",
-        "prepare": "npm run build",
+        "prepare": "husky install && npm run build",
         "prepublishOnly": "npm run build && npm test",
         "semantic-release": "semantic-release"
     },
@@ -93,11 +93,6 @@
         "qs": "^6.6.0",
         "raw-body": "^2.3.3",
         "semver": "^7.0.0"
-    },
-    "husky": {
-        "hooks": {
-            "pre-commit": "npm run test:pre-commit"
-        }
     },
     "engines": {
         "node": ">=6.0.0",
