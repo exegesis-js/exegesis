@@ -40,9 +40,9 @@ document in "/src/index.js", you could specify `controllers` as:
 import * as path from 'path';
 
 const options = {
-    controllers: path.resolve(__dirname, 'controllers'),
-    controllersPattern: "**/*.@(ts|js)"
-}
+  controllers: path.resolve(__dirname, 'controllers'),
+  controllersPattern: '**/*.@(ts|js)',
+};
 ```
 
 Then you can use [`x-exegesis-controller: Pets`](https://github.com/exegesis-js/exegesis/blob/master/docs/OAS3%20Specification%20Extensions.md)
@@ -67,11 +67,11 @@ for details.
 
 ## mimeTypeParsers
 
-An objet where keys are either mime types or mime type wildcards (e.g. 'text/*'),
+An objet where keys are either mime types or mime type wildcards (e.g. 'text/\*'),
 and values are parsers.
 
 This option is used to control how Exegesis parses message bodies and certain
-parameters. By default, parsers are provided for 'text/*' and
+parameters. By default, parsers are provided for 'text/\*' and
 'application/json'; however you can override either of these.
 
 OpenAPI 3.x defines special handling for 'application/x-www-form-urlencoded',
@@ -222,6 +222,10 @@ will call `context.res.json(val)`. See `onResponseValidationError()` for
 a discussion about the difference between these.
 
 This defaults to false, but in a future release it will default to true.
+
+## strictValidation
+
+If true, then this will put ajv into ["strict mode"](https://ajv.js.org/strict-mode.html).
 
 ## allErrors
 

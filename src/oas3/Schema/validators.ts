@@ -1,6 +1,6 @@
 import Ajv, { ValidateFunction } from 'ajv';
 import traveseSchema from 'json-schema-traverse';
-import { CustomFormats, IValidationError, ParameterLocation, ValidatorFunction } from '../../types';
+import { IValidationError, ParameterLocation, ValidatorFunction } from '../../types';
 import { resolveRef } from '../../utils/json-schema-resolve-ref';
 import * as jsonPaths from '../../utils/jsonPaths';
 import * as jsonSchema from '../../utils/jsonSchema';
@@ -46,12 +46,6 @@ function getParameterDescription(parameterLocation: ParameterLocation) {
     }
 
     return description;
-}
-
-function addCustomFormats(ajv: Ajv, customFormats: CustomFormats) {
-    for (const key of Object.keys(customFormats)) {
-        ajv.addFormat(key, customFormats[key]);
-    }
 }
 
 function removeExamples(schema: any) {
@@ -211,9 +205,13 @@ function generateValidator(
         coerceTypes: allowTypeCoercion ? 'array' : false,
         removeAdditional: allowTypeCoercion ? 'failing' : false,
         allErrors: schemaContext.options.allErrors,
+        strict: schemaContext.options.strictValidation,
     });
 
-    addCustomFormats(ajv, customFormats);
+    for (const key of Object.keys(customFormats)) {
+        ajv.addFormat(key, customFormats[key]);
+    }
+
     const validate = ajv.compile(schema);
 
     return function (json: any) {

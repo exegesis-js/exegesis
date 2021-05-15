@@ -159,4 +159,9 @@ export interface ExegesisOptions {
      * will call `context.res.json(val)`.
      */
     treatReturnedJsonAsPure?: boolean;
+
+    /**
+     * If true, then this will put ajv into "strict mode" (see https://ajv.js.org/strict-mode.html).
+     */
+    strictValidation?: boolean;
 }

@@ -36,6 +36,7 @@ export interface ExegesisCompiledOptions {
     validateDefaultResponses: boolean;
     allErrors: boolean;
     treatReturnedJsonAsPure: boolean;
+    strictValidation: boolean;
 }
 
 // See the OAS 3.0 specification for full details about supported formats:
@@ -132,5 +133,6 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
         validateDefaultResponses,
         allErrors: options.allErrors || false,
         treatReturnedJsonAsPure: options.treatReturnedJsonAsPure || false,
+        strictValidation: options.strictValidation ?? false,
     };
 }
