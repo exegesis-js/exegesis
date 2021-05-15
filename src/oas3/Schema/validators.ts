@@ -50,14 +50,7 @@ function getParameterDescription(parameterLocation: ParameterLocation) {
 
 function addCustomFormats(ajv: Ajv, customFormats: CustomFormats) {
     for (const key of Object.keys(customFormats)) {
-        const customFormat = customFormats[key];
-        if (typeof customFormat === 'function' || customFormat instanceof RegExp) {
-            ajv.addFormat(key, { type: 'string', validate: customFormat });
-        } else if (customFormat.type === 'string') {
-            ajv.addFormat(key, { type: 'string', validate: customFormat.validate });
-        } else if (customFormat.type === 'number') {
-            ajv.addFormat(key, { type: 'number', validate: customFormat.validate });
-        }
+        ajv.addFormat(key, customFormats[key]);
     }
 }
 
@@ -219,6 +212,7 @@ function generateValidator(
         removeAdditional: allowTypeCoercion ? 'failing' : false,
         allErrors: schemaContext.options.allErrors,
     });
+
     addCustomFormats(ajv, customFormats);
     const validate = ajv.compile(schema);
 

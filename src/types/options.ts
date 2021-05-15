@@ -1,7 +1,7 @@
-import { StringParser, BodyParser } from './bodyParser';
-import { Controllers, Authenticators, ExegesisPlugin } from './core';
-import { ResponseValidationCallback } from './validation';
 import * as http from 'http';
+import { BodyParser, StringParser } from './bodyParser';
+import { Authenticators, Controllers, ExegesisPlugin } from './core';
+import { ResponseValidationCallback } from './validation';
 
 /**
  * A function which validates custom formats.
@@ -11,7 +11,7 @@ export type CustomFormatChecker = RegExp | ((value: string) => boolean);
 export type HandleErrorFunction = (err: Error, context: { req: http.IncomingMessage }) => any;
 
 export interface StringCustomFormatChecker {
-    type: 'string';
+    type?: 'string' | undefined;
     validate: CustomFormatChecker;
 }
 
@@ -28,6 +28,7 @@ export interface NumberCustomFormatChecker {
  *     false the the string is invalid.
  *   * A `{validate, type}` object, where `type` is either "string" or "number",
  *     and validate is a `function(string) : boolean`.
+ *   * Any `ajv` format.
  */
 export interface CustomFormats {
     [key: string]: CustomFormatChecker | StringCustomFormatChecker | NumberCustomFormatChecker;

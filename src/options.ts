@@ -1,22 +1,26 @@
+import ajvFormats from 'ajv-formats';
 import ld from 'lodash';
-
-import { MimeTypeRegistry } from './utils/mime';
-import TextBodyParser from './bodyParsers/TextBodyParser';
-import JsonBodyParser from './bodyParsers/JsonBodyParser';
 import BodyParserWrapper from './bodyParsers/BodyParserWrapper';
+import JsonBodyParser from './bodyParsers/JsonBodyParser';
+import TextBodyParser from './bodyParsers/TextBodyParser';
 import { loadControllersSync } from './controllers/loadControllers';
-
 import {
-    CustomFormats,
-    ExegesisOptions,
-    StringParser,
+    Authenticators,
     BodyParser,
     Controllers,
-    Authenticators,
+    CustomFormats,
+    ExegesisOptions,
     MimeTypeParser,
     ResponseValidationCallback,
+    StringParser,
 } from './types';
-import { HandleErrorFunction } from './types/options';
+import {
+    HandleErrorFunction,
+    NumberCustomFormatChecker,
+    StringCustomFormatChecker,
+    CustomFormatChecker,
+} from './types/options';
+import { MimeTypeRegistry } from './utils/mime';
 
 export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
@@ -34,50 +38,28 @@ export interface ExegesisCompiledOptions {
     treatReturnedJsonAsPure: boolean;
 }
 
-const INT_32_MIN = -1 * Math.pow(2, 31);
-const INT_32_MAX = Math.pow(2, 31) - 1;
-// Javascript can only safely support a range of -(2^53 - 1) to (2^53 - 1)
-//      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-const INT_64_MIN = Number.MIN_SAFE_INTEGER;
-const INT_64_MAX = Number.MAX_SAFE_INTEGER;
-
 // See the OAS 3.0 specification for full details about supported formats:
 //      https://github.com/OAI/OpenAPI-Specification/blob/3.0.2/versions/3.0.2.md#data-types
 const defaultValidators: CustomFormats = {
-    // string:date is taken care of for us:
-    //      https://github.com/epoberezkin/ajv/blob/797dfc8c2b0f51aaa405342916cccb5962dd5f21/lib/compile/formats.js#L34
-    // string:date-time is from:
-    //      https://tools.ietf.org/html/draft-wright-json-schema-validation-00#section-7.3.1.
-    // number:int32 and number:int64 are defined as non-fractional integers
-    //      https://tools.ietf.org/html/draft-wright-json-schema-00#section-5.3
-    int32: {
-        type: 'number',
-        validate: (value: number) => value >= INT_32_MIN && value <= INT_32_MAX,
-    },
-    int64: {
-        type: 'number',
-        validate: (value: number) => value >= INT_64_MIN && value <= INT_64_MAX,
-    },
-    double: {
-        type: 'number',
-        validate: () => true,
-    },
-    float: {
-        type: 'number',
-        validate: () => true,
-    },
+    // TODO: Support async validators so we don't need all this casting.
+    int32: ajvFormats.get('int32') as NumberCustomFormatChecker,
+    int64: ajvFormats.get('int64') as NumberCustomFormatChecker,
+    double: ajvFormats.get('double') as NumberCustomFormatChecker,
+    float: ajvFormats.get('float') as NumberCustomFormatChecker,
     // Nothing to do for 'password'; this is just a hint for docs.
     password: () => true,
     // Impossible to validate "binary".
     binary: () => true,
-    // `byte` is base64 encoded data.  We *could* validate it here, but if the
-    // string is long, we might take a while to do it, and the application will
-    // figure it out quickly enough when it tries to decode it, so we just
-    // pass it along.
-    byte: () => true,
+    byte: ajvFormats.get('byte') as RegExp,
     // Not defined by OAS 3, but it's used throughout OAS 3.0.1, so we put it
     // here as an alias for 'byte' just in case.
-    base64: () => true,
+    base64: ajvFormats.get('byte') as RegExp,
+    // Various formats we're supposed to support per the JSON Schema RFC.
+    // https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-7.3
+    date: ajvFormats.get('date') as CustomFormatChecker,
+    time: ajvFormats.get('time') as StringCustomFormatChecker,
+    'date-time': ajvFormats.get('date-time') as StringCustomFormatChecker,
+    duration: ajvFormats.get('duration') as RegExp,
 };
 
 export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
