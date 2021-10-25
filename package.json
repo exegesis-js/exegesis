@@ -57,7 +57,7 @@
         "@types/pump": "^1.0.1",
         "@types/qs": "^6.5.1",
         "@types/semver": "^7.1.0",
-        "@typescript-eslint/eslint-plugin": "^4.0.0",
+        "@typescript-eslint/eslint-plugin": "^5.2.0",
         "@typescript-eslint/parser": "^4.0.1",
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
