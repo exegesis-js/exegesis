@@ -89,6 +89,21 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         this.ended = true;
     }
 
+    redirect(status: number, url: string): this;
+    redirect(url: string): this;
+    redirect(a: number | string, b?: string): this {
+        if (typeof a === 'string' && !b) {
+            this.writeHead(302, { Location: a });
+        } else if (typeof a === 'number' && typeof b === 'string') {
+            this.writeHead(a, { Location: b });
+        } else {
+            throw new Error('Invalid arguments to redirect');
+        }
+        this.end();
+
+        return this;
+    }
+
     setHeader(name: string, value: number | string | string[]) {
         if (this.ended && !this._afterController) {
             throw new Error('Trying to set header after response has been ended.');

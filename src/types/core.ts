@@ -51,6 +51,8 @@ export interface ExegesisResponse {
      */
     pureJson(json: any): this;
     end(): void;
+    redirect(status: number, url: string): this;
+    redirect(url: string): this;
     setHeader(name: string, value: number | string | string[] | undefined): void;
     getHeader(name: string): number | string | string[] | undefined;
     getHeaderNames(): string[];
