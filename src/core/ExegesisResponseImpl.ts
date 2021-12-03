@@ -12,6 +12,7 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     headers: types.HttpHeaders = Object.create(null);
     ended: boolean = false;
     connection: net.Socket;
+    socket: net.Socket;
     headersSent: boolean = false;
     private _responseValidationEnabled: boolean;
 
@@ -19,7 +20,10 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
         res: http.ServerResponse /* | http2.Http2ServerResponse */,
         responseValidationEnabled: boolean
     ) {
-        this.connection = res.connection;
+        if (!res.socket) {
+            throw new Error('Response is already ended');
+        }
+        this.connection = this.socket = res.socket;
         this._responseValidationEnabled = responseValidationEnabled;
     }
 

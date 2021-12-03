@@ -42,7 +42,7 @@ export default class FakeExegesisContext implements ExegesisContext {
 
     constructor() {
         this.req = {} as http.IncomingMessage;
-        this.origRes = {} as http.ServerResponse;
+        this.origRes = { socket: {} } as http.ServerResponse;
         this.res = new ExegesisResponseImpl(this.origRes, true);
     }
 

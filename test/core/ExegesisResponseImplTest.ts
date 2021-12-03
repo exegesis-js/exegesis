@@ -20,7 +20,7 @@ describe('ExegesisResponseImpl', () => {
                 content: new StringWrapper('foo'),
             };
 
-            const res = new ExegesisResponseImpl({} as any, true);
+            const res = new ExegesisResponseImpl({ socket: {} } as any, true);
             res.json(data);
 
             expect(res.headers['content-type']).to.equal('application/json');
@@ -44,7 +44,7 @@ describe('ExegesisResponseImpl', () => {
                 content: new StringWrapper('foo'),
             };
 
-            const res = new ExegesisResponseImpl({} as any, false);
+            const res = new ExegesisResponseImpl({ socket: {} } as any, false);
             res.json(data);
 
             expect(res.headers['content-type']).to.equal('application/json');
@@ -56,7 +56,7 @@ describe('ExegesisResponseImpl', () => {
         it('set the response body', () => {
             const body = { content: 'foo' };
 
-            const res = new ExegesisResponseImpl({} as any, true);
+            const res = new ExegesisResponseImpl({ socket: {} } as any, true);
             res.pureJson(body);
 
             expect(res.headers['content-type']).to.equal('application/json');

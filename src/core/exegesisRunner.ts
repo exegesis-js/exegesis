@@ -1,5 +1,6 @@
 import * as http from 'http';
 import { Readable } from 'stream';
+import { asError, HttpError } from '../errors';
 
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
@@ -208,8 +209,9 @@ export default async function generateExegesisRunner<T>(
                                     context,
                                 });
                             }
-                        } catch (err) {
-                            err.status = err.status || 500;
+                        } catch (e) {
+                            const err = asError(e) as HttpError;
+                            (err as any).status = err.status || 500;
                             throw err;
                         }
                     }
@@ -222,7 +224,9 @@ export default async function generateExegesisRunner<T>(
             }
 
             return result;
-        } catch (err) {
+        } catch (e) {
+            const err = asError(e);
+
             if (options.autoHandleHttpErrors) {
                 if (options.autoHandleHttpErrors instanceof Function) {
                     return options.autoHandleHttpErrors(err, { req });

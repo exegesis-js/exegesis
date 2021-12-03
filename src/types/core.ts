@@ -21,6 +21,7 @@ export interface ExegesisResponse {
     headers: HttpHeaders;
     body: Buffer | string | Readable | any;
     connection: net.Socket;
+    socket: net.Socket;
     ended: boolean;
 
     setStatus(status: number): this;

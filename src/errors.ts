@@ -50,3 +50,18 @@ export class HttpPayloadTooLargeError extends HttpError {
         super(413, message);
     }
 }
+
+/**
+ * Ensures the passed in `err` is of type Error.
+ */
+export function asError(err: any): Error {
+    if (err instanceof Error) {
+        return err;
+    } else {
+        const newErr = new Error(err);
+        if (err.status) {
+            (newErr as any).status = err.status;
+        }
+        return newErr;
+    }
+}

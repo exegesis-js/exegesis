@@ -62,7 +62,7 @@ describe('Plugin Test', function () {
             originalOptions: {},
         });
 
-        await runner({} as http.IncomingMessage, {} as http.ServerResponse);
+        await runner({} as http.IncomingMessage, { socket: {} } as http.ServerResponse);
 
         expect(callOrder).to.eql([
             // Note: no preCompile here, because it would be called when compiling options.
