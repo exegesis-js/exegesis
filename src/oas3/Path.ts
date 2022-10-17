@@ -6,7 +6,7 @@ import Parameter from './Parameter';
 import { EXEGESIS_CONTROLLER } from './extensions';
 
 // CONNECT not included, as it is not valid for OpenAPI 3.0.1.
-const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'TRACE', 'PATCH'];
+const HTTP_METHODS = ['get', 'head', 'post', 'put', 'delete', 'options', 'trace', 'patch'] as const;
 
 interface OperationsMap {
     [key: string]: Operation;
@@ -33,19 +33,20 @@ export default class Path {
         );
 
         exegesisController = oaPath[EXEGESIS_CONTROLLER] || exegesisController;
-        this._operations = HTTP_METHODS.map((method) => method.toLowerCase())
-            .filter((method) => oaPath[method])
-            .reduce((result: OperationsMap, method: string) => {
+        this._operations = HTTP_METHODS.reduce((result: OperationsMap, method) => {
+            const operation = oaPath[method];
+            if (operation) {
                 result[method] = new Operation(
                     context.childContext(method),
-                    oaPath[method],
+                    operation,
                     oaPath,
                     method,
                     exegesisController,
                     parameters
                 );
-                return result;
-            }, Object.create(null));
+            }
+            return result;
+        }, Object.create(null));
     }
 
     getOperation(method: string): Operation | undefined {
