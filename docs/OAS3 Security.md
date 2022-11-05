@@ -176,7 +176,8 @@ Here's an example of the securitySchemes section from an OpenAPI document:
 
 ```yaml
   securitySchemes:
-    basicAuth: A request with a username and password
+    basicAuth: 
+      description: A request with a username and password
       type: http
       scheme: basic
     oauth:
