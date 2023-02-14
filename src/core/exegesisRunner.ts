@@ -124,11 +124,7 @@ function getAllowedMethods(resolved: ResolvedPath<OAS3ApiInfo>) {
  * @returns runner function.
  */
 export default async function generateExegesisRunner<T>(
-    api: 
-     
-     
-     
-     terface<T>,
+    api: ApiInterface<T>,
     options: {
         autoHandleHttpErrors: boolean | HandleErrorFunction;
         plugins: PluginsManager;
