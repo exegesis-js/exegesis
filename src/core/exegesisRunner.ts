@@ -12,8 +12,10 @@ import {
     ExegesisRunner,
     HttpResult,
     ExegesisContext,
+    OAS3ApiInfo,
     ResponseValidationCallback,
     ResolvedOperation,
+    ResolvedPath,
     ExegesisOptions,
     ExegesisResponse,
 } from '../types';
@@ -97,12 +99,21 @@ function handleError(err: Error) {
     } else if (Number.isInteger((err as any).status)) {
         return {
             status: (err as any).status,
-            headers: { 'content-type': 'application/json' },
+            headers: err.headers || { 'content-type': 'application/json' },
             body: stringToStream(JSON.stringify({ message: err.message }), 'utf-8'),
         };
     } else {
         throw err;
     }
+}
+
+function getAllowedMethods(resolved: ResolvedPath<OAS3ApiInfo>) {
+    let allowedMethods = [];
+    for (const method in resolved.api.pathItemObject) {
+        allowedMethods.push(method);
+    }
+
+    return allowedMethods.join(",").toUpperCase();
 }
 
 /**
@@ -113,7 +124,11 @@ function handleError(err: Error) {
  * @returns runner function.
  */
 export default async function generateExegesisRunner<T>(
-    api: ApiInterface<T>,
+    api: 
+     
+     
+     
+     terface<T>,
     options: {
         autoHandleHttpErrors: boolean | HandleErrorFunction;
         plugins: PluginsManager;
@@ -144,7 +159,12 @@ export default async function generateExegesisRunner<T>(
             if (!resolved.operation) {
               const error = new Error(`Method ${method} not allowed for ${url}`);
               error.status = 405;
-              throw error;
+              error.headers = { 
+                'Allow': getAllowedMethods(resolved),
+                'content-type': 'application/json'
+              };
+
+            return handleError(error);
           }
             
             const context = new ExegesisContextImpl<T>(
