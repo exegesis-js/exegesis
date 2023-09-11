@@ -67,11 +67,11 @@ for details.
 
 ## mimeTypeParsers
 
-An objet where keys are either mime types or mime type wildcards (e.g. 'text/\*'),
+An object where keys are either mime types or mime type wildcards (e.g. 'text/\*'),
 and values are parsers.
 
-This option is used to control how Exegesis parses message bodies and certain
-parameters. By default, parsers are provided for 'text/\*' and
+This option is used to control how Exegesis [parses message bodies and certain
+parameters](./OAS3%20Parameter%20Parsing.md). By default, parsers are provided for 'text/\*' and
 'application/json'; however you can override either of these.
 
 OpenAPI 3.x defines special handling for 'application/x-www-form-urlencoded',
