@@ -26,7 +26,8 @@ import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import Responses from './Responses';
 import SecuritySchemes from './SecuritySchemes';
 
-const METHODS_WITH_BODY = ['post', 'put', 'patch'];
+// `delete` might have a body. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE
+const METHODS_WITH_BODY = ['post', 'put', 'patch', 'delete'];
 
 function isAuthenticationFailure(result: any): result is AuthenticationFailure {
     return !!(result.type === 'invalid' || result.type === 'missing');
