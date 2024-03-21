@@ -232,6 +232,21 @@ describe('integration test', function () {
                 .expect(200)
                 .expectBody({ hasBody: true });
         });
+
+        it('should return 405 if post is not allowed.', async function () {
+            const fetch = makeFetch(this.server);
+            await fetch(`/greet`, {
+                method: 'post',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ name: 'joe' }),
+            })
+                .expect(405)
+                .expect('allow', 'GET')
+                .expect('content-type', 'application/json')
+                .expectBody({
+                    message: 'Method POST not allowed for /greet',
+                });
+        });
     });
 
     it('should correctly parse application/x-www-form-urlencoded', async function () {

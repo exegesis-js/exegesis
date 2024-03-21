@@ -6,7 +6,16 @@ import Parameter from './Parameter';
 import { EXEGESIS_CONTROLLER } from './extensions';
 
 // CONNECT not included, as it is not valid for OpenAPI 3.0.1.
-const HTTP_METHODS = ['get', 'head', 'post', 'put', 'delete', 'options', 'trace', 'patch'] as const;
+export const HTTP_METHODS = [
+    'get',
+    'head',
+    'post',
+    'put',
+    'delete',
+    'options',
+    'trace',
+    'patch',
+] as const;
 
 interface OperationsMap {
     [key: string]: Operation;

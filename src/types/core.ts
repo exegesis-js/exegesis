@@ -209,6 +209,8 @@ export interface ResolvedOperation {
 export interface ResolvedPath<T> {
     operation: ResolvedOperation | undefined;
     api: T;
+    /** List of methods the client is allowed to send to this path.  e.g. `['get', 'post']`. */
+    allowedMethods: string[];
     /** The path of the operation being accessed.  e.g. "/users/1234". */
     path: string;
     /**

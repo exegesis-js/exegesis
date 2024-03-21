@@ -12,10 +12,8 @@ import {
     ExegesisRunner,
     HttpResult,
     ExegesisContext,
-    OAS3ApiInfo,
     ResponseValidationCallback,
     ResolvedOperation,
-    ResolvedPath,
     ExegesisOptions,
     ExegesisResponse,
 } from '../types';
@@ -99,21 +97,12 @@ function handleError(err: Error) {
     } else if (Number.isInteger((err as any).status)) {
         return {
             status: (err as any).status,
-            headers: err.headers || { 'content-type': 'application/json' },
+            headers: (err as any).headers || { 'content-type': 'application/json' },
             body: stringToStream(JSON.stringify({ message: err.message }), 'utf-8'),
         };
     } else {
         throw err;
     }
-}
-
-function getAllowedMethods(resolved: ResolvedPath<OAS3ApiInfo>) {
-    let allowedMethods = [];
-    for (const method in resolved.api.pathItemObject) {
-        allowedMethods.push(method);
-    }
-
-    return allowedMethods.join(",").toUpperCase();
 }
 
 /**
@@ -153,16 +142,16 @@ export default async function generateExegesisRunner<T>(
             }
 
             if (!resolved.operation) {
-              const error = new Error(`Method ${method} not allowed for ${url}`);
-              error.status = 405;
-              error.headers = { 
-                'Allow': getAllowedMethods(resolved),
-                'content-type': 'application/json'
-              };
+                const error: any = new Error(`Method ${method} not allowed for ${url}`);
+                error.status = 405;
+                error.headers = {
+                    allow: resolved.allowedMethods.join(',').toUpperCase(),
+                    'content-type': 'application/json',
+                };
 
-            return handleError(error);
-          }
-            
+                return handleError(error);
+            }
+
             const context = new ExegesisContextImpl<T>(
                 req,
                 res,
@@ -195,11 +184,7 @@ export default async function generateExegesisRunner<T>(
             }
 
             if (!context.isResponseFinished()) {
-                await invokeController(
-                    operation.controllerModule,
-                    operation.controller,
-                    context
-                );
+                await invokeController(operation.controllerModule, operation.controller, context);
             }
 
             if (!context.origRes.headersSent) {

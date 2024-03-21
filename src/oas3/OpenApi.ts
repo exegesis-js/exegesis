@@ -22,6 +22,7 @@ import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import RequestMediaType from './RequestMediaType';
 import { HttpBadRequestError } from '../errors';
 import { httpHasBody, requestMayHaveBody } from '../utils/httpUtils';
+import { HTTP_METHODS } from './Path';
 
 export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
     readonly openApiDoc: oas3.OpenAPIObject;
@@ -167,6 +168,8 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                     };
                 }
 
+                const allowedMethods = HTTP_METHODS.filter((method) => path.getOperation(method));
+
                 return {
                     operation: resolvedOperation,
                     api: {
@@ -180,6 +183,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
                         requestBodyMediaTypePtr: mediaType && mediaType.context.jsonPointer,
                         requestBodyMediaTypeObject: mediaType && mediaType.oaMediaType,
                     },
+                    allowedMethods,
                     path: resolvedPath.pathKey,
                     baseUrl,
                 };

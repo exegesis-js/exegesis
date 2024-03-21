@@ -40,6 +40,7 @@ export class FakeApiInterface implements ApiInterface<void> {
                 authenticate: () => Promise.resolve(undefined),
             },
             api: void 0,
+            allowedMethods: ['get'],
             path: url,
             baseUrl: '',
         };
