@@ -6,11 +6,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-versions: [12.x, 14.x, 16.x]
+        node-versions: [18.x, 20.x]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
@@ -25,11 +25,11 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: lts
       - run: npm install
       - name: semantic-release
         run: npm run semantic-release
