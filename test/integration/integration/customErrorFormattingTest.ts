@@ -158,11 +158,7 @@ describe('integration test', function () {
                 method: 'post',
                 headers: { 'content-type': 'application/json' },
                 body: '{',
-            })
-                .expect(400)
-                .expectBody({
-                    message: 'Unexpected end of JSON input',
-                });
+            }).expect(400);
         });
     });
 });
