@@ -233,3 +233,9 @@ If set, then when encountering a validation error Exegesis will return
 all errors found in the document instead of just the first error. This
 causes Exegesis to spend more time on requests with errors in them, so
 for performance reasons this is disabled by default.
+
+## lazyCompileValidationSchemas
+
+Response and request schemas are compiled by ajv to make validation faster. However compilation is slow
+and can cause compilation of API to take long time. Enabling this will cause validation schemas
+compilation to be executed when the validator is needed.
