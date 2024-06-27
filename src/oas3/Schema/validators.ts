@@ -117,7 +117,7 @@ function doValidate(
     schemaPtr: string,
     parameterLocation: ParameterLocation,
     parameterRequired: boolean,
-    ajvValidate: ValidateFunction,
+    getAjvValidate: () => ValidateFunction,
     json: any
 ) {
     const value = { value: json };
@@ -142,6 +142,7 @@ function doValidate(
     }
 
     if (!errors) {
+        const ajvValidate = getAjvValidate();
         ajvValidate(value);
         if (ajvValidate.errors) {
             errors = ajvValidate.errors.map((err) => {
@@ -165,6 +166,23 @@ function doValidate(
     }
 
     return { errors, value: value.value };
+}
+
+function createValidateGetter(schema: any, ajv: Ajv, lazy: boolean): () => ValidateFunction {
+    if (lazy) {
+        let validate: ValidateFunction | null = null;
+        return function () {
+            if (!validate) {
+                validate = ajv.compile(schema);
+            }
+            return validate;
+        };
+    } else {
+        const validate = ajv.compile(schema);
+        return function () {
+            return validate;
+        };
+    }
 }
 
 function generateValidator(
@@ -212,10 +230,14 @@ function generateValidator(
         ajv.addFormat(key, customFormats[key]);
     }
 
-    const validate = ajv.compile(schema);
+    const getValidate = createValidateGetter(
+        schema,
+        ajv,
+        schemaContext.options.lazyCompileValidationSchemas
+    );
 
     return function (json: any) {
-        return doValidate(schemaPtr, parameterLocation, parameterRequired, validate, json);
+        return doValidate(schemaPtr, parameterLocation, parameterRequired, getValidate, json);
     };
 }
 

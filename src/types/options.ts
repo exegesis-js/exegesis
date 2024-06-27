@@ -164,4 +164,11 @@ export interface ExegesisOptions {
      * If true, then this will put ajv into "strict mode" (see https://ajv.js.org/strict-mode.html).
      */
     strictValidation?: boolean;
+
+    /**
+     * Response and request schemas are compiled by ajv to make validation faster. However compilation is slow
+     * and can cause compilation of API to take long time. Enabling this will cause validation schemas
+     * compilation to be executed when the validator is needed.
+     */
+    lazyCompileValidationSchemas?: boolean;
 }
