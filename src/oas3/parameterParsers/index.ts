@@ -1,6 +1,6 @@
 import ld from 'lodash';
 import querystring from 'querystring';
-import qs from 'qs';
+import { parse } from 'neoqs/legacy';
 
 import { ParametersMap, ParameterLocation } from '../../types';
 import { ValidationError } from '../../errors';
@@ -143,7 +143,7 @@ function deepObjectParser(
     parserContext: any
 ): any {
     if (!parserContext.qsParsed) {
-        parserContext.qsParsed = qs.parse(rawValue);
+        parserContext.qsParsed = parse(rawValue);
     }
     const qsParsed = parserContext.qsParsed;
     return qsParsed[location.name];
