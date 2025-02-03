@@ -1,7 +1,7 @@
 import * as http from 'http';
 import * as oas3 from 'openapi3-ts';
 import pb from 'promise-breaker';
-import pump from 'pump';
+import { pipeline } from 'stream';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import { compileOptions } from './options';
@@ -179,7 +179,9 @@ export function writeHttpResult(
 
         if (httpResult.body) {
             const body = httpResult.body;
-            await pb.call((done2: pump.Callback) => pump(body, res, done2));
+            await pb.call((done2: (err: NodeJS.ErrnoException | null) => void) =>
+                pipeline(body, res, done2)
+            );
         } else {
             res.end();
         }

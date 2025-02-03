@@ -52,7 +52,6 @@
         "@types/lodash": "^4.14.132",
         "@types/mocha": "^10.0.0",
         "@types/node": "^18.7.23",
-        "@types/pump": "^1.0.1",
         "@types/qs": "^6.5.1",
         "@types/semver": "^7.1.0",
         "@typescript-eslint/eslint-plugin": "^7.3.1",
@@ -86,13 +85,12 @@
         "lodash": "^4.17.11",
         "openapi3-ts": "^3.1.1",
         "promise-breaker": "^6.0.0",
-        "pump": "^3.0.0",
         "qs": "^6.6.0",
         "raw-body": "^2.3.3",
         "semver": "^7.0.0"
     },
     "engines": {
-        "node": ">=6.0.0",
+        "node": ">=10.0.0",
         "npm": ">5.0.0"
     }
 }
