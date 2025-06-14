@@ -1,6 +1,6 @@
 import ld from 'lodash';
 import querystring from 'querystring';
-import qs from 'qs';
+import qs from 'neoqs/legacy';
 
 import { ParametersMap, ParameterLocation } from '../../types';
 import { ValidationError } from '../../errors';
